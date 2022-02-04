@@ -62,7 +62,8 @@ target_sources(GuiAppExample
         Main.cpp
         MainComponent.cpp
         SoundProcessor.cpp
-        SoundProcessor.h)
+        SoundProcessor.h
+        Wavetable.h)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
@@ -98,6 +99,7 @@ target_link_libraries(GuiAppExample
     PRIVATE
         # GuiAppData            # If we'd created a binary data target, we'd link to it here
         juce::juce_gui_extra
+        juce::juce_audio_processors
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

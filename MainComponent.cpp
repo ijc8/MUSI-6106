@@ -1,5 +1,6 @@
 #include "MainComponent.h"
 #include "SoundProcessor.h"
+#include "Wavetable.h"
 #include "ErrorDef.h"
 
 //==============================================================================
@@ -10,9 +11,11 @@ MainComponent::MainComponent()
     CSoundProcessor::setSampleRate(44100.0f);
     CSoundProcessor* pCSoundProcessor = 0;
     COscillator::create(pCSoundProcessor, 440.0f);
-    COscillator::create(pCSoundProcessor, 220.0f);
     pCSoundProcessor->process();
     COscillator::destroy(pCSoundProcessor);
+
+    SineWavetable sine;
+    sine.createWavetable();
    
 }
 
