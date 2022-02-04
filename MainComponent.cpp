@@ -1,9 +1,14 @@
 #include "MainComponent.h"
+#include "SoundProcessor.h"
+#include "ErrorDef.h"
 
 //==============================================================================
 MainComponent::MainComponent()
 {
     setSize (600, 400);
+
+
+   
 }
 
 //==============================================================================
