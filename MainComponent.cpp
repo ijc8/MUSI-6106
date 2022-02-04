@@ -7,7 +7,12 @@ MainComponent::MainComponent()
 {
     setSize (600, 400);
 
-
+    CSoundProcessor::setSampleRate(44100.0f);
+    CSoundProcessor* pCSoundProcessor = 0;
+    COscillator::create(pCSoundProcessor, 440.0f);
+    COscillator::create(pCSoundProcessor, 220.0f);
+    pCSoundProcessor->process();
+    COscillator::destroy(pCSoundProcessor);
    
 }
 

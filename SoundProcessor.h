@@ -12,13 +12,13 @@ public:
 
 	static Error_t setSampleRate(float fNewSampleRate);
 
-	virtual float process();
+	virtual float process() = 0;
 	Error_t setGain(float fNewGain);
 	float getGain() const;
 	
 protected:
 
-	static float m_fSampleRateInHz;
+	static float s_fSampleRateInHz;
 	float m_fGain;
 
 private:
