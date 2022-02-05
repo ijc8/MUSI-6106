@@ -43,12 +43,11 @@ protected:
 
 	float m_fCurrentIndex;
 	float m_fTableDelta;
+	float FREQ_TO_TABLEDELTA;
+	float TABLEDELTA_TO_FREQ;
 	const Wavetable& m_Wavetable;
 
 private:
-
-	float FREQ_TO_TABLEDELTA;
-	float TABLEDELTA_TO_FREQ;
 };
 
 #endif // #if !defined(__SoundProcessor_hdr__)
