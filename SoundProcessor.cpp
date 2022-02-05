@@ -92,7 +92,7 @@ float COscillator::getFrequency() const
 
 float COscillator::process()
 {
-	float tableSize = (unsigned)m_Wavetable.getNumSamples();
+	unsigned tableSize = (unsigned)m_Wavetable.getNumSamples();
 
 	unsigned index0 = (unsigned)m_fCurrentIndex;
 	unsigned index1 = index0 + 1;
