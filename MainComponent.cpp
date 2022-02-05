@@ -7,18 +7,6 @@
 MainComponent::MainComponent()
 {
     setSize (600, 400);
-
-    SineWavetable sine;
-    sine.createWavetable();
-
-    CSoundProcessor::setSampleRate(44100.0f);
-    CSoundProcessor* pCSoundProcessor = 0;
-    COscillator::create(pCSoundProcessor, sine);
-    pCSoundProcessor->setGain(1.0f);
-    for (int i = 0; i < 10; i++)
-        pCSoundProcessor->process();
-    COscillator::destroy(pCSoundProcessor);
-
 }
 
 //==============================================================================
