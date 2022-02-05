@@ -92,6 +92,24 @@ float COscillator::getFrequency() const
 
 float COscillator::process()
 {
-	return 0.0f;
+	float tableSize = (unsigned)m_Wavetable.getNumSamples();
+
+	unsigned index0 = (unsigned)m_fCurrentIndex;
+	unsigned index1 = index0 + 1;
+	if (index1 >= tableSize)
+		index1 = (unsigned)0;
+
+	float frac = m_fCurrentIndex - (float)index0;
+
+	const float* wavetableReader = m_Wavetable.getReadPointer(0);
+	float value0 = wavetableReader[index0];
+	float value1 = wavetableReader[index1];
+
+	float currentSample = value0 + frac * (value1 - value0);
+
+	if ((m_fCurrentIndex += m_fTableDelta) > (float)tableSize)
+		m_fCurrentIndex -= (float)tableSize;
+
+	return currentSample;
 }
 //=======================================================================

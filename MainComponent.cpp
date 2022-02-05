@@ -14,14 +14,10 @@ MainComponent::MainComponent()
     CSoundProcessor::setSampleRate(44100.0f);
     CSoundProcessor* pCSoundProcessor = 0;
     COscillator::create(pCSoundProcessor, sine);
-    pCSoundProcessor->process();
+    for (int i = 0; i < 10; i++)
+        pCSoundProcessor->process();
     COscillator::destroy(pCSoundProcessor);
 
-    COscillator osc(sine);
-    osc.getFrequency();
-    osc.setFrequency(44);
-    osc.getFrequency();
-   
 }
 
 //==============================================================================

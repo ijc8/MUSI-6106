@@ -9,6 +9,7 @@ public:
     Wavetable() {};
 	virtual ~Wavetable() {};
 
+    const float* getReadPointer(int sampleIndex = 0) const { return m_fWavetable.getReadPointer(0, sampleIndex); };
 	virtual void createWavetable() = 0;
     static int getNumSamples() { return s_iTableSize; };
 
