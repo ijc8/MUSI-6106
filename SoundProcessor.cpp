@@ -25,7 +25,7 @@ Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 
 Error_t CSoundProcessor::setGain(float fNewGain)
 {
-	assert(fNewGain > -1.0 && fNewGain < 1.0);
+	assert(fNewGain >= -1.0 && fNewGain <= 1.0);
 	if (fNewGain < -1.0 || fNewGain > 1.0)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -77,7 +77,7 @@ Error_t COscillator::destroy(CSoundProcessor*& pCSoundProcessor)
 
 Error_t COscillator::setFrequency(float fNewFrequency)
 {
-	assert(fNewFrequency > 0 && fNewFrequency < 20000);
+	assert(fNewFrequency >= 0 && fNewFrequency <= 20000);
 	if (fNewFrequency < 0 || fNewFrequency > 20000)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -110,6 +110,6 @@ float COscillator::process()
 	if ((m_fCurrentIndex += m_fTableDelta) > (float)tableSize)
 		m_fCurrentIndex -= (float)tableSize;
 
-	return currentSample;
+	return m_fGain * currentSample;
 }
 //=======================================================================
