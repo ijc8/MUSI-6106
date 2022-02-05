@@ -10,6 +10,7 @@ public:
 	virtual ~Wavetable() {};
 
 	virtual void createWavetable() = 0;
+    static int getNumSamples() { return s_iTableSize; };
 
 protected:
 

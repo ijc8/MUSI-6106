@@ -8,14 +8,19 @@ MainComponent::MainComponent()
 {
     setSize (600, 400);
 
+    SineWavetable sine;
+    sine.createWavetable();
+
     CSoundProcessor::setSampleRate(44100.0f);
     CSoundProcessor* pCSoundProcessor = 0;
-    COscillator::create(pCSoundProcessor, 440.0f);
+    COscillator::create(pCSoundProcessor, sine);
     pCSoundProcessor->process();
     COscillator::destroy(pCSoundProcessor);
 
-    SineWavetable sine;
-    sine.createWavetable();
+    COscillator osc(sine);
+    osc.getFrequency();
+    osc.setFrequency(44);
+    osc.getFrequency();
    
 }
 
