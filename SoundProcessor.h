@@ -12,6 +12,7 @@ public:
 	virtual ~CSoundProcessor();
 
 	static Error_t setSampleRate(float fNewSampleRate);
+	static float getSampleRate();
 
 	virtual float process() = 0;
 	Error_t setGain(float fNewGain);
@@ -29,11 +30,12 @@ private:
 class COscillator : public CSoundProcessor
 {
 public:
-	COscillator(const Wavetable& wavetableToUse, float fFrequency = 440.0f);
+	COscillator(const Wavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
 	virtual ~COscillator();
 
-	static Error_t create(CSoundProcessor*& pCSoundProcessor, const Wavetable& wavetableToUse, float fFrequency = 440.0f);
+	static Error_t create(CSoundProcessor*& pCSoundProcessor, const Wavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
 	static Error_t destroy(CSoundProcessor*& pCSoundProcessor);
+	static Error_t updateConversionFactors();
 
 	Error_t setFrequency(float fNewFrequency);
 	float getFrequency() const;
@@ -41,11 +43,13 @@ public:
 
 protected:
 
+	static float s_FREQ_TO_TABLEDELTA;
+	static float s_TABLEDELTA_TO_FREQ;
+
 	float m_fCurrentIndex;
 	float m_fTableDelta;
-	float FREQ_TO_TABLEDELTA;
-	float TABLEDELTA_TO_FREQ;
 	const Wavetable& m_Wavetable;
+
 
 private:
 };

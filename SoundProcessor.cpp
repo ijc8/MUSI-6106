@@ -19,7 +19,13 @@ Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 		return Error_t::kFunctionInvalidArgsError;
 
 	s_fSampleRateInHz = fNewSampleRate;
+	COscillator::updateConversionFactors();
 	return Error_t::kNoError;
+}
+
+float CSoundProcessor::getSampleRate()
+{
+	return s_fSampleRateInHz;
 }
 
 
@@ -42,14 +48,13 @@ float CSoundProcessor::s_fSampleRateInHz = 0.0f;
 //=======================================================================
 
 //=======================================================================
-COscillator::COscillator(const Wavetable& wavetableToUse, float fFrequency) :
+COscillator::COscillator(const Wavetable& wavetableToUse, float fFrequency, float fGain) :
 	m_fCurrentIndex(0.0f),
 	m_fTableDelta(0.0f),
-	m_Wavetable(wavetableToUse),
-	FREQ_TO_TABLEDELTA( (float)wavetableToUse.getNumSamples() / s_fSampleRateInHz),
-	TABLEDELTA_TO_FREQ( 1.0f / FREQ_TO_TABLEDELTA)
+	m_Wavetable(wavetableToUse)
 {
 	setFrequency(fFrequency);
+	setGain(fGain);
 }
 
 COscillator::~COscillator()
@@ -57,12 +62,12 @@ COscillator::~COscillator()
 
 }
 
-Error_t COscillator::create(CSoundProcessor*& pCSoundProcessor, const Wavetable& wavetableToUse, float fFrequency)
+Error_t COscillator::create(CSoundProcessor*& pCSoundProcessor, const Wavetable& wavetableToUse, float fFrequency, float fGain)
 {
 	assert(!pCSoundProcessor);
 	if (!pCSoundProcessor) 
 	{
-		pCSoundProcessor = new COscillator(wavetableToUse, fFrequency);
+		pCSoundProcessor = new COscillator(wavetableToUse, fFrequency, fGain);
 		return Error_t::kNoError;
 	}
 	return Error_t::kMemError;
@@ -75,19 +80,34 @@ Error_t COscillator::destroy(CSoundProcessor*& pCSoundProcessor)
 	return Error_t::kNoError;
 }
 
+Error_t COscillator::updateConversionFactors()
+{
+	if (s_fSampleRateInHz == 0.0f)
+	{
+		s_FREQ_TO_TABLEDELTA = 0.0f;
+		s_TABLEDELTA_TO_FREQ = 0.0f;
+	}
+	else
+	{
+		s_FREQ_TO_TABLEDELTA = Wavetable::getNumSamples() / s_fSampleRateInHz;
+		s_TABLEDELTA_TO_FREQ = 1.0f / s_FREQ_TO_TABLEDELTA;
+	}
+	return Error_t::kNoError;
+}
+
 Error_t COscillator::setFrequency(float fNewFrequency)
 {
 	assert(fNewFrequency >= 0 && fNewFrequency <= 20000);
 	if (fNewFrequency < 0 || fNewFrequency > 20000)
 		return Error_t::kFunctionInvalidArgsError;
 
-	m_fTableDelta = FREQ_TO_TABLEDELTA * fNewFrequency;
+	m_fTableDelta = s_FREQ_TO_TABLEDELTA * fNewFrequency;
 	return Error_t::kNoError;
 }
 
 float COscillator::getFrequency() const
 {
-	return m_fTableDelta * TABLEDELTA_TO_FREQ;
+	return m_fTableDelta * s_TABLEDELTA_TO_FREQ;
 }
 
 float COscillator::process()
@@ -112,4 +132,7 @@ float COscillator::process()
 
 	return m_fGain * currentSample;
 }
+
+float COscillator::s_FREQ_TO_TABLEDELTA = 0.0f;
+float COscillator::s_TABLEDELTA_TO_FREQ = 0.0f;
 //=======================================================================
