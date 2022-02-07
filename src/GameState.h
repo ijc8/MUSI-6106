@@ -86,4 +86,18 @@ namespace Chess {
     };
 }
 
+class GameState {
+public:
+    static GameState &getInstance() {
+        static GameState instance;
+        return instance;
+    }
+
+    Chess::Board &getBoard() {
+        return board;
+    }
+private:
+    Chess::Board board;
+};
+
 #endif
