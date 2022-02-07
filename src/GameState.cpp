@@ -1,3 +1,6 @@
+#include <cassert>
+#include <cctype>
+
 #include "GameState.h"
 
 using namespace Chess;
@@ -5,16 +8,59 @@ using namespace Chess;
 // Starting state for a game of chess using standard rules.
 const std::string Board::initialBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
+const std::unordered_map<char, Piece::Type> Piece::CharMap{
+    {'P', Piece::Type::Pawn},
+    {'B', Piece::Type::Bishop},
+    {'N', Piece::Type::Knight},
+    {'R', Piece::Type::Rook},
+    {'Q', Piece::Type::Queen},
+    {'K', Piece::Type::King},
+};
+
 Board::Board(std::string boardFen) {
     setBoardFen(boardFen);
 }
 
 std::string Board::getBoardFen() const {
-    throw "not implemented";
+    std::string fen;
+    // Counts number of consecutive empty squares in a rank.
+    int emptyCount = 0;
+    for (int rank = 7; rank >= 0; rank++) {
+        for (int file = 0; file < 8; file++) {
+            std::optional<Piece> piece = getPieceAt(Square(rank, file));
+            if (piece.has_value()) {
+                fen += std::to_string(emptyCount);
+                emptyCount = 0;
+                fen += (char)piece.value().type;
+            } else {
+                emptyCount++;
+            }
+        }
+        // Insert slash between ranks.
+        if (rank < 7) fen += '/';
+    }
+    return fen;
 }
 
 void Board::setBoardFen(const std::string boardFen) {
-    throw "not implemented";
+    int rank = 7, file = 0;
+    for (const char c : boardFen) {
+        assert(rank >= 0 && rank < 8 && file >= 0 && file < 8);
+        if (c == '/') {
+            rank--;
+            file = 0;
+        } else if (isdigit(c)) {
+            file += c - '0';
+        } else if (islower(c)) {
+            Piece::Type type = Piece::CharMap.at(toupper(c));
+            setPieceAt(Square(rank, file), Piece(type, Color::Black));
+            file++;
+        } else {
+            Piece::Type type = Piece::CharMap.at(c);
+            setPieceAt(Square(rank, file), Piece(type, Color::White));
+            file++;
+        }
+    }
 }
 
 std::optional<Piece> Board::getPieceAt(const Square square) const {
@@ -23,11 +69,11 @@ std::optional<Piece> Board::getPieceAt(const Square square) const {
 
 void Board::setPieceAt(const Square square, const std::optional<Piece> piece) {
     board[square.rank][square.file] = piece;
-    // if (piece.has_value()) {
-    //     pieceMap[square] = piece.value();
-    // } else {
-    //     pieceMap.erase(square);
-    // }
+    if (piece.has_value()) {
+        pieceMap[square] = piece.value();
+    } else {
+        pieceMap.erase(square);
+    }
 }
 
 std::unordered_map<Square, Piece> Board::getPieceMap() const {

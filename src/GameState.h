@@ -1,3 +1,6 @@
+#ifndef GAME_STATE_H
+#define GAME_STATE_H
+
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -11,14 +14,19 @@ namespace Chess {
 
     struct Piece {
         enum class Type {
-            Pawn,
-            Knight,
-            Bishop,
-            Rook,
-            Queen,
-            King
+            Pawn = 'P',
+            Knight = 'N',
+            Bishop = 'B',
+            Rook = 'R',
+            Queen = 'Q',
+            King = 'K',
         };
 
+        static const std::unordered_map<char, Type> CharMap;
+        static const std::unordered_map<Type, char> ToChar;
+
+        // Default constructor is required for use in a map.
+        Piece(): Piece(Type::Pawn, Color::White) {}
         Piece(Type type_, Color color_) : type(type_), color(color_) {}
         Type type;
         Color color;
@@ -26,7 +34,7 @@ namespace Chess {
 
     struct Square {
         Square(uint8_t rank_, uint8_t file_) : rank(rank_), file(file_) {}
-        bool operator==(const Square &other) {
+        bool operator==(const Square &other) const {
             return rank == other.rank && file == other.file;
         }
         uint8_t rank, file;
@@ -72,3 +80,5 @@ namespace Chess {
         std::unordered_map<Square, Piece> pieceMap;
     };
 }
+
+#endif
