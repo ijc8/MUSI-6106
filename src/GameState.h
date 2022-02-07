@@ -27,13 +27,18 @@ namespace Chess {
 
         // Default constructor is required for use in a map.
         Piece(): Piece(Type::Pawn, Color::White) {}
-        Piece(Type type_, Color color_) : type(type_), color(color_) {}
+        Piece(const Type type_, const Color color_) : type(type_), color(color_) {}
+        Piece(char c) : type(CharMap.at(toupper(c))), color(islower(c) ? Color::Black : Color::White) {}
+        bool operator==(const Piece& other) const {
+            return type == other.type && color == other.color;
+        }
         Type type;
         Color color;
     };
 
     struct Square {
         Square(uint8_t rank_, uint8_t file_) : rank(rank_), file(file_) {}
+        Square(const std::string square) : Square(square[1] - '1', square[0] - 'a') {}
         bool operator==(const Square &other) const {
             return rank == other.rank && file == other.file;
         }

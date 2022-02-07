@@ -25,19 +25,30 @@ std::string Board::getBoardFen() const {
     std::string fen;
     // Counts number of consecutive empty squares in a rank.
     int emptyCount = 0;
-    for (int rank = 7; rank >= 0; rank++) {
+    // Helper function.
+    auto flushEmpty = [&emptyCount, &fen]() {
+        if (emptyCount > 0) {
+            fen += std::to_string(emptyCount);
+            emptyCount = 0;
+        }
+    };
+
+    for (int rank = 7; rank >= 0; rank--) {
         for (int file = 0; file < 8; file++) {
             std::optional<Piece> piece = getPieceAt(Square(rank, file));
             if (piece.has_value()) {
-                fen += std::to_string(emptyCount);
-                emptyCount = 0;
-                fen += (char)piece.value().type;
+                flushEmpty();
+                char pieceChar = (char)piece.value().type;
+                fen += (piece.value().color == Color::White ? pieceChar : tolower(pieceChar));
             } else {
                 emptyCount++;
             }
         }
+        flushEmpty();
         // Insert slash between ranks.
-        if (rank < 7) fen += '/';
+        if (rank > 0) {
+            fen += '/';
+        }
     }
     return fen;
 }
@@ -45,19 +56,14 @@ std::string Board::getBoardFen() const {
 void Board::setBoardFen(const std::string boardFen) {
     int rank = 7, file = 0;
     for (const char c : boardFen) {
-        assert(rank >= 0 && rank < 8 && file >= 0 && file < 8);
+        assert(rank >= 0 && rank < 8 && file >= 0 && (file < 8 || c == '/'));
         if (c == '/') {
             rank--;
             file = 0;
         } else if (isdigit(c)) {
             file += c - '0';
-        } else if (islower(c)) {
-            Piece::Type type = Piece::CharMap.at(toupper(c));
-            setPieceAt(Square(rank, file), Piece(type, Color::Black));
-            file++;
         } else {
-            Piece::Type type = Piece::CharMap.at(c);
-            setPieceAt(Square(rank, file), Piece(type, Color::White));
+            setPieceAt(Square(rank, file), Piece(c));
             file++;
         }
     }

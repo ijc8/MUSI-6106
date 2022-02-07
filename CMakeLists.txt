@@ -46,6 +46,9 @@ juce_add_gui_app(MusicalChess
     # COMPANY_NAME ...                  # Specify the name of the app's author
     PRODUCT_NAME "MusicalChess")     # The name of the final executable, which can differ from the target name
 
+juce_add_console_app(Tests
+    PRODUCT_NAME "Tests")
+
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
 # this header will be automatically added to the target. The main function of the JuceHeader is to
@@ -64,6 +67,11 @@ target_sources(MusicalChess
         src/Main.cpp
         src/MainComponent.cpp
         src/GameState.cpp)
+
+target_sources(Tests
+    PRIVATE
+        src/GameState.cpp
+	tests/GameState.cpp)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
