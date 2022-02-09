@@ -1,35 +1,9 @@
 #include "MainComponent.h"
-#include "SoundProcessor.h"
-
-#include <fstream>
 
 //==============================================================================
 MainComponent::MainComponent()
 {
     setSize (600, 400);
-
-    CSoundProcessor::setSampleRate(48000.0f);
-    CSineWavetable sine;
-    sine.createWavetable();
-
-    std::ofstream out_file;
-    out_file.open("C:/Users/JohnK/Documents/CS/MusicalChess/out.txt");
-
-    CInstrument* pCInstrument = new CWavetableOscillator(sine, 440.0f, 0.5f);
-
-    int iNumSamples = 100000;
-    for (int sample{ 0 }; sample < iNumSamples - 1; sample++)
-    {
-        out_file << pCInstrument->process() << ",";
-        CSoundProcessor::setSampleRate(48000.0f + sample);
-        pCInstrument->reinitialize();
-    }
-    out_file << pCInstrument->process();
-    out_file << std::endl;
-    std::cout << "done" << std::endl;
-
-    delete pCInstrument;
-    out_file.close();
 }
 
 //==============================================================================
