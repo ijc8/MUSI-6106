@@ -9,7 +9,7 @@ MainComponent::MainComponent()
     setSize (600, 400);
 
     CSoundProcessor::setSampleRate(48000.0f);
-    SineWavetable sine;
+    CSineWavetable sine;
     sine.createWavetable();
 
     std::ofstream out_file;

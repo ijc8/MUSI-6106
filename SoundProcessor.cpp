@@ -59,7 +59,7 @@ float CInstrument::getGain() const
 //=======================================================================
 
 //=======================================================================
-CWavetableOscillator::CWavetableOscillator(const Wavetable& wavetableToUse, float fFrequency, float fGain) :
+CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain) :
 	m_fFrequencyInHz(0.0f),
 	m_fCurrentIndex(0.0f),
 	m_fTableDelta(0.0f),
@@ -83,7 +83,7 @@ Error_t CWavetableOscillator::updateConversionFactors()
 	}
 	else
 	{
-		s_FREQ_TO_TABLEDELTA = Wavetable::getNumSamples() / s_fSampleRateInHz;
+		s_FREQ_TO_TABLEDELTA = CWavetable::getNumSamples() / s_fSampleRateInHz;
 		s_TABLEDELTA_TO_FREQ = 1.0f / s_FREQ_TO_TABLEDELTA;
 	}
 	return Error_t::kNoError;
@@ -133,6 +133,6 @@ void CWavetableOscillator::reinitialize()
 	setFrequency(m_fFrequencyInHz);
 }
 
-float CWavetableOscillator::s_FREQ_TO_TABLEDELTA = (s_fSampleRateInHz == 0) ? 0 : Wavetable::getNumSamples() / s_fSampleRateInHz;
+float CWavetableOscillator::s_FREQ_TO_TABLEDELTA = (s_fSampleRateInHz == 0) ? 0 : CWavetable::getNumSamples() / s_fSampleRateInHz;
 float CWavetableOscillator::s_TABLEDELTA_TO_FREQ = (s_fSampleRateInHz == 0) ? 0 : 1.0f / s_FREQ_TO_TABLEDELTA;
 //=======================================================================

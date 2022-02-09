@@ -55,7 +55,7 @@ protected:
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const Wavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
+	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
 	virtual ~CWavetableOscillator();
 	static Error_t updateConversionFactors();
 
@@ -80,7 +80,7 @@ protected:
 	float m_fFrequencyInHz;
 	float m_fCurrentIndex;
 	float m_fTableDelta;
-	const Wavetable& m_Wavetable;
+	const CWavetable& m_Wavetable;
 
 };
 

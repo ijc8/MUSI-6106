@@ -3,11 +3,11 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-class Wavetable
+class CWavetable
 {
 public:
-    Wavetable() {};
-	virtual ~Wavetable() {};
+    CWavetable() {};
+	virtual ~CWavetable() {};
 
     const float* getReadPointer(int sampleIndex = 0) const { return m_fWavetable.getReadPointer(0, sampleIndex); };
 	virtual void createWavetable() = 0;
@@ -20,12 +20,12 @@ protected:
 
 };
 
-class SineWavetable : public Wavetable
+class CSineWavetable : public CWavetable
 {
 public:
 
-    SineWavetable() {};
-    ~SineWavetable() {};
+    CSineWavetable() {};
+    ~CSineWavetable() {};
 
 	void createWavetable() override
 	{
