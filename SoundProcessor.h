@@ -15,43 +15,50 @@ public:
 	static float getSampleRate();
 
 	virtual float process() = 0;
-	Error_t setGain(float fNewGain);
-	float getGain() const;
+	virtual void reinitialize() = 0;
 	
 protected:
 
 	static float s_fSampleRateInHz;
-	float m_fGain;
-
-private:
 
 };
 
-class COscillator : public CSoundProcessor
+class CInstrument : public CSoundProcessor
 {
 public:
-	COscillator(const Wavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
-	virtual ~COscillator();
+	CInstrument();
+	virtual ~CInstrument();
 
-	static Error_t create(CSoundProcessor*& pCSoundProcessor, const Wavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
-	static Error_t destroy(CSoundProcessor*& pCSoundProcessor);
+	Error_t setGain(float fNewGain);
+	float getGain() const;
+
+protected:
+
+	float m_fGain;
+};
+
+class CWavetableOscillator : public CInstrument
+{
+public:
+	CWavetableOscillator(const Wavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
+	virtual ~CWavetableOscillator();
 	static Error_t updateConversionFactors();
 
 	Error_t setFrequency(float fNewFrequency);
 	float getFrequency() const;
 	float process() override;
+	void reinitialize() override;
 
 protected:
 
 	static float s_FREQ_TO_TABLEDELTA;
 	static float s_TABLEDELTA_TO_FREQ;
 
+	float m_fFrequencyInHz;
 	float m_fCurrentIndex;
 	float m_fTableDelta;
 	const Wavetable& m_Wavetable;
 
-
-private:
 };
 
 #endif // #if !defined(__SoundProcessor_hdr__)

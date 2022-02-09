@@ -1,8 +1,7 @@
 #include "SoundProcessor.h"
 
 //=======================================================================
-CSoundProcessor::CSoundProcessor() :
-	m_fGain(0.0)
+CSoundProcessor::CSoundProcessor()
 {
 
 }
@@ -19,7 +18,7 @@ Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 		return Error_t::kFunctionInvalidArgsError;
 
 	s_fSampleRateInHz = fNewSampleRate;
-	COscillator::updateConversionFactors();
+	CWavetableOscillator::updateConversionFactors();
 	return Error_t::kNoError;
 }
 
@@ -28,8 +27,22 @@ float CSoundProcessor::getSampleRate()
 	return s_fSampleRateInHz;
 }
 
+float CSoundProcessor::s_fSampleRateInHz = 0.0f;
+//=======================================================================
 
-Error_t CSoundProcessor::setGain(float fNewGain)
+//=======================================================================
+CInstrument::CInstrument() :
+	m_fGain(0.0f)
+{
+
+}
+
+CInstrument::~CInstrument()
+{
+
+}
+
+Error_t CInstrument::setGain(float fNewGain)
 {
 	assert(fNewGain >= -1.0 && fNewGain <= 1.0);
 	if (fNewGain < -1.0 || fNewGain > 1.0)
@@ -39,16 +52,15 @@ Error_t CSoundProcessor::setGain(float fNewGain)
 	return Error_t::kNoError;
 }
 
-float CSoundProcessor::getGain() const
+float CInstrument::getGain() const
 {
 	return m_fGain;
 }
-
-float CSoundProcessor::s_fSampleRateInHz = 0.0f;
 //=======================================================================
 
 //=======================================================================
-COscillator::COscillator(const Wavetable& wavetableToUse, float fFrequency, float fGain) :
+CWavetableOscillator::CWavetableOscillator(const Wavetable& wavetableToUse, float fFrequency, float fGain) :
+	m_fFrequencyInHz(0.0f),
 	m_fCurrentIndex(0.0f),
 	m_fTableDelta(0.0f),
 	m_Wavetable(wavetableToUse)
@@ -57,30 +69,12 @@ COscillator::COscillator(const Wavetable& wavetableToUse, float fFrequency, floa
 	setGain(fGain);
 }
 
-COscillator::~COscillator()
+CWavetableOscillator::~CWavetableOscillator()
 {
 
 }
 
-Error_t COscillator::create(CSoundProcessor*& pCSoundProcessor, const Wavetable& wavetableToUse, float fFrequency, float fGain)
-{
-	assert(!pCSoundProcessor);
-	if (!pCSoundProcessor) 
-	{
-		pCSoundProcessor = new COscillator(wavetableToUse, fFrequency, fGain);
-		return Error_t::kNoError;
-	}
-	return Error_t::kMemError;
-}
-
-Error_t COscillator::destroy(CSoundProcessor*& pCSoundProcessor)
-{
-	delete pCSoundProcessor;
-	pCSoundProcessor = 0;
-	return Error_t::kNoError;
-}
-
-Error_t COscillator::updateConversionFactors()
+Error_t CWavetableOscillator::updateConversionFactors()
 {
 	if (s_fSampleRateInHz == 0.0f)
 	{
@@ -95,22 +89,23 @@ Error_t COscillator::updateConversionFactors()
 	return Error_t::kNoError;
 }
 
-Error_t COscillator::setFrequency(float fNewFrequency)
+Error_t CWavetableOscillator::setFrequency(float fNewFrequency)
 {
 	assert(fNewFrequency >= 0 && fNewFrequency <= 20000);
 	if (fNewFrequency < 0 || fNewFrequency > 20000)
 		return Error_t::kFunctionInvalidArgsError;
 
+	m_fFrequencyInHz = fNewFrequency;
 	m_fTableDelta = s_FREQ_TO_TABLEDELTA * fNewFrequency;
 	return Error_t::kNoError;
 }
 
-float COscillator::getFrequency() const
+float CWavetableOscillator::getFrequency() const
 {
-	return m_fTableDelta * s_TABLEDELTA_TO_FREQ;
+	return m_fFrequencyInHz;
 }
 
-float COscillator::process()
+float CWavetableOscillator::process()
 {
 	unsigned tableSize = (unsigned)m_Wavetable.getNumSamples();
 
@@ -133,6 +128,11 @@ float COscillator::process()
 	return m_fGain * currentSample;
 }
 
-float COscillator::s_FREQ_TO_TABLEDELTA = 0.0f;
-float COscillator::s_TABLEDELTA_TO_FREQ = 0.0f;
+void CWavetableOscillator::reinitialize()
+{
+	setFrequency(m_fFrequencyInHz);
+}
+
+float CWavetableOscillator::s_FREQ_TO_TABLEDELTA = 0.0f;
+float CWavetableOscillator::s_TABLEDELTA_TO_FREQ = 0.0f;
 //=======================================================================
