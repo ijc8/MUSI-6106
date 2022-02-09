@@ -15,7 +15,7 @@ public:
 
 protected:
 
-	static const unsigned s_iTableSize = 1 << 7;
+	static const unsigned s_iTableSize = 1 << 9;
     juce::AudioSampleBuffer m_fWavetable;
 
 };

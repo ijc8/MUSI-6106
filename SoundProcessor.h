@@ -11,10 +11,25 @@ public:
 	CSoundProcessor();
 	virtual ~CSoundProcessor();
 
+	/* Sets sample rate for all sound processors. 
+	*  Requires followup call to reinitialize()
+	\return Error_t
+	*/
 	static Error_t setSampleRate(float fNewSampleRate);
+
+	/* Returns current sample rate for sound processors.
+	\return float
+	*/
 	static float getSampleRate();
 
+	/* Override this for audio processing.
+	\return float
+	*/
 	virtual float process() = 0;
+
+	/* Override this to recalculate member variables that depend on sampling rate. 
+	\return void
+	*/
 	virtual void reinitialize() = 0;
 	
 protected:
@@ -46,7 +61,15 @@ public:
 
 	Error_t setFrequency(float fNewFrequency);
 	float getFrequency() const;
+
+	/* Outputs values from selected wavetable.
+	\return float
+	*/
 	float process() override;
+
+	/* Resets frequency using proper sample rate 
+	\return void 
+	*/
 	void reinitialize() override;
 
 protected:

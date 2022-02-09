@@ -27,7 +27,7 @@ float CSoundProcessor::getSampleRate()
 	return s_fSampleRateInHz;
 }
 
-float CSoundProcessor::s_fSampleRateInHz = 0.0f;
+float CSoundProcessor::s_fSampleRateInHz = 44100.0f;
 //=======================================================================
 
 //=======================================================================
@@ -133,6 +133,6 @@ void CWavetableOscillator::reinitialize()
 	setFrequency(m_fFrequencyInHz);
 }
 
-float CWavetableOscillator::s_FREQ_TO_TABLEDELTA = 0.0f;
-float CWavetableOscillator::s_TABLEDELTA_TO_FREQ = 0.0f;
+float CWavetableOscillator::s_FREQ_TO_TABLEDELTA = (s_fSampleRateInHz == 0) ? 0 : Wavetable::getNumSamples() / s_fSampleRateInHz;
+float CWavetableOscillator::s_TABLEDELTA_TO_FREQ = (s_fSampleRateInHz == 0) ? 0 : 1.0f / s_FREQ_TO_TABLEDELTA;
 //=======================================================================
