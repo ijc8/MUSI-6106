@@ -66,12 +66,18 @@ target_sources(MusicalChess
     PRIVATE
         src/Main.cpp
         src/MainComponent.cpp
-        src/GameState.cpp)
+        src/GameState.cpp
+        src/Main.cpp
+        src/MainComponent.cpp
+        src/SoundProcessor.cpp
+        src/SoundProcessor.h
+        src/Wavetable.h
+        src/ErrorDef.h)
 
 target_sources(Tests
     PRIVATE
         src/GameState.cpp
-	tests/GameState.cpp)
+	      tests/GameState.cpp)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
@@ -107,6 +113,7 @@ target_link_libraries(MusicalChess
     PRIVATE
         # GuiAppData            # If we'd created a binary data target, we'd link to it here
         juce::juce_gui_extra
+        juce::juce_audio_processors
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
