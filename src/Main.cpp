@@ -1,72 +1,48 @@
-#include "MainComponent.h"
+/*
+  ==============================================================================
 
-//==============================================================================
-class GuiAppApplication  : public juce::JUCEApplication
+    This file contains the startup code for a PIP.
+
+  ==============================================================================
+*/
+
+#include <JuceHeader.h>
+#include "GridDemo.h"
+
+class Application    : public juce::JUCEApplication
 {
 public:
     //==============================================================================
-    GuiAppApplication() {}
+    Application() = default;
 
-    // We inject these as compile definitions from the CMakeLists.txt
-    // If you've enabled the juce header with `juce_generate_juce_header(<thisTarget>)`
-    // you could `#include <JuceHeader.h>` and use `ProjectInfo::projectName` etc. instead.
-    const juce::String getApplicationName() override       { return JUCE_APPLICATION_NAME_STRING; }
-    const juce::String getApplicationVersion() override    { return JUCE_APPLICATION_VERSION_STRING; }
-    bool moreThanOneInstanceAllowed() override             { return true; }
+    const juce::String getApplicationName() override       { return "GridDemo"; }
+    const juce::String getApplicationVersion() override    { return "1.0.0"; }
 
-    //==============================================================================
-    void initialise (const juce::String& commandLine) override
+    void initialise (const juce::String&) override
     {
-        // This method is where you should put your application's initialisation code..
-        juce::ignoreUnused (commandLine);
-
-        mainWindow.reset (new MainWindow (getApplicationName()));
+        mainWindow.reset (new MainWindow ("GridDemo", new GridDemo, *this));
     }
 
-    void shutdown() override
-    {
-        // Add your application's shutdown code here..
+    void shutdown() override                         { mainWindow = nullptr; }
 
-        mainWindow = nullptr; // (deletes our window)
-    }
-
-    //==============================================================================
-    void systemRequestedQuit() override
-    {
-        // This is called when the app is being asked to quit: you can ignore this
-        // request and let the app carry on running, or call quit() to allow the app to close.
-        quit();
-    }
-
-    void anotherInstanceStarted (const juce::String& commandLine) override
-    {
-        // When another instance of the app is launched while this one is running,
-        // this method is invoked, and the commandLine parameter tells you what
-        // the other instance's command-line arguments were.
-        juce::ignoreUnused (commandLine);
-    }
-
-    //==============================================================================
-    /*
-        This class implements the desktop window that contains an instance of
-        our MainComponent class.
-    */
+private:
     class MainWindow    : public juce::DocumentWindow
     {
     public:
-        explicit MainWindow (juce::String name)
-            : DocumentWindow (name,
-                              juce::Desktop::getInstance().getDefaultLookAndFeel()
-                                                          .findColour (ResizableWindow::backgroundColourId),
-                              DocumentWindow::allButtons)
+        MainWindow (const juce::String& name, juce::Component* c, JUCEApplication& a)
+            : DocumentWindow (name, juce::Desktop::getInstance().getDefaultLookAndFeel()
+                                                                .findColour (ResizableWindow::backgroundColourId),
+                              juce::DocumentWindow::allButtons),
+              app (a)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
+            setContentOwned (c, true);
 
-           #if JUCE_IOS || JUCE_ANDROID
+           #if JUCE_ANDROID || JUCE_IOS
             setFullScreen (true);
            #else
-            setResizable (true, true);
+            setResizable (true, false);
+            setResizeLimits (300, 250, 10000, 10000);
             centreWithSize (getWidth(), getHeight());
            #endif
 
@@ -75,27 +51,18 @@ public:
 
         void closeButtonPressed() override
         {
-            // This is called when the user tries to close this window. Here, we'll just
-            // ask the app to quit when this happens, but you can change this to do
-            // whatever you need.
-            JUCEApplication::getInstance()->systemRequestedQuit();
+            app.systemRequestedQuit();
         }
 
-        /* Note: Be careful if you override any DocumentWindow methods - the base
-           class uses a lot of them, so by overriding you might break its functionality.
-           It's best to do all your work in your content component instead, but if
-           you really have to override any DocumentWindow methods, make sure your
-           subclass also calls the superclass's method.
-        */
-
     private:
+        JUCEApplication& app;
+
+        //==============================================================================
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
     };
 
-private:
     std::unique_ptr<MainWindow> mainWindow;
 };
 
 //==============================================================================
-// This macro generates the main() routine that launches the app.
-START_JUCE_APPLICATION (GuiAppApplication)
+START_JUCE_APPLICATION (Application)
