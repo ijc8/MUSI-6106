@@ -15,7 +15,9 @@ cmake_minimum_required(VERSION 3.15)
 # `project()` command. `project()` sets up some helpful variables that describe source/binary
 # directories, and the current project version. This is a standard CMake command.
 
-project(GUI_APP_EXAMPLE VERSION 0.0.1)
+project(MUSICAL_CHESS VERSION 0.0.1)
+
+set(CMAKE_CXX_STANDARD 17)
 
 # If you've installed JUCE somehow (via a package manager, or directly using the CMake install
 # target), you'll need to tell this project that it depends on the installed copy of JUCE. If you've
@@ -44,6 +46,9 @@ juce_add_gui_app(MusicalChess
     # COMPANY_NAME ...                  # Specify the name of the app's author
     PRODUCT_NAME "MusicalChess")     # The name of the final executable, which can differ from the target name
 
+juce_add_console_app(Tests
+    PRODUCT_NAME "Tests")
+
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
 # this header will be automatically added to the target. The main function of the JuceHeader is to
@@ -60,7 +65,13 @@ juce_add_gui_app(MusicalChess
 target_sources(MusicalChess
     PRIVATE
         src/Main.cpp
-        src/MainComponent.cpp)
+        src/MainComponent.cpp
+        src/GameState.cpp)
+
+target_sources(Tests
+    PRIVATE
+        src/GameState.cpp
+	tests/GameState.cpp)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
