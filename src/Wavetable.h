@@ -10,13 +10,16 @@ public:
 	virtual ~CWavetable() {};
 
     const float* getReadPointer(int sampleIndex = 0) const { return m_fWavetable.getReadPointer(0, sampleIndex); };
-	virtual void createWavetable() = 0;
-    static int getNumSamples() { return s_iTableSize; };
+	virtual void generateWavetable() = 0;
+    int getNumSamples() const { return s_iTableSize; };
+    bool hasBeenGenerated() const { return m_bHasBeenGenerated; };
+
 
 protected:
 
-	static const unsigned s_iTableSize = 1 << 9;
+	const unsigned s_iTableSize = 1 << 9;
     juce::AudioSampleBuffer m_fWavetable;
+    bool m_bHasBeenGenerated = false;
 
 };
 
@@ -27,11 +30,10 @@ public:
     CSineWavetable() {};
     ~CSineWavetable() {};
 
-	void createWavetable() override
+	void generateWavetable() override
 	{
         m_fWavetable.setSize(1, (int)s_iTableSize);
         float* samples = m_fWavetable.getWritePointer(0);     
-
         auto angleDelta = juce::MathConstants<double>::twoPi / (double)(s_iTableSize - 1); 
         auto currentAngle = 0.0;
 
@@ -41,6 +43,8 @@ public:
             samples[i] = (float)sample;
             currentAngle += angleDelta;
         }
+
+        m_bHasBeenGenerated = true;
 	}
 
 };
