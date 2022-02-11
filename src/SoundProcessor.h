@@ -11,20 +11,9 @@ public:
 	CSoundProcessor(float fSampleRate);
 	virtual ~CSoundProcessor();
 
-	/*Override this for audio processing.
-	\return float
-	*/
 	virtual float process() = 0;
 
-	/* Sets sample rate for all sound processors. 
-	*  Requires followup call to reinitialize()
-	\return Error_t
-	*/
 	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
-
-	/* Returns current sample rate for sound processors.
-	\return float
-	*/
 	float getSampleRate();
 
 	
