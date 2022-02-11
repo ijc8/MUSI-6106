@@ -1,9 +1,9 @@
 #include "SoundProcessor.h"
 
 //=======================================================================
-CSoundProcessor::CSoundProcessor()
+CSoundProcessor::CSoundProcessor(float fSampleRate)
 {
-
+	setSampleRate(fSampleRate);
 }
 
 CSoundProcessor::~CSoundProcessor()
@@ -17,24 +17,22 @@ Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 	if (fNewSampleRate < 0.0)
 		return Error_t::kFunctionInvalidArgsError;
 
-	s_fSampleRateInHz = fNewSampleRate;
-	CWavetableOscillator::updateConversionFactors();
+	m_fSampleRateInHz = fNewSampleRate;
 	return Error_t::kNoError;
 }
 
 float CSoundProcessor::getSampleRate()
 {
-	return s_fSampleRateInHz;
+	return m_fSampleRateInHz;
 }
 
-float CSoundProcessor::s_fSampleRateInHz = 44100.0f;
 //=======================================================================
 
 //=======================================================================
-CInstrument::CInstrument() :
-	m_fGain(0.0f)
+CInstrument::CInstrument(float fGain, float fSampleRate) :
+	CSoundProcessor(fSampleRate)
 {
-
+	setGain(fGain);
 }
 
 CInstrument::~CInstrument()
@@ -59,14 +57,13 @@ float CInstrument::getGain() const
 //=======================================================================
 
 //=======================================================================
-CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain) :
-	m_fFrequencyInHz(0.0f),
-	m_fCurrentIndex(0.0f),
-	m_fTableDelta(0.0f),
-	m_Wavetable(wavetableToUse)
+CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain, float fSampleRate) :
+	CInstrument(fGain, fSampleRate),
+	m_Wavetable(wavetableToUse),
+	m_iTableSize(wavetableToUse.getNumSamples())
 {
+	assert(wavetableToUse.hasBeenGenerated());
 	setFrequency(fFrequency);
-	setGain(fGain);
 }
 
 CWavetableOscillator::~CWavetableOscillator()
@@ -74,29 +71,21 @@ CWavetableOscillator::~CWavetableOscillator()
 
 }
 
-Error_t CWavetableOscillator::updateConversionFactors()
-{
-	if (s_fSampleRateInHz == 0.0f)
-	{
-		s_FREQ_TO_TABLEDELTA = 0.0f;
-		s_TABLEDELTA_TO_FREQ = 0.0f;
-	}
-	else
-	{
-		s_FREQ_TO_TABLEDELTA = CWavetable::getNumSamples() / s_fSampleRateInHz;
-		s_TABLEDELTA_TO_FREQ = 1.0f / s_FREQ_TO_TABLEDELTA;
-	}
-	return Error_t::kNoError;
-}
-
 Error_t CWavetableOscillator::setFrequency(float fNewFrequency)
 {
 	assert(fNewFrequency >= 0 && fNewFrequency <= 20000);
 	if (fNewFrequency < 0 || fNewFrequency > 20000)
 		return Error_t::kFunctionInvalidArgsError;
-
-	m_fFrequencyInHz = fNewFrequency;
-	m_fTableDelta = s_FREQ_TO_TABLEDELTA * fNewFrequency;
+	
+	if (m_fSampleRateInHz == 0)
+	{
+		m_fFrequencyInHz = m_fTableDelta = 0;
+	}
+	else
+	{
+		m_fFrequencyInHz = fNewFrequency;
+		m_fTableDelta = (m_fSampleRateInHz == 0.0f) ? 0.0f : (m_iTableSize / m_fSampleRateInHz) * fNewFrequency;
+	}
 	return Error_t::kNoError;
 }
 
@@ -107,11 +96,9 @@ float CWavetableOscillator::getFrequency() const
 
 float CWavetableOscillator::process()
 {
-	unsigned tableSize = (unsigned)m_Wavetable.getNumSamples();
-
 	unsigned index0 = (unsigned)m_fCurrentIndex;
 	unsigned index1 = index0 + 1;
-	if (index1 >= tableSize)
+	if (index1 >= (unsigned)m_iTableSize)
 		index1 = (unsigned)0;
 
 	float frac = m_fCurrentIndex - (float)index0;
@@ -122,17 +109,17 @@ float CWavetableOscillator::process()
 
 	float currentSample = value0 + frac * (value1 - value0);
 
-	if ((m_fCurrentIndex += m_fTableDelta) > (float)tableSize)
-		m_fCurrentIndex -= (float)tableSize;
+	if ((m_fCurrentIndex += m_fTableDelta) > (float)m_iTableSize)
+		m_fCurrentIndex -= (float)m_iTableSize;
 
 	return m_fGain * currentSample;
 }
 
-void CWavetableOscillator::reinitialize()
+Error_t CWavetableOscillator::setSampleRate(float fNewSampleRate)
 {
-	setFrequency(m_fFrequencyInHz);
+	if (CSoundProcessor::setSampleRate(fNewSampleRate) == Error_t::kNoError)
+		return setFrequency(m_fFrequencyInHz);
+	return Error_t::kFunctionInvalidArgsError;
 }
 
-float CWavetableOscillator::s_FREQ_TO_TABLEDELTA = (s_fSampleRateInHz == 0) ? 0 : CWavetable::getNumSamples() / s_fSampleRateInHz;
-float CWavetableOscillator::s_TABLEDELTA_TO_FREQ = (s_fSampleRateInHz == 0) ? 0 : 1.0f / s_FREQ_TO_TABLEDELTA;
 //=======================================================================
