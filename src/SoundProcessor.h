@@ -8,40 +8,36 @@
 class CSoundProcessor
 {
 public:
-	CSoundProcessor();
+	CSoundProcessor(float fSampleRate);
 	virtual ~CSoundProcessor();
+
+	/*Override this for audio processing.
+	\return float
+	*/
+	virtual float process() = 0;
 
 	/* Sets sample rate for all sound processors. 
 	*  Requires followup call to reinitialize()
 	\return Error_t
 	*/
-	static Error_t setSampleRate(float fNewSampleRate);
+	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
 
 	/* Returns current sample rate for sound processors.
 	\return float
 	*/
-	static float getSampleRate();
+	float getSampleRate();
 
-	/* Override this for audio processing.
-	\return float
-	*/
-	virtual float process() = 0;
-
-	/* Override this to recalculate member variables that depend on sampling rate. 
-	\return void
-	*/
-	virtual void reinitialize() = 0;
 	
 protected:
 
-	static float s_fSampleRateInHz;
+	float m_fSampleRateInHz = 0.0f;
 
 };
 
 class CInstrument : public CSoundProcessor
 {
 public:
-	CInstrument();
+	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument();
 
 	Error_t setGain(float fNewGain);
@@ -49,38 +45,28 @@ public:
 
 protected:
 
-	float m_fGain;
+	float m_fGain = 0.0f;
 };
 
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 440.0f, float fGain = 1.0f);
+	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain, float fSampleRate);
 	virtual ~CWavetableOscillator();
-	static Error_t updateConversionFactors();
 
 	Error_t setFrequency(float fNewFrequency);
 	float getFrequency() const;
 
-	/* Outputs values from selected wavetable.
-	\return float
-	*/
+	Error_t setSampleRate(float fNewSampleRate) override;
 	float process() override;
-
-	/* Resets frequency using proper sample rate 
-	\return void 
-	*/
-	void reinitialize() override;
 
 protected:
 
-	static float s_FREQ_TO_TABLEDELTA;
-	static float s_TABLEDELTA_TO_FREQ;
-
-	float m_fFrequencyInHz;
-	float m_fCurrentIndex;
-	float m_fTableDelta;
+	float m_fFrequencyInHz = 0.0f;
+	float m_fCurrentIndex = 0.0f;
+	float m_fTableDelta = 0.0f;
 	const CWavetable& m_Wavetable;
+	int m_iTableSize;
 
 };
 
