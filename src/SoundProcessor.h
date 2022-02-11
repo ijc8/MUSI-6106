@@ -13,7 +13,7 @@ public:
 
 	virtual float process() = 0;
 
-	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
+	virtual Error_t setSampleRate(float fNewSampleRate);
 	float getSampleRate();
 
 	
