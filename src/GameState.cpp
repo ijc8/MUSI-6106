@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cctype>
+#include <sstream>
 
 #include "GameState.h"
 
@@ -97,7 +98,7 @@ std::string GameState::getFen() const {
     std::string boardFen = getBoardFen();
     char turnc = turn == Color::White ? 'w' : 'b';
     std::string castleFen = "";
-    for (char p : "KQkq") {
+    for (char p : std::string("KQkq")) {
         if (canCastle(Piece(p))) {
             castleFen += p;
         }
@@ -106,11 +107,28 @@ std::string GameState::getFen() const {
         castleFen = '-';
     }
     std::string ep = enPassant.has_value() ? enPassant.value().toString() : "-";
-    std::string halfmove = "TODO";
-    std::string fullmove = "TODO";
+    std::string halfmove = std::to_string(halfmoveClock);
+    std::string fullmove = std::to_string(fullmoveNumber);
     return boardFen + " " + turnc + " " + castleFen + " " + ep + " " + halfmove + " " + fullmove;
 }
 
 void GameState::setFen(const std::string fen) {
-    throw fen;  // TODO
+    std::istringstream stream(fen);
+    std::string boardFen, castleFen, ep;
+    char turnc;
+    stream >> boardFen >> turnc >> castleFen >> ep >> halfmoveClock >> fullmoveNumber;
+    setBoardFen(boardFen);
+    turn = turnc == 'w' ? Color::White : Color::Black;
+    for (char p : castleFen) {
+        if (p == 'K') {
+            castling[0][0] = true;
+        } else if (p == 'Q') {
+            castling[0][1] = true;
+        } else if (p == 'k') {
+            castling[1][0] = true;
+        } else if (p == 'q') {
+            castling[1][1] = true;
+        }
+    }
+    enPassant = ep == "-" ? std::nullopt : std::make_optional(Square(ep));
 }

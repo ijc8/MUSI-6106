@@ -109,11 +109,15 @@ namespace Chess {
             assert(false);
             return false;
         }
+        int getHalfmoveClock() const { return halfmoveClock; }
+        int getFullmoveNumber() const { return fullmoveNumber; }
 
     protected:
         Color turn;
         std::optional<Square> enPassant;
         bool castling[2][2] = {true};
+        int halfmoveClock = 0;
+        int fullmoveNumber = 0;
     };
 
     class Game: public GameState {
