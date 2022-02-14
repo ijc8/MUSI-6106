@@ -16,12 +16,12 @@ int main() {
     assert(board.getPieceAt(Square("e7")) == Piece('p'));
 
     // Ensure singleton works as expected.
-    GameState &state = GameState::getInstance();
-    state.getBoard().setPieceAt(Square("h4"), Piece('Q'));
+    AppState &state = AppState::getInstance();
+    state.getGame().setPieceAt(Square("h4"), Piece('Q'));
 
-    GameState &state2 = GameState::getInstance();
+    AppState &state2 = AppState::getInstance();
     assert(&state == &state2);
-    assert(state2.getBoard().getPieceAt(Square("h4")) == Piece('Q'));
+    assert(state2.getGame().getPieceAt(Square("h4")) == Piece('Q'));
 
     return 0;
 }

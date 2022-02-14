@@ -5,8 +5,10 @@
 
 using namespace Chess;
 
-// Starting state for a game of chess using standard rules.
+// Starting position for a game of chess using standard rules.
 const std::string Board::initialBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+// Starting state for a game of chess using standard rules.
+const std::string GameState::initialFen = Board::initialBoardFen + " w KQkq - 0 1";
 
 const std::unordered_map<char, Piece::Type> Piece::CharMap{
     {'P', Piece::Type::Pawn},
@@ -84,4 +86,31 @@ void Board::setPieceAt(const Square square, const std::optional<Piece> piece) {
 
 std::unordered_map<Square, Piece> Board::getPieceMap() const {
     return pieceMap;
+}
+
+
+GameState::GameState(const std::string fen) {
+    setFen(fen);
+}
+
+std::string GameState::getFen() const {
+    std::string boardFen = getBoardFen();
+    char turnc = turn == Color::White ? 'w' : 'b';
+    std::string castleFen = "";
+    for (char p : "KQkq") {
+        if (canCastle(Piece(p))) {
+            castleFen += p;
+        }
+    }
+    if (castleFen.empty()) {
+        castleFen = '-';
+    }
+    std::string ep = enPassant.has_value() ? enPassant.value().toString() : "-";
+    std::string halfmove = "TODO";
+    std::string fullmove = "TODO";
+    return boardFen + " " + turnc + " " + castleFen + " " + ep + " " + halfmove + " " + fullmove;
+}
+
+void GameState::setFen(const std::string fen) {
+    throw fen;  // TODO
 }
