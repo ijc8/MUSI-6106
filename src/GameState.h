@@ -52,6 +52,9 @@ namespace Chess {
     struct Move {
         Move(Square src_, Square dst_, std::optional<Piece::Type> promotion_ = std::nullopt)
             : src(src_), dst(dst_), promotion(promotion_) {}
+        bool operator==(const Move &other) const {
+            return src == other.src && dst == other.dst && promotion == other.promotion;
+        }
         Square src, dst;
         std::optional<Piece::Type> promotion;
     };

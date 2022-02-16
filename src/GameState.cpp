@@ -64,7 +64,10 @@ void Board::setBoardFen(const std::string boardFen) {
             rank--;
             file = 0;
         } else if (isdigit(c)) {
-            file += c - '0';
+            int endFile = file + (c - '0');
+            for (; file < endFile; file++) {
+                setPieceAt(Square(rank, file), std::nullopt);
+            }
         } else {
             setPieceAt(Square(rank, file), Piece(c));
             file++;
@@ -144,10 +147,20 @@ void Game::push(Move move) {
     } else {
         setPieceAt(move.dst, piece);
     }
+
+    // Flip turn.
+    turn = turn == Color::White ? Color::Black : Color::White;
+    // Handle en passant.
+    if (piece.type == Piece::Type::Pawn && abs(move.src.rank - move.dst.rank) == 2) {
+        enPassant.emplace((move.src.rank + move.dst.rank) / 2, move.src.file);
+    }
+    // TODO: Update move clocks, castling rights.
 }
 
 Move Game::pop() {
     auto [move, state] = history.top();
-    // TODO: Copy information from `state` on to current instance.
+    // TODO: Restore game state in a less hacky way.
+    // (or, just store FEN strings in the history instead of GameStates.)
+    setFen(state.getFen());
     return move;
 }
