@@ -13,7 +13,7 @@ public:
 
 	virtual float process() = 0;
 
-	virtual Error_t setSampleRate(float fNewSampleRate);
+	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
 	float getSampleRate();
 
 	
@@ -31,10 +31,19 @@ public:
 
 	Error_t setGain(float fNewGain);
 	float getGain() const;
+	Error_t setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease);
+	const juce::ADSR::Parameters& getADSRParameters() const;
+
+	void noteOn();
+	void noteOff();
+
+	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
 
 protected:
 
 	float m_fGain = 0.0f;
+	juce::ADSR m_adsr;
+	juce::ADSR::Parameters m_adsrParameters;
 };
 
 class CWavetableOscillator : public CInstrument
