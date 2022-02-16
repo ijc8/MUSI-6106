@@ -121,14 +121,33 @@ void GameState::setFen(const std::string fen) {
     turn = turnc == 'w' ? Color::White : Color::Black;
     for (char p : castleFen) {
         if (p == 'K') {
-            castling[0][0] = true;
+            castleRights.whiteShort = true;
         } else if (p == 'Q') {
-            castling[0][1] = true;
+            castleRights.whiteLong = true;
         } else if (p == 'k') {
-            castling[1][0] = true;
+            castleRights.blackShort = true;
         } else if (p == 'q') {
-            castling[1][1] = true;
+            castleRights.blackLong = true;
         }
     }
     enPassant = ep == "-" ? std::nullopt : std::make_optional(Square(ep));
+}
+
+void Game::push(Move move) {
+    // Push the move and a copy of the game state on to the history stack.
+    history.emplace(move, GameState(*this));
+    // NOTE: This does not check `move` for legality.
+    Piece piece = getPieceAt(move.src).value();
+    setPieceAt(move.src, std::nullopt);
+    if (move.promotion.has_value()) {
+        setPieceAt(move.dst, Piece(move.promotion.value(), piece.color));
+    } else {
+        setPieceAt(move.dst, piece);
+    }
+}
+
+Move Game::pop() {
+    auto [move, state] = history.top();
+    // TODO: Copy information from `state` on to current instance.
+    return move;
 }
