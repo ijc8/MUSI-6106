@@ -3,23 +3,27 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include "SoundProcessor.h"
 
 class CScheduler : public CSoundProcessor
 {
 public:
-	CScheduler(float fSampleRate);
+	CScheduler(float fSampleRate = 0.0f);
 	~CScheduler();
 
-	void process();
+	float process();
 
 	Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t enableLoop(bool bShouldEnable);
 
 private:
 
 	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleStarter;
 	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleEnder;
+	std::vector<CInstrument*> m_InstrumentVector;
+
 	int convertSecToSamp(float fSec) const;
 
 	int iCurrentSample = 0;
