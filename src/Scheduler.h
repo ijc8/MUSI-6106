@@ -13,7 +13,7 @@ public:
 	CScheduler(float fSampleRate = 0.0f);
 	~CScheduler();
 
-	float process();
+	float process() override;
 
 	Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 	Error_t enableLoop(bool bShouldEnable);

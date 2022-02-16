@@ -11,6 +11,8 @@ public:
 	CSoundProcessor(float fSampleRate);
 	virtual ~CSoundProcessor();
 
+	virtual float process() = 0;
+
 	virtual Error_t setSampleRate(float fNewSampleRate);
 	float getSampleRate();
 
@@ -26,8 +28,6 @@ class CInstrument : public CSoundProcessor
 public:
 	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument();
-
-	virtual float process() = 0;
 
 	Error_t setGain(float fNewGain);
 	float getGain() const;
