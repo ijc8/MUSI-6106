@@ -1,9 +1,26 @@
 #include "MainComponent.h"
+#include "Scheduler.h"
 
 //==============================================================================
 MainComponent::MainComponent()
 {
     setSize (600, 400);
+
+    const float fSampleRate = 44100;
+
+    CSineWavetable sine;
+    sine.generateWavetable();
+
+    CScheduler schedule(fSampleRate);
+    CInstrument* osc1 = new CWavetableOscillator(sine, 440, 1, fSampleRate);
+    CInstrument* osc2 = new CWavetableOscillator(sine, 220, 1, fSampleRate);
+
+    schedule.add(osc1, 1, 1);
+    schedule.add(osc2, 2, 1);
+    schedule.add(osc1, 3, 3);
+
+    delete osc1;
+    delete osc2;
 }
 
 //==============================================================================
