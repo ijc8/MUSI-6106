@@ -11,13 +11,13 @@ class CScheduler : public CSoundProcessor
 {
 public:
 	CScheduler(float fSampleRate = 0.0f);
-	~CScheduler();
+	virtual ~CScheduler();
 
-	float process() override;
+	virtual float process() override;
 
-	Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	virtual Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 
-private:
+protected:
 
 	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleStarter;
 	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleEnder;
@@ -26,5 +26,21 @@ private:
 	int convertSecToSamp(float fSec) const;
 
 	int iCurrentSample = 0;
+};
+
+class CLooper : public CScheduler
+{
+public:
+	CLooper(float fSampleRate = 0.0f);
+	~CLooper();
+
+	float process() override;
+
+	Error_t add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec) override;
+
+private:
+
+	int iLoopSample = 1;
+
 };
 #endif // #if !defined(__Scheduler_hdr__)
