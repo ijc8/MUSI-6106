@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <forward_list>
 #include <vector>
 
 #include "SoundProcessor.h"
@@ -11,21 +12,25 @@ class CScheduler : public CSoundProcessor
 {
 public:
 	CScheduler(float fSampleRate = 0.0f);
-	virtual ~CScheduler();
+	~CScheduler();
 
-	virtual float process() override;
+	float process() override;
 
-	virtual Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t reset();
 
 protected:
 
 	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleStarter;
 	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleEnder;
-	std::vector<CInstrument*> m_InstrumentVector;
+	std::forward_list<CInstrument*> m_InstrumentList;
 
 	int convertSecToSamp(float fSec) const;
 
 	int iCurrentSample = 0;
+
+private:
+	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleDeleter;
 };
 
 class CLooper : public CScheduler
@@ -36,7 +41,8 @@ public:
 
 	float process() override;
 
-	Error_t add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec) override;
+	Error_t add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t reset();
 
 private:
 

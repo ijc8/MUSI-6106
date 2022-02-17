@@ -7,40 +7,50 @@ CScheduler::CScheduler(float fSampleRate) :
 
 CScheduler::~CScheduler()
 {
-	for (CInstrument* instToDelete : m_InstrumentVector)
-		delete instToDelete;
+	reset();
 }
 
 float CScheduler::process()
 {
-	auto startSampleIterator = m_ScheduleStarter.find(iCurrentSample);
-	if (startSampleIterator != m_ScheduleStarter.end())
+	auto noteOnIterator = m_ScheduleStarter.find(iCurrentSample);
+	if (noteOnIterator != m_ScheduleStarter.end())
 	{
-		std::unordered_set<CInstrument*> setToStart = startSampleIterator->second;
+		std::unordered_set<CInstrument*> setToStart = noteOnIterator->second;
 		for (CInstrument* instToStart : setToStart)
 		{
 			instToStart->noteOn();
 		}
-		m_ScheduleStarter.erase(startSampleIterator);
+		m_ScheduleStarter.erase(noteOnIterator);
 	}
-	auto EndSampleIterator = m_ScheduleEnder.find(iCurrentSample);
-	if (EndSampleIterator != m_ScheduleEnder.end())
+	auto noteOffIterator = m_ScheduleEnder.find(iCurrentSample);
+	if (noteOffIterator != m_ScheduleEnder.end())
 	{
-		std::unordered_set<CInstrument*> setToEnd = EndSampleIterator->second;
+		std::unordered_set<CInstrument*> setToEnd = noteOffIterator->second;
 		for (CInstrument* instToEnd : setToEnd) 
 		{
 			instToEnd->noteOff();
 		}
-		m_ScheduleEnder.erase(EndSampleIterator);
+		m_ScheduleEnder.erase(noteOffIterator);
+	}
+	auto deleteIterator = m_ScheduleDeleter.find(iCurrentSample);
+	if (deleteIterator != m_ScheduleDeleter.end())
+	{
+		std::unordered_set<CInstrument*> setToDelete = deleteIterator->second;
+		for (CInstrument* instToDelete : setToDelete)
+		{
+			m_InstrumentList.remove(instToDelete);
+			delete instToDelete;
+		}
+		m_ScheduleDeleter.erase(deleteIterator);
 	}
 
-	if (m_ScheduleStarter.empty() && m_ScheduleEnder.empty())
+	if (m_ScheduleStarter.empty() && m_ScheduleEnder.empty() && m_ScheduleDeleter.empty())
 		iCurrentSample = 0;
 	else
 		iCurrentSample++;
 
 	float fCurrentValue = 0.0f;
-	for (CInstrument* instToProcess : m_InstrumentVector)
+	for (CInstrument* instToProcess : m_InstrumentList)
 		fCurrentValue += instToProcess->process();
 
 	return fCurrentValue;
@@ -53,9 +63,25 @@ Error_t CScheduler::add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float 
 
 	int iNoteOnInSamp = convertSecToSamp(fOnsetInSec) + iCurrentSample;
 	int iNoteOffInSamp = convertSecToSamp(fDurationInSec) + iNoteOnInSamp;
+	int iDeleteInSamp = convertSecToSamp(pInstrumentToAdd->getADSRParameters().release) + iNoteOffInSamp;
+
 	m_ScheduleStarter[iNoteOnInSamp].insert(pInstrumentToAdd);
 	m_ScheduleEnder[iNoteOffInSamp].insert(pInstrumentToAdd);
-	m_InstrumentVector.push_back(pInstrumentToAdd);
+	m_ScheduleDeleter[iDeleteInSamp].insert(pInstrumentToAdd);
+	m_InstrumentList.push_front(pInstrumentToAdd);
+
+	return Error_t::kNoError;
+}
+
+Error_t CScheduler::reset()
+{
+	for (CInstrument* instToDelete : m_InstrumentList)
+		delete instToDelete;
+	m_ScheduleStarter.clear();
+	m_ScheduleEnder.clear();
+	m_ScheduleDeleter.clear();
+	m_InstrumentList.clear();
+	iCurrentSample = 0;
 	return Error_t::kNoError;
 }
 
@@ -73,7 +99,7 @@ CLooper::CLooper(float fSampleRate) :
 
 CLooper::~CLooper()
 {
-
+	reset();
 }
 
 float CLooper::process()
@@ -96,11 +122,14 @@ float CLooper::process()
 			instToEnd->noteOff();
 		}
 	}
+
 	iCurrentSample++;
 	iCurrentSample %= iLoopSample;
+
 	float fCurrentValue = 0.0f;
-	for (CInstrument* instToProcess : m_InstrumentVector)
+	for (CInstrument* instToProcess : m_InstrumentList)
 		fCurrentValue += instToProcess->process();
+
 	return fCurrentValue;
 }
 
@@ -114,9 +143,17 @@ Error_t CLooper::add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDu
 	int iTotalLength = iNoteOffInSamp + pInstrumentToAdd->getADSRParameters().release * m_fSampleRateInHz;
 	if (iTotalLength > iLoopSample)
 		iLoopSample = iTotalLength;
+
 	m_ScheduleStarter[iNoteOnInSamp].insert(pInstrumentToAdd);
 	m_ScheduleEnder[iNoteOffInSamp].insert(pInstrumentToAdd);
-	m_InstrumentVector.push_back(pInstrumentToAdd);
+	m_InstrumentList.push_front(pInstrumentToAdd);
+
 	return Error_t::kNoError;
 
+}
+
+Error_t CLooper::reset()
+{
+	iLoopSample = 1;
+	return CScheduler::reset();
 }
