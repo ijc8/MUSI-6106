@@ -33,10 +33,16 @@ float CScheduler::process()
 		}
 		m_ScheduleEnder.erase(EndSampleIterator);
 	}
-	iCurrentSample++;
+
+	if (m_ScheduleStarter.empty() && m_ScheduleEnder.empty())
+		iCurrentSample = 0;
+	else
+		iCurrentSample++;
+
 	float fCurrentValue = 0.0f;
 	for (CInstrument* instToProcess : m_InstrumentVector)
 		fCurrentValue += instToProcess->process();
+
 	return fCurrentValue;
 }
 
