@@ -8,6 +8,7 @@ CScheduler::CScheduler(float fSampleRate) :
 CScheduler::~CScheduler()
 {
 	reset();
+	assert(m_InstrumentList.empty());
 }
 
 float CScheduler::process()
@@ -61,13 +62,16 @@ Error_t CScheduler::add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float 
 	if (pInstrumentToAdd == nullptr || fOnsetInSec < 0 || fDurationInSec < 0)
 		return Error_t::kFunctionInvalidArgsError;
 
-	int iNoteOnInSamp = convertSecToSamp(fOnsetInSec) + iCurrentSample;
-	int iNoteOffInSamp = convertSecToSamp(fDurationInSec) + iNoteOnInSamp;
-	int iDeleteInSamp = convertSecToSamp(pInstrumentToAdd->getADSRParameters().release) + iNoteOffInSamp;
+	int iNoteOnInSamp = convertSecToSamp(fOnsetInSec);
+	int iNoteOffInSamp = iNoteOnInSamp + convertSecToSamp(fDurationInSec - pInstrumentToAdd->getADSRParameters().release);
+	int iDoneSamp = convertSecToSamp(fOnsetInSec + fDurationInSec);
+	assert(iNoteOffInSamp > iNoteOnInSamp);
+	if (iNoteOffInSamp < iNoteOnInSamp)
+		return Error_t::kFunctionInvalidArgsError;
 
 	m_ScheduleStarter[iNoteOnInSamp].insert(pInstrumentToAdd);
 	m_ScheduleEnder[iNoteOffInSamp].insert(pInstrumentToAdd);
-	m_ScheduleDeleter[iDeleteInSamp].insert(pInstrumentToAdd);
+	m_ScheduleDeleter[iDoneSamp].insert(pInstrumentToAdd);
 	m_InstrumentList.push_front(pInstrumentToAdd);
 
 	return Error_t::kNoError;
@@ -100,6 +104,7 @@ CLooper::CLooper(float fSampleRate) :
 CLooper::~CLooper()
 {
 	reset();
+	assert(m_InstrumentList.empty());
 }
 
 float CLooper::process()
@@ -139,10 +144,13 @@ Error_t CLooper::add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDu
 		return Error_t::kFunctionInvalidArgsError;
 
 	int iNoteOnInSamp = convertSecToSamp(fOnsetInSec);
-	int iNoteOffInSamp = convertSecToSamp(fDurationInSec) + iNoteOnInSamp;
-	int iTotalLength = iNoteOffInSamp + pInstrumentToAdd->getADSRParameters().release * m_fSampleRateInHz;
-	if (iTotalLength > iLoopSample)
-		iLoopSample = iTotalLength;
+	int iNoteOffInSamp = iNoteOnInSamp + convertSecToSamp(fDurationInSec - pInstrumentToAdd->getADSRParameters().release);
+	int iDoneSamp = convertSecToSamp(fOnsetInSec + fDurationInSec);
+	assert(iNoteOffInSamp > iNoteOnInSamp);
+	if (iNoteOffInSamp < iNoteOnInSamp)
+		return Error_t::kFunctionInvalidArgsError;
+	if (iDoneSamp > iLoopSample)
+		iLoopSample = iDoneSamp;
 
 	m_ScheduleStarter[iNoteOnInSamp].insert(pInstrumentToAdd);
 	m_ScheduleEnder[iNoteOffInSamp].insert(pInstrumentToAdd);

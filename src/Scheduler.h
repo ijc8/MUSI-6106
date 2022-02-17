@@ -16,7 +16,7 @@ public:
 
 	float process() override;
 
-	Error_t add(CInstrument* rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 	Error_t reset();
 
 protected:
