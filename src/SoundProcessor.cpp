@@ -100,7 +100,7 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 	m_Wavetable(wavetableToUse),
 	m_iTableSize(wavetableToUse.getNumSamples())
 {
-	assert(wavetableToUse.hasBeenGenerated());
+	//assert(wavetableToUse.hasBeenGenerated());
 	setFrequency(fFrequency);
 }
 

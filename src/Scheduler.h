@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <forward_list>
 #include <vector>
+#include <tuple>
 
 #include "SoundProcessor.h"
 
@@ -17,20 +18,25 @@ public:
 	float process() override;
 
 	Error_t add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t add(CInstrument& rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 	Error_t reset();
 
 protected:
 
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleStarter;
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleEnder;
+	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleNoteOn;
+	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleNoteOff;
 	std::forward_list<CInstrument*> m_InstrumentList;
+	std::vector<CInstrument*> m_GarbageCollector;
 
 	int convertSecToSamp(float fSec) const;
+	Error_t addToADSRSchedulers(CInstrument* pInstrumentToAdd, float fOnset, float fDurationInSec);
 
 	int iCurrentSample = 0;
 
 private:
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleDeleter;
+	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleRemover;
+	Error_t addToInstRemover(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t addToSchedulers(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 };
 
 class CLooper : public CScheduler
@@ -42,6 +48,7 @@ public:
 	float process() override;
 
 	Error_t add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t add(CInstrument& rInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 	Error_t reset();
 
 private:
