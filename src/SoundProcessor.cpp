@@ -13,8 +13,8 @@ CSoundProcessor::~CSoundProcessor()
 
 Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 {
-	assert(fNewSampleRate >= 0.0);
-	if (fNewSampleRate < 0.0)
+	assert(fNewSampleRate > 0.0);
+	if (fNewSampleRate <= 0.0)
 		return Error_t::kFunctionInvalidArgsError;
 
 	m_fSampleRateInHz = fNewSampleRate;

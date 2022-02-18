@@ -19,7 +19,7 @@ public:
 	
 protected:
 
-	float m_fSampleRateInHz = 0.0f;
+	float m_fSampleRateInHz = 48000.0f;
 
 };
 
@@ -49,7 +49,7 @@ protected:
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain, float fSampleRate);
+	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
 	virtual ~CWavetableOscillator();
 
 	Error_t setFrequency(float fNewFrequency);

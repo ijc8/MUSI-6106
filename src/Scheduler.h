@@ -11,7 +11,7 @@
 class CScheduler : public CSoundProcessor
 {
 public:
-	CScheduler(float fSampleRate = 0.0f);
+	CScheduler(float fSampleRate = 48000.0f);
 	~CScheduler();
 
 	float process() override;
@@ -40,7 +40,7 @@ private:
 class CLooper : public CScheduler
 {
 public:
-	CLooper(float fSampleRate = 0.0f);
+	CLooper(float fSampleRate = 48000.0f);
 	~CLooper();
 
 	float process() override;
