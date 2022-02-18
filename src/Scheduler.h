@@ -8,11 +8,11 @@
 
 #include "SoundProcessor.h"
 
-class CScheduler : public CSoundProcessor
+class CLooper : public CSoundProcessor
 {
 public:
-	CScheduler(float fSampleRate = 48000.0f);
-	~CScheduler();
+	CLooper(float fSampleRate = 48000.0f);
+	~CLooper();
 
 	float process() override;
 
@@ -29,19 +29,20 @@ protected:
 	std::vector<CInstrument*> m_GarbageCollector;
 
 	int convertSecToSamp(float fSec) const;
+	int convertSampToSec(int iSamp) const;
 	Error_t addToADSRSchedulers(CInstrument* pInstrumentToAdd, float fOnset, float fDurationInSec);
 
 private:
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleRemover;
-	Error_t addToInstRemover(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
-	Error_t addToSchedulers(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+
+	int iLoopSample = 1;
+
 };
 
-class CLooper : public CScheduler
+class CScheduler : public CLooper
 {
 public:
-	CLooper(float fSampleRate = 48000.0f);
-	~CLooper();
+	CScheduler(float fSampleRate = 48000.0f);
+	~CScheduler();
 
 	float process() override;
 
@@ -51,7 +52,12 @@ public:
 
 private:
 
-	int iLoopSample = 1;
+	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleRemover;
 
+	Error_t addToADSRSchedulers(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t addToInstRemover(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
+	Error_t addToSchedulers(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 };
+
+
 #endif // #if !defined(__Scheduler_hdr__)
