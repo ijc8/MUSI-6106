@@ -43,11 +43,7 @@ float CScheduler::process()
 		}
 		m_ScheduleRemover.erase(removeIterator);
 	}
-
-	if (m_ScheduleNoteOn.empty() && m_ScheduleNoteOff.empty() && m_ScheduleRemover.empty())
-		iCurrentSample = 0;
-	else
-		iCurrentSample++;
+	iCurrentSample++;
 
 	float fCurrentValue = 0.0f;
 	for (CInstrument* instToProcess : m_InstrumentList)
@@ -58,6 +54,8 @@ float CScheduler::process()
 
 Error_t CScheduler::add(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec)
 {
+	if (m_InstrumentList.empty())
+		iCurrentSample = 0;
 	m_GarbageCollector.push_back(pInstrumentToAdd);
 	return addToSchedulers(pInstrumentToAdd, fOnsetInSec, fDurationInSec);
 }
