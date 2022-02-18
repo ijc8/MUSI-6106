@@ -87,6 +87,7 @@ Error_t CScheduler::addToADSRSchedulers(CInstrument* pInstrumentToAdd, float fOn
 {
 	if (pInstrumentToAdd == nullptr || fOnsetInSec < 0 || fDurationInSec < 0)
 		return Error_t::kFunctionInvalidArgsError;
+
 	int iNoteOnInSamp = convertSecToSamp(fOnsetInSec);
 	int iNoteOffInSamp = iNoteOnInSamp + convertSecToSamp(fDurationInSec - pInstrumentToAdd->getADSRParameters().release);
 	assert(iNoteOffInSamp > iNoteOnInSamp);
@@ -96,6 +97,7 @@ Error_t CScheduler::addToADSRSchedulers(CInstrument* pInstrumentToAdd, float fOn
 	m_ScheduleNoteOn[iNoteOnInSamp].insert(pInstrumentToAdd);
 	m_ScheduleNoteOff[iNoteOffInSamp].insert(pInstrumentToAdd);
 	m_InstrumentList.push_front(pInstrumentToAdd);
+
 	return Error_t::kNoError;
 }
 Error_t CScheduler::addToInstRemover(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec)
