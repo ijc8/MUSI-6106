@@ -23,8 +23,8 @@ public:
 protected:
 
 	int iCurrentSample = 0;
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleNoteOn;
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleNoteOff;
+	std::map<int, std::unordered_set<CInstrument*>> m_ScheduleNoteOn;
+	std::map<int, std::unordered_set<CInstrument*>> m_ScheduleNoteOff;
 	std::forward_list<CInstrument*> m_InstrumentList;
 	std::vector<CInstrument*> m_GarbageCollector;
 
@@ -52,7 +52,7 @@ public:
 
 private:
 
-	std::unordered_map<int, std::unordered_set<CInstrument*>> m_ScheduleRemover;
+	std::map<int, std::unordered_set<CInstrument*>> m_ScheduleRemover;
 
 	Error_t addToADSRSchedulers(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
 	Error_t addToInstRemover(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec);
