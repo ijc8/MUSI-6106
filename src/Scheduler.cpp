@@ -108,7 +108,7 @@ Error_t CScheduler::addToInstRemover(CInstrument* pInstrumentToAdd, float fOnset
 }
 Error_t CScheduler::addToSchedulers(CInstrument* pInstrumentToAdd, float fOnsetInSec, float fDurationInSec)
 {
-	if (addToADSRSchedulers(pInstrumentToAdd, fOnsetInSec, fDurationInSec) == Error_t::kNoError);
+	if (addToADSRSchedulers(pInstrumentToAdd, fOnsetInSec, fDurationInSec) == Error_t::kNoError)
 		return addToInstRemover(pInstrumentToAdd, fOnsetInSec, fDurationInSec);
 	return Error_t::kFunctionInvalidArgsError;
 }
