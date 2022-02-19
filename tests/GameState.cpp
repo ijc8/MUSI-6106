@@ -41,6 +41,13 @@ int main() {
     // Confirm that popping restores previous state.
     assert(game.pop() == Move(Square("e2"), Square("e4")));
     assert(game.getFen() == GameState::initialFen);
+    // Confirm that history is LIFO and en passant works as expected:
+    game.push(Move(Square("d2"), Square("d4")));
+    assert(game.getEnPassant() == Square("d3"));
+    game.push(Move(Square("b8"), Square("c6")));
+    assert(game.getEnPassant() == std::nullopt);
+    assert(game.pop() == Move(Square("b8"), Square("c6")));
+    assert(game.pop() == Move(Square("d2"), Square("d4")));
 
     // Ensure singleton works as expected.
     AppState &state = AppState::getInstance();

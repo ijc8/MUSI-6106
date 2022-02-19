@@ -153,12 +153,15 @@ void Game::push(Move move) {
     // Handle en passant.
     if (piece.type == Piece::Type::Pawn && abs(move.src.rank - move.dst.rank) == 2) {
         enPassant.emplace((move.src.rank + move.dst.rank) / 2, move.src.file);
+    } else {
+        enPassant.reset();
     }
     // TODO: Update move clocks, castling rights.
 }
 
 Move Game::pop() {
     auto [move, state] = history.top();
+    history.pop();
     // TODO: Restore game state in a less hacky way.
     // (or, just store FEN strings in the history instead of GameStates.)
     setFen(state.getFen());
