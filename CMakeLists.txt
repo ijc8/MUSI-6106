@@ -71,10 +71,12 @@ target_sources(MusicalChess
         src/MainComponent.cpp
         src/SoundProcessor.cpp
         src/Scheduler.cpp
+        src/MainProcessor.cpp
         src/SoundProcessor.h
         src/Wavetable.h
         src/ErrorDef.h
-        src/Scheduler.h)
+        src/Scheduler.h
+        src/MainProcessor.h)
 
 target_sources(Tests
     PRIVATE
