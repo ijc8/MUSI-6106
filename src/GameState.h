@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <stack>
 #include <string>
 #include <unordered_map>
 
@@ -42,12 +43,18 @@ namespace Chess {
         bool operator==(const Square &other) const {
             return rank == other.rank && file == other.file;
         }
+        std::string toString() const {
+            return std::string{(char)(file + 'a'), (char)(rank + '1')};
+        }
         uint8_t rank, file;
     };
 
     struct Move {
         Move(Square src_, Square dst_, std::optional<Piece::Type> promotion_ = std::nullopt)
             : src(src_), dst(dst_), promotion(promotion_) {}
+        bool operator==(const Move &other) const {
+            return src == other.src && dst == other.dst && promotion == other.promotion;
+        }
         Square src, dst;
         std::optional<Piece::Type> promotion;
     };
@@ -76,28 +83,76 @@ namespace Chess {
         void setPieceAt(const Square square, const std::optional<Piece>);
         std::unordered_map<Square, Piece> getPieceMap() const;
 
-        // TODO: Implement move history & keep track of other state like turn, castling rights, etc; maybe in another class.
-        // void push(Move move);
-        // Move pop();
-        // Move peek();
-    private:
+    protected:
         std::optional<Piece> board[8][8];
         std::unordered_map<Square, Piece> pieceMap;
     };
+
+    struct CastleRights {
+        bool whiteShort;
+        bool whiteLong;
+        bool blackShort;
+        bool blackLong;
+    };
+
+    class GameState: public Board {
+    public:
+        static const std::string initialFen;
+
+        GameState(const std::string fen = initialFen);
+
+        std::string getFen() const;
+        void setFen(const std::string fen);
+
+        Color getTurn() const { return turn; }
+        std::optional<Square> getEnPassant() const { return enPassant; }
+        bool canCastle(Piece castleType) const {
+            if (castleType == Piece('K')) {
+                return castleRights.whiteShort;
+            } else if (castleType == Piece('Q')) {
+                return castleRights.whiteLong;
+            } else if (castleType == Piece('k')) {
+                return castleRights.blackShort;
+            } else if (castleType == Piece('q')) {
+                return castleRights.blackLong;
+            }
+            assert(false);
+            return false;
+        }
+        int getHalfmoveClock() const { return halfmoveClock; }
+        int getFullmoveNumber() const { return fullmoveNumber; }
+
+    protected:
+        Color turn;
+        std::optional<Square> enPassant;
+        CastleRights castleRights;
+        int halfmoveClock = 0;
+        int fullmoveNumber = 0;
+    };
+
+    class Game: public GameState {
+    public:
+        void push(Move move);
+        Move pop();
+    
+    private:
+        std::stack<std::tuple<Move, GameState>> history;
+    };
 }
 
-class GameState {
+// TODO: Move to separate module as this grows to include other application state.
+class AppState {
 public:
-    static GameState &getInstance() {
-        static GameState instance;
+    static AppState &getInstance() {
+        static AppState instance;
         return instance;
     }
 
-    Chess::Board &getBoard() {
-        return board;
+    Chess::Game &getGame() {
+        return game;
     }
 private:
-    Chess::Board board;
+    Chess::Game game;
 };
 
 #endif
