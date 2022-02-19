@@ -34,15 +34,10 @@ class Looper : public Scheduler
 {
 public:
 	Looper(float sampleRate = 48000) : Scheduler(sampleRate) {};
-	virtual ~Looper() {};
+	virtual ~Looper() = default;
 
-	virtual void pushInst(CInstrument* instrumentToPush, float duration, float onset) override;
 	virtual float process() override;
 	void setLoopLength(float newLoopLength);
-
-protected:
-
-private:
 
 };
 

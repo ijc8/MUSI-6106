@@ -52,7 +52,6 @@ unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int,
 	if (triggerSample != mapToCheck.end())
 	{
 		unordered_set setToReturn = triggerSample->second;
-		mapToCheck.erase(triggerSample);
 		return setToReturn;
 	}
 	return unordered_set<CInstrument*>();
@@ -63,17 +62,17 @@ int Scheduler::getLength() const
 	return scheduleLength;
 }
 
-void Looper::pushInst(CInstrument* instrumentToPush, float duration, float onset)
-{
-}
-
 float Looper::process()
 {
-	return 0.0f;
+	float currentValue = Scheduler::process();
+	sampleCounter %= scheduleLength;
+	return currentValue;
 }
 
 void Looper::setLoopLength(float newLoopLength)
 {
+	assert(newLoopLength > 0);
+	scheduleLength = secToSamp(newLoopLength, m_fSampleRateInHz);
 }
 
 
