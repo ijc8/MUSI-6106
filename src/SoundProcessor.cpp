@@ -13,8 +13,8 @@ CSoundProcessor::~CSoundProcessor()
 
 Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 {
-	assert(fNewSampleRate >= 0.0);
-	if (fNewSampleRate < 0.0)
+	assert(fNewSampleRate > 0.0);
+	if (fNewSampleRate <= 0.0)
 		return Error_t::kFunctionInvalidArgsError;
 
 	m_fSampleRateInHz = fNewSampleRate;
@@ -33,6 +33,8 @@ CInstrument::CInstrument(float fGain, float fSampleRate) :
 	CSoundProcessor(fSampleRate)
 {
 	setGain(fGain);
+	m_adsr.setSampleRate(fSampleRate);
+	m_adsr.setParameters(m_adsrParameters);
 }
 
 CInstrument::~CInstrument()
@@ -54,6 +56,42 @@ float CInstrument::getGain() const
 {
 	return m_fGain;
 }
+
+Error_t CInstrument::setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease)
+{
+	m_adsrParameters.attack = fAttack;
+	m_adsrParameters.decay = fDecay;
+	m_adsrParameters.sustain = fSustain;
+	m_adsrParameters.release = fRelease;
+	m_adsr.setParameters(m_adsrParameters);
+	return Error_t::kNoError;
+}
+
+const juce::ADSR::Parameters& CInstrument::getADSRParameters() const
+{
+	return m_adsrParameters;
+}
+
+void CInstrument::noteOn()
+{
+	m_adsr.noteOn();
+}
+
+void CInstrument::noteOff()
+{
+	m_adsr.noteOff();
+}
+
+Error_t CInstrument::setSampleRate(float fNewSampleRate)
+{
+	if (CSoundProcessor::setSampleRate(fNewSampleRate) == Error_t::kNoError)
+	{
+		m_adsr.setSampleRate(fNewSampleRate);
+		m_adsr.setParameters(m_adsrParameters);
+		return Error_t::kNoError;
+	}
+	return Error_t::kFunctionInvalidArgsError;
+}
 //=======================================================================
 
 //=======================================================================
@@ -62,7 +100,7 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 	m_Wavetable(wavetableToUse),
 	m_iTableSize(wavetableToUse.getNumSamples())
 {
-	assert(wavetableToUse.hasBeenGenerated());
+	//assert(wavetableToUse.hasBeenGenerated());
 	setFrequency(fFrequency);
 }
 
@@ -112,12 +150,12 @@ float CWavetableOscillator::process()
 	if ((m_fCurrentIndex += m_fTableDelta) > (float)m_iTableSize)
 		m_fCurrentIndex -= (float)m_iTableSize;
 
-	return m_fGain * currentSample;
+	return m_adsr.getNextSample() * m_fGain * currentSample;
 }
 
 Error_t CWavetableOscillator::setSampleRate(float fNewSampleRate)
 {
-	if (CSoundProcessor::setSampleRate(fNewSampleRate) == Error_t::kNoError)
+	if (CInstrument::setSampleRate(fNewSampleRate) == Error_t::kNoError)
 		return setFrequency(m_fFrequencyInHz);
 	return Error_t::kFunctionInvalidArgsError;
 }

@@ -19,7 +19,7 @@ public:
 	
 protected:
 
-	float m_fSampleRateInHz = 0.0f;
+	float m_fSampleRateInHz = 48000.0f;
 
 };
 
@@ -31,16 +31,25 @@ public:
 
 	Error_t setGain(float fNewGain);
 	float getGain() const;
+	Error_t setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease);
+	const juce::ADSR::Parameters& getADSRParameters() const;
+
+	void noteOn();
+	void noteOff();
+
+	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
 
 protected:
 
 	float m_fGain = 0.0f;
+	juce::ADSR m_adsr;
+	juce::ADSR::Parameters m_adsrParameters;
 };
 
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain, float fSampleRate);
+	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
 	virtual ~CWavetableOscillator();
 
 	Error_t setFrequency(float fNewFrequency);

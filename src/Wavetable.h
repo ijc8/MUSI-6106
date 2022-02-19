@@ -10,12 +10,13 @@ public:
 	virtual ~CWavetable() {};
 
     const float* getReadPointer(int sampleIndex = 0) const { return m_fWavetable.getReadPointer(0, sampleIndex); };
-	virtual void generateWavetable() = 0;
     int getNumSamples() const { return s_iTableSize; };
     bool hasBeenGenerated() const { return m_bHasBeenGenerated; };
 
 
 protected:
+
+    virtual void generateWavetable() = 0;
 
 	const unsigned s_iTableSize = 1 << 9;
     juce::AudioSampleBuffer m_fWavetable;
@@ -27,8 +28,10 @@ class CSineWavetable : public CWavetable
 {
 public:
 
-    CSineWavetable() {};
+    CSineWavetable() { generateWavetable(); };
     ~CSineWavetable() {};
+
+protected:
 
 	void generateWavetable() override
 	{
