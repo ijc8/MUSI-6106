@@ -1,6 +1,80 @@
+#include "Scheduler.h"
 
+int secToSamp(float sec, float sampleRate)
+{
+	return static_cast<int>(sec * sampleRate);
+}
 
+Scheduler::~Scheduler()
+{
+	for (CInstrument* inst : setInsts)
+		delete inst;
+}
 
+void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float onset)
+{
+	int releaseInSamp = secToSamp(instrumentToPush->getADSRParameters().release, m_fSampleRateInHz);
+	int durationInSamp = secToSamp(duration, m_fSampleRateInHz);
+	int noteOn = secToSamp(onset, m_fSampleRateInHz);
+	int totalSampleLength = noteOn + durationInSamp;
+	int noteOff = totalSampleLength - releaseInSamp;
+	assert(noteOff > noteOn);
+
+	mapNoteOn[noteOn].insert(instrumentToPush);
+	mapNoteOff[noteOff].insert(instrumentToPush);
+	setInsts.insert(instrumentToPush);
+
+	if (totalSampleLength > scheduleLength)
+		scheduleLength = totalSampleLength;
+}
+
+float Scheduler::process()
+{
+	unordered_set noteOnSet = checkTriggers(sampleCounter, mapNoteOn);
+	for (CInstrument* noteOnInst : noteOnSet)
+		noteOnInst->noteOn();
+
+	unordered_set noteOffSet = checkTriggers(sampleCounter, mapNoteOff);
+	for (CInstrument* noteOffInst : noteOffSet)
+		noteOffInst->noteOff();
+	
+	float currentValue = 0;
+	for (CInstrument* inst : setInsts)
+		currentValue += inst->process();
+
+	sampleCounter++;
+	return currentValue;
+}
+
+unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
+{
+	auto triggerSample = mapToCheck.find(currentSample);
+	if (triggerSample != mapToCheck.end())
+	{
+		unordered_set setToReturn = triggerSample->second;
+		mapToCheck.erase(triggerSample);
+		return setToReturn;
+	}
+	return unordered_set<CInstrument*>();
+}
+
+int Scheduler::getLength() const
+{
+	return scheduleLength;
+}
+
+void Looper::pushInst(CInstrument* instrumentToPush, float duration, float onset)
+{
+}
+
+float Looper::process()
+{
+	return 0.0f;
+}
+
+void Looper::setLoopLength(float newLoopLength)
+{
+}
 
 
 
@@ -241,3 +315,4 @@
 ////==========================================================
 //
 //
+

@@ -2,16 +2,31 @@
 #define __Scheduler_hdr__
 #include "SoundProcessor.h"
 
+#include <map>
+#include <unordered_set>
+
+using std::map;
+using std::unordered_set;
+
 class Scheduler : public CSoundProcessor
 {
 public:
 	Scheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
-	virtual ~Scheduler() {};
+	virtual ~Scheduler();
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration, float onset);
-	Error_t setSampleRate(float newSampleRate);
+	virtual float process() override;
+	int getLength() const;
 
 protected:
+
+	unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
+
+	map<int, unordered_set<CInstrument*>> mapNoteOn;
+	map<int, unordered_set<CInstrument*>> mapNoteOff;
+	unordered_set<CInstrument*> setInsts;
+	long long sampleCounter = 0;
+	int scheduleLength = 0;
 
 };
 
@@ -22,6 +37,7 @@ public:
 	virtual ~Looper() {};
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration, float onset) override;
+	virtual float process() override;
 	void setLoopLength(float newLoopLength);
 
 protected:
