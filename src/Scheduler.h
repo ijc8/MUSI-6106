@@ -8,23 +8,27 @@
 using std::map;
 using std::unordered_set;
 
-class Scheduler : public CSoundProcessor
+class Scheduler : public CInstrument
 {
 public:
-	Scheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
+	Scheduler(float sampleRate = 48000) : CInstrument(1.0f, sampleRate) {};
 	virtual ~Scheduler();
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration, float onset);
 	virtual float process() override;
 	int getLength() const;
+	void noteOn() override;
 
 protected:
 
-	unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
+	virtual unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
+	int secToSamp(float sec, float sampleRate) const;
+	float sampToSec(int sample, float sampleRate) const;
 
 	map<int, unordered_set<CInstrument*>> mapNoteOn;
 	map<int, unordered_set<CInstrument*>> mapNoteOff;
 	unordered_set<CInstrument*> setInsts;
+	unordered_set<CInstrument*> garbageCollector;
 	long long sampleCounter = 0;
 	int scheduleLength = 0;
 
@@ -34,11 +38,10 @@ class Looper : public Scheduler
 {
 public:
 	Looper(float sampleRate = 48000) : Scheduler(sampleRate) {};
-	virtual ~Looper() = default;
+	~Looper() = default;
 
-	virtual float process() override;
+	float process() override;
 	void setLoopLength(float newLoopLength);
-
 };
 
 

@@ -3,7 +3,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-#include "../../src/Scheduler.h"
+#include "../../src/MainProcessor.h"
 #include <vector>
 
 //==============================================================================
@@ -30,9 +30,13 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
+    float mSampleRate;
 
     CSineWavetable sine;
-    std::vector<Looper*> mainProcessor;
+    MainProcessor mainProcessor;
+
+    CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 440, 1);
+    Looper loop1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

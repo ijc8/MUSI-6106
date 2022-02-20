@@ -32,7 +32,17 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
+    mSampleRate = sampleRate;
+    mainProcessor.setSampleRate(sampleRate);
+    pawnOsc.setSampleRate(sampleRate);
+    loop1.setSampleRate(sampleRate);
 
+    loop1.pushInst(new CWavetableOscillator(sine, 230, 1, sampleRate), 0.5, 0);
+    loop1.pushInst(new CWavetableOscillator(sine, 460, 1, sampleRate), 0.5, 0.5);
+    loop1.pushInst(new CWavetableOscillator(sine, 600, 1, sampleRate), 0.5, 1);
+
+    mainProcessor.addInstRef(pawnOsc);
+    mainProcessor.addInstRef(loop1);
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
@@ -44,30 +54,28 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 
     for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
     {
-        float fCurrentSample = 0;
-        for (Looper* looper : mainProcessor)
-            fCurrentSample += looper->process();
+        float fCurrentSample = mainProcessor.process();
         leftChannel[sample] += fCurrentSample;
         rightChannel[sample] += fCurrentSample;
 
 
-        if (totalSample == 100000) {
-            Looper* looper = new Looper(48000);
-            looper->pushInst(new CWavetableOscillator(sine, 440, 1, 48000), 1, 0);
-            looper->pushInst(new CWavetableOscillator(sine, 220, 1, 48000), 1, 1);
-            looper->setLoopLength(4);
-            mainProcessor.push_back(looper);
+        if (totalSample == 48000)
+            pawnOsc.noteOn();
+        if (totalSample == 300000)
+            pawnOsc.noteOff();
+        if (totalSample == 200000)
+        {
+            loop1.noteOn();
         }
-        totalSample++;
 
+        totalSample++;
     }
 
 }
 
 void MainComponent::releaseResources()
 {
-    for (Looper* looper : mainProcessor)
-        delete looper;
+
 }
 
 //==============================================================================

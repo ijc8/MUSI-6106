@@ -1,13 +1,18 @@
 #include "Scheduler.h"
 
-int secToSamp(float sec, float sampleRate)
+int Scheduler::secToSamp(float sec, float sampleRate) const
 {
 	return static_cast<int>(sec * sampleRate);
 }
 
+float Scheduler::sampToSec(int sample, float sampleRate) const
+{
+	return static_cast<float>(sample / sampleRate);
+}
+
 Scheduler::~Scheduler()
 {
-	for (CInstrument* inst : setInsts)
+	for (CInstrument* inst : garbageCollector)
 		delete inst;
 }
 
@@ -23,6 +28,7 @@ void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float on
 	mapNoteOn[noteOn].insert(instrumentToPush);
 	mapNoteOff[noteOff].insert(instrumentToPush);
 	setInsts.insert(instrumentToPush);
+	garbageCollector.insert(instrumentToPush);
 
 	if (totalSampleLength > scheduleLength)
 		scheduleLength = totalSampleLength;
@@ -43,7 +49,7 @@ float Scheduler::process()
 		currentValue += inst->process();
 
 	sampleCounter++;
-	return currentValue;
+	return m_adsr.getNextSample() * currentValue;
 }
 
 unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
@@ -60,6 +66,12 @@ unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int,
 int Scheduler::getLength() const
 {
 	return scheduleLength;
+}
+
+void Scheduler::noteOn()
+{
+	sampleCounter = 0;
+	CInstrument::noteOn();
 }
 
 float Looper::process()

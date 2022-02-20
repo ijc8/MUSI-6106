@@ -34,10 +34,10 @@ public:
 	Error_t setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease);
 	const juce::ADSR::Parameters& getADSRParameters() const;
 
-	void noteOn();
+	virtual void noteOn();
 	void noteOff();
 
-	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
+	virtual Error_t setSampleRate(float fNewSampleRate);
 
 protected:
 
