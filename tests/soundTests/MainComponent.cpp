@@ -33,20 +33,27 @@ MainComponent::~MainComponent()
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     mSampleRate = sampleRate;
-    mainProcessor.setSampleRate(sampleRate);
-    pawnOsc.setSampleRate(sampleRate);
-    loop1.setSampleRate(sampleRate);
+    for (auto& processor : processors)
+        processor->setSampleRate(sampleRate);
 
-    loop1.pushInst(new CWavetableOscillator(sine, 110, 1, sampleRate), 0.5, 0);
-    loop1.pushInst(new CWavetableOscillator(sine, 130.81, 1, sampleRate), 0.5, 0.5);
-    loop1.pushInst(new CWavetableOscillator(sine, 164.81, 1, sampleRate), 0.5, 1);
-    loop1.setADSRParameters(4, .5, 0.5, 2);
+    loop.pushInst(new CWavetableOscillator(sine, 110, 1, sampleRate), 0.5, 0);
+    loop.pushInst(new CWavetableOscillator(sine, 130.81, 1, sampleRate), 0.5, 0.5);
+    loop.pushInst(new CWavetableOscillator(sine, 164.81, 1, sampleRate), 0.5, 1);
 
+    loop.setADSRParameters(4, .5, 1, 2);
     pawnOsc.setADSRParameters(1, .3, 0.5, 4);
+    knightOsc.setADSRParameters(0.5, 0.1, 0.75, 3);
 
     mainProcessor.addInstRef(pawnOsc);
-    mainProcessor.addInstRef(loop1);
+    mainProcessor.addInstRef(knightOsc);
+    mainProcessor.addInstRef(queenOsc);
+    mainProcessor.addInstRef(kingOsc);
+    mainProcessor.addInstRef(loop);
+
+    for (auto instrument : instruments)
+        instrument->noteOn();
 }
+
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
@@ -60,22 +67,6 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
         float fCurrentSample = mainProcessor.process();
         leftChannel[sample] += fCurrentSample;
         rightChannel[sample] += fCurrentSample;
-
-
-        if (totalSample == 48000)
-            pawnOsc.noteOn();
-        if (totalSample == 300000)
-            pawnOsc.noteOff();
-        if (totalSample == 200000)
-        {
-            loop1.noteOn();
-        }
-        if (totalSample == 400000)
-            pawnOsc.shiftFrequency(-20);
-        if (totalSample == 800000)
-            loop1.noteOff();
-
-        totalSample++;
     }
 
 }

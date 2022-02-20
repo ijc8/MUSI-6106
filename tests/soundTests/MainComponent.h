@@ -30,16 +30,35 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-    float mSampleRate;
+    float mSampleRate = 0.0f;
 
     CSineWavetable sine;
+
     MainProcessor mainProcessor;
-
     CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 440, 1);
-    CWavetableOscillator knightOsc = CWavetableOscillator(sine, 440, 1);
+    CWavetableOscillator knightOsc = CWavetableOscillator(sine, 220, 1);
+    CWavetableOscillator queenOsc = CWavetableOscillator(sine, 110, 0.5);
+    CWavetableOscillator kingOsc = CWavetableOscillator(sine, 55, 0.25);
+    Looper loop;
 
+    CSoundProcessor* processors[6]
+    {
+        &mainProcessor,
+        &pawnOsc,
+        &knightOsc,
+        &queenOsc,
+        &kingOsc,
+        &loop
+    };
 
-    Looper loop1;
+    CInstrument* instruments[5]
+    {
+        &pawnOsc,
+        &knightOsc,
+        &queenOsc,
+        &kingOsc,
+        &loop
+    };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
