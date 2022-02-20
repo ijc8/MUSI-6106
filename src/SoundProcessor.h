@@ -9,7 +9,7 @@ class CSoundProcessor
 {
 public:
 	CSoundProcessor(float fSampleRate);
-	virtual ~CSoundProcessor();
+	virtual ~CSoundProcessor() = default;
 
 	virtual float process() = 0;
 
@@ -27,17 +27,18 @@ class CInstrument : public CSoundProcessor
 {
 public:
 	CInstrument(float fGain, float fSampleRate);
-	virtual ~CInstrument();
+	virtual ~CInstrument() = default;
 
 	Error_t setGain(float fNewGain);
 	float getGain() const;
+	void shiftGain(float fShift);
+
 	Error_t setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease);
 	const juce::ADSR::Parameters& getADSRParameters() const;
-
 	virtual void noteOn();
 	void noteOff();
 
-	virtual Error_t setSampleRate(float fNewSampleRate);
+	virtual Error_t setSampleRate(float fNewSampleRate) override;
 
 protected:
 
@@ -50,10 +51,11 @@ class CWavetableOscillator : public CInstrument
 {
 public:
 	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
-	virtual ~CWavetableOscillator();
+	virtual ~CWavetableOscillator() = default;
 
 	Error_t setFrequency(float fNewFrequency);
 	float getFrequency() const;
+	void shiftFrequency(float fShift);
 
 	Error_t setSampleRate(float fNewSampleRate) override;
 	float process() override;

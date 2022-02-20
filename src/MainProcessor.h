@@ -12,7 +12,7 @@ public:
 	void addInstRef(CInstrument& instrumentToAdd);
 	void removeInstRef(CInstrument& instrumentToRemove);
 
-	void pushInst(CInstrument* instrumentToPush, float duration, float onset) override;
+	void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f) override;
 
 	float process() override;
 

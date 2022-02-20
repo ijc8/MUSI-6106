@@ -36,6 +36,9 @@ private:
     MainProcessor mainProcessor;
 
     CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 440, 1);
+    CWavetableOscillator knightOsc = CWavetableOscillator(sine, 440, 1);
+
+
     Looper loop1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)

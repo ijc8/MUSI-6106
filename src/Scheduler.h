@@ -14,7 +14,7 @@ public:
 	Scheduler(float sampleRate = 48000) : CInstrument(1.0f, sampleRate) {};
 	virtual ~Scheduler();
 
-	virtual void pushInst(CInstrument* instrumentToPush, float duration, float onset);
+	virtual void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f);
 	virtual float process() override;
 	int getLength() const;
 	void noteOn() override;
@@ -24,11 +24,13 @@ protected:
 	virtual unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
 	int secToSamp(float sec, float sampleRate) const;
 	float sampToSec(int sample, float sampleRate) const;
+	void updateGainNorm();
 
 	map<int, unordered_set<CInstrument*>> mapNoteOn;
 	map<int, unordered_set<CInstrument*>> mapNoteOff;
 	unordered_set<CInstrument*> setInsts;
 	unordered_set<CInstrument*> garbageCollector;
+	float gainNorm = 0.0f;
 	long long sampleCounter = 0;
 	int scheduleLength = 0;
 

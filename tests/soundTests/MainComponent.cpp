@@ -37,9 +37,12 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     pawnOsc.setSampleRate(sampleRate);
     loop1.setSampleRate(sampleRate);
 
-    loop1.pushInst(new CWavetableOscillator(sine, 230, 1, sampleRate), 0.5, 0);
-    loop1.pushInst(new CWavetableOscillator(sine, 460, 1, sampleRate), 0.5, 0.5);
-    loop1.pushInst(new CWavetableOscillator(sine, 600, 1, sampleRate), 0.5, 1);
+    loop1.pushInst(new CWavetableOscillator(sine, 110, 1, sampleRate), 0.5, 0);
+    loop1.pushInst(new CWavetableOscillator(sine, 130.81, 1, sampleRate), 0.5, 0.5);
+    loop1.pushInst(new CWavetableOscillator(sine, 164.81, 1, sampleRate), 0.5, 1);
+    loop1.setADSRParameters(4, .5, 0.5, 2);
+
+    pawnOsc.setADSRParameters(1, .3, 0.5, 4);
 
     mainProcessor.addInstRef(pawnOsc);
     mainProcessor.addInstRef(loop1);
@@ -67,6 +70,10 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
         {
             loop1.noteOn();
         }
+        if (totalSample == 400000)
+            pawnOsc.shiftFrequency(-20);
+        if (totalSample == 800000)
+            loop1.noteOff();
 
         totalSample++;
     }

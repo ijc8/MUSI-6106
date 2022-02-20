@@ -3,11 +3,13 @@
 void MainProcessor::addInstRef(CInstrument& instrumentToAdd)
 {
 	setInsts.insert(&instrumentToAdd);
+	updateGainNorm();
 }
 
 void MainProcessor::removeInstRef(CInstrument& instrumentToRemove)
 {
 	setInsts.erase(&instrumentToRemove);
+	updateGainNorm();
 }
 
 void MainProcessor::pushInst(CInstrument* oscillatorToPush, float duration, float onset)

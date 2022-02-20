@@ -10,6 +10,15 @@ float Scheduler::sampToSec(int sample, float sampleRate) const
 	return static_cast<float>(sample / sampleRate);
 }
 
+void Scheduler::updateGainNorm()
+{
+	int numOsc = setInsts.size();
+	if (numOsc == 0)
+		gainNorm = 0;
+	else
+		gainNorm = 1.0f / numOsc;
+}
+
 Scheduler::~Scheduler()
 {
 	for (CInstrument* inst : garbageCollector)
@@ -32,6 +41,8 @@ void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float on
 
 	if (totalSampleLength > scheduleLength)
 		scheduleLength = totalSampleLength;
+
+	updateGainNorm();
 }
 
 float Scheduler::process()
@@ -49,7 +60,7 @@ float Scheduler::process()
 		currentValue += inst->process();
 
 	sampleCounter++;
-	return m_adsr.getNextSample() * currentValue;
+	return gainNorm * m_adsr.getNextSample() * currentValue;
 }
 
 unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)

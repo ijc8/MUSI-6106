@@ -6,11 +6,6 @@ CSoundProcessor::CSoundProcessor(float fSampleRate)
 	setSampleRate(fSampleRate);
 }
 
-CSoundProcessor::~CSoundProcessor()
-{
-
-}
-
 Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 {
 	assert(fNewSampleRate > 0.0);
@@ -37,11 +32,6 @@ CInstrument::CInstrument(float fGain, float fSampleRate) :
 	m_adsr.setParameters(m_adsrParameters);
 }
 
-CInstrument::~CInstrument()
-{
-
-}
-
 Error_t CInstrument::setGain(float fNewGain)
 {
 	assert(fNewGain >= -1.0 && fNewGain <= 1.0);
@@ -55,6 +45,13 @@ Error_t CInstrument::setGain(float fNewGain)
 float CInstrument::getGain() const
 {
 	return m_fGain;
+}
+
+void CInstrument::shiftGain(float fShift)
+{
+	float fNewGain = m_fGain + fShift;
+	assert(fNewGain <= 1 && fNewGain >= -1);
+	setGain(fNewGain);
 }
 
 Error_t CInstrument::setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease)
@@ -104,11 +101,6 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 	setFrequency(fFrequency);
 }
 
-CWavetableOscillator::~CWavetableOscillator()
-{
-
-}
-
 Error_t CWavetableOscillator::setFrequency(float fNewFrequency)
 {
 	assert(fNewFrequency >= 0 && fNewFrequency <= 20000);
@@ -130,6 +122,13 @@ Error_t CWavetableOscillator::setFrequency(float fNewFrequency)
 float CWavetableOscillator::getFrequency() const
 {
 	return m_fFrequencyInHz;
+}
+
+void CWavetableOscillator::shiftFrequency(float fShift)
+{
+	float fNewFrequency = m_fFrequencyInHz + fShift;
+	assert(fNewFrequency >= 0);
+	setFrequency(fNewFrequency);
 }
 
 float CWavetableOscillator::process()
