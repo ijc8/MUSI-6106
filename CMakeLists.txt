@@ -49,6 +49,9 @@ juce_add_gui_app(MusicalChess
 juce_add_console_app(Tests
     PRODUCT_NAME "Tests")
 
+juce_add_console_app(SonifierTest
+		PRODUCT_NAME "SonifierTest")
+
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
 # this header will be automatically added to the target. The main function of the JuceHeader is to
@@ -76,12 +79,21 @@ target_sources(MusicalChess
         src/Wavetable.h
         src/ErrorDef.h
         src/Scheduler.h
-        src/MainProcessor.h)
+        src/MainProcessor.h
+		src/DebugSonifier.h
+		src/DebugSonifier.cpp)
 
 target_sources(Tests
     PRIVATE
         src/GameState.cpp
 	      tests/GameState.cpp)
+
+target_sources(SonifierTest
+		PRIVATE
+		src/GameState.cpp
+		src/SoundProcessor.cpp
+		src/DebugSonifier.cpp
+		tests/SonifierTest.cpp)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
@@ -97,6 +109,15 @@ target_compile_definitions(MusicalChess
         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
 	JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_PRODUCT_NAME>"
 	JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_VERSION>")
+
+target_compile_definitions(SonifierTest
+		PRIVATE
+		# JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
+		JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
+		JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
+		JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_PRODUCT_NAME>"
+		JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_VERSION>")
+
 
 # If your target needs extra binary assets, you can add them here. The first argument is the name of
 # a new static library target that will include all the binary resources. There is an optional
@@ -122,3 +143,11 @@ target_link_libraries(MusicalChess
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+target_link_libraries(SonifierTest
+		PRIVATE
+		juce::juce_audio_processors
+		PUBLIC
+		juce::juce_recommended_config_flags
+		juce::juce_recommended_lto_flags
+		juce::juce_recommended_warning_flags)
