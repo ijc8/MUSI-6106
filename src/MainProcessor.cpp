@@ -30,9 +30,21 @@ float MainProcessor::process()
 
 void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
-	for (CInstrument* inst : setInsts)
-		inst->process(outBuffer, numChannels, numSamples, sampleCounter);
-	sampleCounter += numSamples;
+
+	for (auto const& [sample, set] : mapRemover)
+	{
+		if (sample < sampleCounter)
+		{
+			for (CInstrument* inst : set)
+			{
+				setInsts.erase(inst);
+			}
+			mapRemover.erase(sample);
+			if (mapRemover.empty()) break;
+		}
+	}
+
+	Scheduler::process(outBuffer, numChannels, numSamples, masterClock);
 }
 
 unordered_set<CInstrument*> MainProcessor::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)

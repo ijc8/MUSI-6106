@@ -52,16 +52,16 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     pawnOsc.setADSRParameters(1, .3, 0.5, 4);
     knightOsc.setADSRParameters(0.5, 0.1, 0.75, 3);
 
-    //mainProcessor.addInstRef(pawnOsc);
-    //mainProcessor.addInstRef(knightOsc);
-    //mainProcessor.addInstRef(queenOsc);
-    //mainProcessor.addInstRef(kingOsc);
-    //mainProcessor.addInstRef(loop);
+    mainProcessor.addInstRef(pawnOsc);
+    mainProcessor.addInstRef(knightOsc);
+    mainProcessor.addInstRef(queenOsc);
+    mainProcessor.addInstRef(kingOsc);
+    mainProcessor.addInstRef(loop);
 
     for (auto instrument : instruments)
         instrument->noteOn();
 
-    //mainProcessor.pushInst(new CWavetableOscillator(sine, 560, 1, sampleRate), 4, 4);
+    mainProcessor.pushInst(new CWavetableOscillator(sine, 560, 1, sampleRate), 4, 0);
 }
 
 

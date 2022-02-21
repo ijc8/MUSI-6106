@@ -67,8 +67,26 @@ float Scheduler::process()
 
 void Scheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
+	float** temp = new float* [numChannels];
+	for (int channel = 0; channel < numChannels; channel++)
+		temp[channel] = new float[numSamples] {0};
+
 	for (CInstrument* inst : setInsts)
-		inst->process(outBuffer, numChannels, numSamples, sampleCounter);
+		inst->process(temp, numChannels, numSamples, sampleCounter);
+
+	for (int sample = 0; sample < numSamples; sample++)
+	{
+		float adsrVal = m_adsr.getNextSample();
+		for (int channel = 0; channel < numChannels; channel++)
+		{
+			outBuffer[channel][sample] = m_fGain * adsrVal * temp[channel][sample];
+		}
+	}
+
+	for (int channel = 0; channel < numChannels; channel++)
+		delete[] temp[channel];
+	delete[] temp;
+
 	sampleCounter += numSamples;
 }
 
