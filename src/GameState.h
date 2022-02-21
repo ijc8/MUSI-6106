@@ -6,6 +6,7 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace Chess {
     enum class Color {
@@ -15,21 +16,16 @@ namespace Chess {
 
     struct Piece {
         enum class Type {
-            Pawn = 'P',
-            Knight = 'N',
-            Bishop = 'B',
-            Rook = 'R',
-            Queen = 'Q',
-            King = 'K',
+            Pawn, Knight, Bishop, Rook, Queen, King,
         };
 
-        static const std::unordered_map<char, Type> CharMap;
+        static const std::unordered_map<char, Type> FromChar;
         static const std::unordered_map<Type, char> ToChar;
 
         // Default constructor is required for use in a map.
         Piece(): Piece(Type::Pawn, Color::White) {}
         Piece(const Type type_, const Color color_) : type(type_), color(color_) {}
-        Piece(char c) : type(CharMap.at(toupper(c))), color(islower(c) ? Color::Black : Color::White) {}
+        Piece(char c) : type(FromChar.at(toupper(c))), color(islower(c) ? Color::Black : Color::White) {}
         bool operator==(const Piece& other) const {
             return type == other.type && color == other.color;
         }
@@ -66,6 +62,17 @@ struct std::hash<Chess::Square> {
     std::size_t operator()(const Chess::Square &square) const {
         // Rank and file can take on values from 0-7 (inclusive), so each takes up 3 bits.
         return (uint8_t)(square.rank << 3) | square.file;
+    }
+};
+
+template <>
+struct std::hash<Chess::Move> {
+    std::size_t operator()(const Chess::Move &move) const {
+        uint8_t src = std::hash<Chess::Square>{}(move.src); // 6 bits
+        uint8_t dst = std::hash<Chess::Square>{}(move.dst); // 6 bits
+        // Pawn is invalid promotion type, so we use 0 to represent no promotion.
+        uint8_t promotion = move.promotion.has_value() ? (int)*move.promotion : 0; // 5 possibilities: 3 bits
+        return (std::size_t)(promotion << 12 | dst << 6 | src);
     }
 };
 
@@ -121,6 +128,9 @@ namespace Chess {
         }
         int getHalfmoveClock() const { return halfmoveClock; }
         int getFullmoveNumber() const { return fullmoveNumber; }
+
+        std::unordered_set<Move> generateMoves(Square src) const;
+        bool isLegal(Move move) const;
 
     protected:
         Color turn;

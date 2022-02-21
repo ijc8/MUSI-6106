@@ -11,13 +11,22 @@ const std::string Board::initialBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 // Starting state for a game of chess using standard rules.
 const std::string GameState::initialFen = Board::initialBoardFen + " w KQkq - 0 1";
 
-const std::unordered_map<char, Piece::Type> Piece::CharMap{
+const std::unordered_map<char, Piece::Type> Piece::FromChar{
     {'P', Piece::Type::Pawn},
     {'B', Piece::Type::Bishop},
     {'N', Piece::Type::Knight},
     {'R', Piece::Type::Rook},
     {'Q', Piece::Type::Queen},
     {'K', Piece::Type::King},
+};
+
+const std::unordered_map<Piece::Type, char> Piece::ToChar{
+    {Piece::Type::Pawn, 'P'},
+    {Piece::Type::Bishop, 'B'},
+    {Piece::Type::Knight, 'N'},
+    {Piece::Type::Rook, 'R'},
+    {Piece::Type::Queen, 'Q'},
+    {Piece::Type::King, 'K'},
 };
 
 Board::Board(std::string boardFen) {
@@ -41,7 +50,7 @@ std::string Board::getBoardFen() const {
             std::optional<Piece> piece = getPieceAt(Square(rank, file));
             if (piece.has_value()) {
                 flushEmpty();
-                char pieceChar = (char)piece.value().type;
+                char pieceChar = Piece::ToChar.at(piece.value().type);
                 fen += (piece.value().color == Color::White ? pieceChar : tolower(pieceChar));
             } else {
                 emptyCount++;
@@ -134,6 +143,73 @@ void GameState::setFen(const std::string fen) {
         }
     }
     enPassant = ep == "-" ? std::nullopt : std::make_optional(Square(ep));
+}
+
+std::unordered_set<Move> GameState::generateMoves(Square src) const {
+    // This generates all moves possible from a given square - including moves that may not be legal due to leaving the king in check.
+    assert(getPieceAt(src).has_value());
+    Piece piece = getPieceAt(src).value();
+    std::unordered_set<Move> moves;
+    if (piece.type == Piece::Type::King) {
+        int delta[][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+        for (auto [dr, df] : delta) {
+            moves.emplace(src, Square(src.rank + dr, src.file + df));
+        }
+    } else if (piece.type == Piece::Type::Knight) {
+        int delta[][2] = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
+        for (auto [dr, df] : delta) {
+            moves.emplace(src, Square(src.rank + dr, src.file + df));
+        }
+    } else if (piece.type == Piece::Type::Pawn) {
+        int dr = piece.color == Color::White ? 1 : -1;
+        {
+            Square dst(src.rank + dr, src.file);
+            // TODO: Generate all possible promotions if pawn has reached back rank.
+            if (!getPieceAt(dst).has_value()) {
+                // Pawn isn't blocked, can push it up the board.
+                moves.emplace(src, dst);
+            }
+        }
+        for (int df : {-1, 1}) {
+            // Check for pawn captures (including en passant!).
+            Square dst(src.rank + dr, src.file + df);
+            std::optional<Piece> capture = getPieceAt(dst);
+            if ((enPassant.has_value() && *enPassant == dst) || (capture.has_value() && capture->color != turn)) {
+                moves.emplace(src, dst);
+            }
+        }
+    }
+    // TODO: Sliding pieces: bishop, rook, queen.
+    // TODO: Filter out (or avoid adding in the first place) moves that go off the board.
+    return moves;
+}
+
+bool GameState::isLegal(Move move) const {
+    std::optional<Piece> piece = getPieceAt(move.src);
+    std::optional<Piece> capture = getPieceAt(move.dst);
+    if (!piece.has_value() || piece->color != turn) {
+        // Source square is empty or contains opponent's piece.
+        return false;
+    } else if (capture.has_value() && capture->color == turn) {
+        // Destination square is blocked by our piece.
+        return false;
+    }
+
+    if (move.promotion.has_value()) {
+        // Must be a pawn.
+        if (piece->type != Piece::Type::Pawn) return false;
+        // Must be moving to the opponent's backrank.
+        if (!((turn == Color::White && move.dst.rank == 7) || (turn == Color::Black && move.dst.rank == 0))) return false;
+        // Can't promote to pawn or king.
+        if (*move.promotion == Piece::Type::Pawn || *move.promotion == Piece::Type::King) return false;
+    }
+
+    // TODO: Handle castling.
+
+    // TODO: Check if movement is valid for piece type.
+
+    // TODO: Check if move leaves king in check.
+    return true;
 }
 
 void Game::push(Move move) {
