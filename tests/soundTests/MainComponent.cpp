@@ -57,12 +57,11 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 
     mainProcessor.addInstRef(queenOsc);
     mainProcessor.addInstRef(kingOsc);
-    mainProcessor.addInstRef(loop);
 
     for (auto instrument : instruments)
         instrument->noteOn();
 
-    mainProcessor.pushInst(new CWavetableOscillator(sine, 560, 1, sampleRate), 4, 0);
+    //mainProcessor.pushInst(new CWavetableOscillator(sine, 560, 1, sampleRate), 4, 0);
 }
 
 

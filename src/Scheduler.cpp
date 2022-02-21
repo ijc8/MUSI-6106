@@ -49,7 +49,7 @@ void Scheduler::process(float** outBuffer, int numChannels, int numSamples, cons
 		float adsrVal = m_adsr.getNextSample();
 		for (int channel = 0; channel < numChannels; channel++)
 		{
-			outBuffer[channel][sample] = m_fGain * adsrVal * temp[channel][sample];
+			outBuffer[channel][sample] += m_fGain * adsrVal * temp[channel][sample];
 		}
 	}
 

@@ -35,9 +35,9 @@ private:
     CSineWavetable sine;
 
     MainProcessor mainProcessor;
-    CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 440, 1);
-    CWavetableOscillator knightOsc = CWavetableOscillator(sine, 220, 1);
-    CWavetableOscillator queenOsc = CWavetableOscillator(sine, 110, 0.5);
+    CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 343, 1);
+    CWavetableOscillator knightOsc = CWavetableOscillator(sine, 170, 1);
+    CWavetableOscillator queenOsc = CWavetableOscillator(sine, 900, 0.5);
     CWavetableOscillator kingOsc = CWavetableOscillator(sine, 55, 0.25);
     Looper loop;
 
