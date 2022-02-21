@@ -19,15 +19,6 @@ void MainProcessor::pushInst(CInstrument* oscillatorToPush, float duration, floa
 	mapRemover[deleteSample].insert(oscillatorToPush);
 }
 
-float MainProcessor::process()
-{
-	unordered_set removeSet = checkTriggers(sampleCounter, mapRemover);
-	for (CInstrument* inst : removeSet)
-		setInsts.erase(inst);
-
-	return Scheduler::process();
-}
-
 void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
 
@@ -45,16 +36,4 @@ void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, 
 	}
 
 	Scheduler::process(outBuffer, numChannels, numSamples, masterClock);
-}
-
-unordered_set<CInstrument*> MainProcessor::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
-{
-	auto triggerSample = mapToCheck.find(currentSample);
-	if (triggerSample != mapToCheck.end())
-	{
-		unordered_set setToReturn = triggerSample->second;
-		mapToCheck.erase(triggerSample);
-		return setToReturn;
-	}
-	return unordered_set<CInstrument*>();
 }

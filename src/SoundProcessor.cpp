@@ -21,6 +21,16 @@ float CSoundProcessor::getSampleRate()
 	return m_fSampleRateInHz;
 }
 
+int CSoundProcessor::secToSamp(float sec, float sampleRate) const
+{
+	return static_cast<int>(sec * sampleRate);
+}
+
+float CSoundProcessor::sampToSec(int sample, float sampleRate) const
+{
+	return static_cast<float>(sample / sampleRate);
+}
+
 //=======================================================================
 
 //=======================================================================
@@ -129,27 +139,6 @@ void CWavetableOscillator::shiftFrequency(float fShift)
 	float fNewFrequency = m_fFrequencyInHz + fShift;
 	assert(fNewFrequency >= 0);
 	setFrequency(fNewFrequency);
-}
-
-float CWavetableOscillator::process()
-{
-	unsigned index0 = (unsigned)m_fCurrentIndex;
-	unsigned index1 = index0 + 1;
-	if (index1 >= (unsigned)m_iTableSize)
-		index1 = (unsigned)0;
-
-	float frac = m_fCurrentIndex - (float)index0;
-
-	const float* wavetableReader = m_Wavetable.getReadPointer(0);
-	float value0 = wavetableReader[index0];
-	float value1 = wavetableReader[index1];
-
-	float currentSample = value0 + frac * (value1 - value0);
-
-	if ((m_fCurrentIndex += m_fTableDelta) > (float)m_iTableSize)
-		m_fCurrentIndex -= (float)m_iTableSize;
-
-	return m_adsr.getNextSample() * m_fGain * currentSample;
 }
 
 void CWavetableOscillator::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)

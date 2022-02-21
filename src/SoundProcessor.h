@@ -11,7 +11,6 @@ public:
 	CSoundProcessor(float fSampleRate);
 	virtual ~CSoundProcessor() = default;
 
-	virtual float process() = 0;
 	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock) = 0;
 
 	virtual Error_t setSampleRate(float fNewSampleRate);
@@ -20,6 +19,8 @@ public:
 	
 protected:
 
+	int secToSamp(float sec, float sampleRate) const;
+	float sampToSec(int sample, float sampleRate) const;
 	float m_fSampleRateInHz = 48000.0f;
 
 };
@@ -72,7 +73,6 @@ public:
 	void shiftFrequency(float fShift);
 
 	Error_t setSampleRate(float fNewSampleRate) override;
-	float process() override;
 	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock) override;
 
 protected:

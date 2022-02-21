@@ -1,15 +1,5 @@
 #include "Scheduler.h"
 
-int Scheduler::secToSamp(float sec, float sampleRate) const
-{
-	return static_cast<int>(sec * sampleRate);
-}
-
-float Scheduler::sampToSec(int sample, float sampleRate) const
-{
-	return static_cast<float>(sample / sampleRate);
-}
-
 void Scheduler::updateGainNorm()
 {
 	int numOsc = setInsts.size();
@@ -36,8 +26,6 @@ void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float on
 
 	instrumentToPush->schedule(noteOn, noteOff);
 
-	mapNoteOn[noteOn].insert(instrumentToPush);
-	mapNoteOff[noteOff].insert(instrumentToPush);
 	setInsts.insert(instrumentToPush);
 	garbageCollector.insert(instrumentToPush);
 
@@ -45,24 +33,6 @@ void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float on
 		scheduleLength = totalSampleLength;
 
 	updateGainNorm();
-}
-
-float Scheduler::process()
-{
-	unordered_set noteOnSet = checkTriggers(sampleCounter, mapNoteOn);
-	for (CInstrument* noteOnInst : noteOnSet)
-		noteOnInst->noteOn();
-
-	unordered_set noteOffSet = checkTriggers(sampleCounter, mapNoteOff);
-	for (CInstrument* noteOffInst : noteOffSet)
-		noteOffInst->noteOff();
-	
-	float currentValue = 0;
-	for (CInstrument* inst : setInsts)
-		currentValue += inst->process();
-
-	sampleCounter++;
-	return gainNorm * m_adsr.getNextSample() * currentValue;
 }
 
 void Scheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
@@ -90,17 +60,6 @@ void Scheduler::process(float** outBuffer, int numChannels, int numSamples, cons
 	sampleCounter += numSamples;
 }
 
-unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
-{
-	auto triggerSample = mapToCheck.find(currentSample);
-	if (triggerSample != mapToCheck.end())
-	{
-		unordered_set setToReturn = triggerSample->second;
-		return setToReturn;
-	}
-	return unordered_set<CInstrument*>();
-}
-
 int Scheduler::getLength() const
 {
 	return scheduleLength;
@@ -110,13 +69,6 @@ void Scheduler::noteOn()
 {
 	sampleCounter = 0;
 	CInstrument::noteOn();
-}
-
-float Looper::process()
-{
-	float currentValue = Scheduler::process();
-	sampleCounter %= scheduleLength;
-	return currentValue;
 }
 
 void Looper::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
