@@ -15,6 +15,7 @@ public:
 	void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f) override;
 
 	float process() override;
+	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 
 protected:
 

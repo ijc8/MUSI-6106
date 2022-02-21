@@ -152,6 +152,40 @@ float CWavetableOscillator::process()
 	return m_adsr.getNextSample() * m_fGain * currentSample;
 }
 
+void CWavetableOscillator::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+{
+	for (int sample = 0; sample < numSamples; sample++)
+	{
+
+		if (hasBeenScheduled)
+		{
+			if (masterClock + sample == noteOnSample) noteOn();
+			if (masterClock + sample == noteOffSample) noteOff();
+		}
+
+		unsigned index0 = (unsigned)m_fCurrentIndex;
+		unsigned index1 = index0 + 1;
+		if (index1 >= (unsigned)m_iTableSize)
+			index1 = (unsigned)0;
+
+		float frac = m_fCurrentIndex - (float)index0;
+
+		const float* wavetableReader = m_Wavetable.getReadPointer(0);
+		float value0 = wavetableReader[index0];
+		float value1 = wavetableReader[index1];
+
+		float currentSample = value0 + frac * (value1 - value0);
+
+		if ((m_fCurrentIndex += m_fTableDelta) > (float)m_iTableSize)
+			m_fCurrentIndex -= (float)m_iTableSize;
+
+		currentSample *= m_adsr.getNextSample() * m_fGain;
+
+		for (int channel = 0; channel < numChannels; channel++)
+			outBuffer[channel][sample] += currentSample;
+	} 
+}
+
 Error_t CWavetableOscillator::setSampleRate(float fNewSampleRate)
 {
 	if (CInstrument::setSampleRate(fNewSampleRate) == Error_t::kNoError)

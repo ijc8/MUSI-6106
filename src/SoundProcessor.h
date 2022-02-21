@@ -12,6 +12,7 @@ public:
 	virtual ~CSoundProcessor() = default;
 
 	virtual float process() = 0;
+	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock) = 0;
 
 	virtual Error_t setSampleRate(float fNewSampleRate);
 	float getSampleRate();
@@ -25,6 +26,7 @@ protected:
 
 class CInstrument : public CSoundProcessor
 {
+	friend class Scheduler;
 public:
 	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument() = default;
@@ -45,6 +47,18 @@ protected:
 	float m_fGain = 0.0f;
 	juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
+	int noteOnSample = 0;
+	int noteOffSample = 0;
+	bool hasBeenScheduled = false;
+
+private:
+
+	void schedule(int noteOn, int noteOff)
+	{
+		noteOnSample = noteOn;
+		noteOffSample = noteOff;
+		hasBeenScheduled = true;
+	};
 };
 
 class CWavetableOscillator : public CInstrument
@@ -59,6 +73,7 @@ public:
 
 	Error_t setSampleRate(float fNewSampleRate) override;
 	float process() override;
+	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock) override;
 
 protected:
 

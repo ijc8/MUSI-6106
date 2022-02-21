@@ -28,6 +28,13 @@ float MainProcessor::process()
 	return Scheduler::process();
 }
 
+void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+{
+	for (CInstrument* inst : setInsts)
+		inst->process(outBuffer, numChannels, numSamples, sampleCounter);
+	sampleCounter += numSamples;
+}
+
 unordered_set<CInstrument*> MainProcessor::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
 {
 	auto triggerSample = mapToCheck.find(currentSample);

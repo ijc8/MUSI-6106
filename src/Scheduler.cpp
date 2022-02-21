@@ -34,6 +34,8 @@ void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float on
 	int noteOff = totalSampleLength - releaseInSamp;
 	assert(noteOff > noteOn);
 
+	instrumentToPush->schedule(noteOn, noteOff);
+
 	mapNoteOn[noteOn].insert(instrumentToPush);
 	mapNoteOff[noteOff].insert(instrumentToPush);
 	setInsts.insert(instrumentToPush);
@@ -63,6 +65,13 @@ float Scheduler::process()
 	return gainNorm * m_adsr.getNextSample() * currentValue;
 }
 
+void Scheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+{
+	for (CInstrument* inst : setInsts)
+		inst->process(outBuffer, numChannels, numSamples, sampleCounter);
+	sampleCounter += numSamples;
+}
+
 unordered_set<CInstrument*> Scheduler::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
 {
 	auto triggerSample = mapToCheck.find(currentSample);
@@ -90,6 +99,12 @@ float Looper::process()
 	float currentValue = Scheduler::process();
 	sampleCounter %= scheduleLength;
 	return currentValue;
+}
+
+void Looper::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+{
+	Scheduler::process(outBuffer, numChannels, numSamples, masterClock);
+	sampleCounter %= scheduleLength;
 }
 
 void Looper::setLoopLength(float newLoopLength)

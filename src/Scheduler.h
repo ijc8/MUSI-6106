@@ -16,6 +16,7 @@ public:
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f);
 	virtual float process() override;
+	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 	int getLength() const;
 	void noteOn() override;
 
@@ -43,6 +44,7 @@ public:
 	~Looper() = default;
 
 	float process() override;
+	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 	void setLoopLength(float newLoopLength);
 };
 
