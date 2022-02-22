@@ -8,15 +8,17 @@
 using std::map;
 using std::unordered_set;
 
-class Scheduler : public CSoundProcessor
+// Class that contains a set of instruments scheduled for particular times and durations
+class CScheduler : public CSoundProcessor
 {
 public:
-	Scheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
-	virtual ~Scheduler();
+	CScheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
+	virtual ~CScheduler();
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f);
-	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 	int getLength() const;
+
+	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 
 protected:
 
@@ -27,14 +29,15 @@ protected:
 
 };
 
-class Looper : public Scheduler
+class CLooper : public CScheduler
 {
 public:
-	Looper(float sampleRate = 48000) : Scheduler(sampleRate) {};
-	~Looper() = default;
+	CLooper(float sampleRate = 48000) : CScheduler(sampleRate) {};
+	~CLooper() = default;
+
+	void setLoopLength(float newLoopLength);
 
 	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
-	void setLoopLength(float newLoopLength);
 };
 
 

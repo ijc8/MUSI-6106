@@ -23,7 +23,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(loopButton);
     loopButton.setButtonText("Add Loop");
     loopButton.onClick = [this]() {
-        Looper* newLoop = new Looper(mSampleRate);
+        CLooper* newLoop = new CLooper(mSampleRate);
         newLoop->pushInst(new CWavetableOscillator(sine, 110, 1, mSampleRate), 0.5, 0);
         newLoop->pushInst(new CWavetableOscillator(sine, 130.81, 1, mSampleRate), 0.5, 0.5);
         newLoop->pushInst(new CWavetableOscillator(sine, 164.81, 1, mSampleRate), 0.5, 1);

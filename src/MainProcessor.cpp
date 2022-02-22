@@ -1,33 +1,33 @@
 #include "MainProcessor.h"
 
-void MainProcessor::addInstRef(CInstrument& instrumentToAdd)
+void CMainProcessor::addInstRef(CInstrument& instrumentToAdd)
 {
 	setInsts.insert(&instrumentToAdd);
 }
 
-void MainProcessor::removeInstRef(CInstrument& instrumentToRemove)
+void CMainProcessor::removeInstRef(CInstrument& instrumentToRemove)
 {
 	setInsts.erase(&instrumentToRemove);
 }
 
-void MainProcessor::addScheduleRef(Scheduler& scheduleToAdd)
+void CMainProcessor::addScheduleRef(CScheduler& scheduleToAdd)
 {
 	setSchedules.insert(&scheduleToAdd);
 }
 
-void MainProcessor::removeScheduleRef(Scheduler& scheduleToRemove)
+void CMainProcessor::removeScheduleRef(CScheduler& scheduleToRemove)
 {
 	setSchedules.erase(&scheduleToRemove);
 }
 
-void MainProcessor::pushInst(CInstrument* oscillatorToPush, float duration, float onset)
+void CMainProcessor::pushInst(CInstrument* oscillatorToPush, float duration, float onset)
 {
-	Scheduler::pushInst(oscillatorToPush, duration, onset + sampToSec(sampleCounter, m_fSampleRateInHz));
+	CScheduler::pushInst(oscillatorToPush, duration, onset + sampToSec(sampleCounter, m_fSampleRateInHz));
 	int deleteSample = secToSamp(onset + duration, m_fSampleRateInHz) + sampleCounter;
 	instRemover[deleteSample].insert(oscillatorToPush);
 }
 
-void MainProcessor::pushSchedule(Scheduler* scheduleToPush)
+void CMainProcessor::pushSchedule(CScheduler* scheduleToPush)
 {
 	setSchedules.insert(scheduleToPush);
 	garbageCollector.insert(scheduleToPush);
@@ -35,7 +35,7 @@ void MainProcessor::pushSchedule(Scheduler* scheduleToPush)
 	scheduleRemover[deleteSample].insert(scheduleToPush);
 }
 
-void MainProcessor::pushLooper(Looper* loopToPush, int numTimesToLoop)
+void CMainProcessor::pushLooper(CLooper* loopToPush, int numTimesToLoop)
 {
 	setSchedules.insert(loopToPush);
 	garbageCollector.insert(loopToPush);
@@ -43,9 +43,9 @@ void MainProcessor::pushLooper(Looper* loopToPush, int numTimesToLoop)
 	scheduleRemover[deleteSample].insert(loopToPush);
 }
 
-void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CMainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
-
+	// removes any temporary instruments that are done processing
 	for (auto const& [sample, set] : instRemover)
 	{
 		if (sample < sampleCounter)
@@ -58,11 +58,13 @@ void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, 
 			if (instRemover.empty()) break;
 		}
 	}
+
+	// removes any temporary schedules/loops that are done processing
 	for (auto const& [sample, set] : scheduleRemover)
 	{
 		if (sample < sampleCounter)
 		{
-			for (Scheduler* schedule : set)
+			for (CScheduler* schedule : set)
 			{
 				setSchedules.erase(schedule);
 			}
@@ -71,7 +73,7 @@ void MainProcessor::process(float** outBuffer, int numChannels, int numSamples, 
 		}
 	}
 
-	for (Scheduler* schedule : setSchedules)
+	for (CScheduler* schedule : setSchedules)
 		schedule->process(outBuffer, numChannels, numSamples, sampleCounter);
-	Scheduler::process(outBuffer, numChannels, numSamples, sampleCounter);
+	CScheduler::process(outBuffer, numChannels, numSamples, sampleCounter);
 }

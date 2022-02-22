@@ -39,12 +39,12 @@ private:
 
     CSineWavetable sine;
 
-    MainProcessor mainProcessor;
+    CMainProcessor mainProcessor;
     CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 343, 1);
     CWavetableOscillator knightOsc = CWavetableOscillator(sine, 170, 1);
     CWavetableOscillator queenOsc = CWavetableOscillator(sine, 900, 0.5);
     CWavetableOscillator kingOsc = CWavetableOscillator(sine, 55, 0.25);
-    Looper loop;
+    CLooper loop;
 
     CSoundProcessor* processors[6]
     {

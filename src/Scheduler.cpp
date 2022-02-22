@@ -1,12 +1,12 @@
 #include "Scheduler.h"
 
-Scheduler::~Scheduler()
+CScheduler::~CScheduler()
 {
 	for (CSoundProcessor* inst : garbageCollector)
 		delete inst;
 }
 
-void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float onset)
+void CScheduler::pushInst(CInstrument* instrumentToPush, float duration, float onset)
 {
 	int releaseInSamp = secToSamp(instrumentToPush->getADSRParameters().release, m_fSampleRateInHz);
 	int durationInSamp = secToSamp(duration, m_fSampleRateInHz);
@@ -24,7 +24,7 @@ void Scheduler::pushInst(CInstrument* instrumentToPush, float duration, float on
 		scheduleLength = totalSampleLength;
 }
 
-void Scheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CScheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
 
 	for (CInstrument* inst : setInsts)
@@ -33,18 +33,18 @@ void Scheduler::process(float** outBuffer, int numChannels, int numSamples, cons
 	sampleCounter += numSamples;
 }
 
-int Scheduler::getLength() const
+int CScheduler::getLength() const
 {
 	return scheduleLength;
 }
 
-void Looper::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CLooper::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
-	Scheduler::process(outBuffer, numChannels, numSamples, masterClock);
+	CScheduler::process(outBuffer, numChannels, numSamples, masterClock);
 	sampleCounter %= scheduleLength;
 }
 
-void Looper::setLoopLength(float newLoopLength)
+void CLooper::setLoopLength(float newLoopLength)
 {
 	assert(newLoopLength > 0);
 	scheduleLength = secToSamp(newLoopLength, m_fSampleRateInHz);

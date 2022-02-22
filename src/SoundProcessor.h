@@ -27,7 +27,7 @@ protected:
 
 class CInstrument : public CSoundProcessor
 {
-	friend class Scheduler;
+	friend class CScheduler;
 public:
 	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument() = default;
