@@ -24,9 +24,9 @@ MainComponent::MainComponent()
     loopButton.setButtonText("Add Loop");
     loopButton.onClick = [this]() {
         CLooper* newLoop = new CLooper(mSampleRate);
-        newLoop->pushInst(new CWavetableOscillator(sine, 110, 1, mSampleRate), 0.5, 0);
+        newLoop->pushInst(new CWavetableOscillator(sine, 110, 1, mSampleRate), 0, 0.5);
         newLoop->pushInst(new CWavetableOscillator(sine, 130.81, 1, mSampleRate), 0.5, 0.5);
-        newLoop->pushInst(new CWavetableOscillator(sine, 164.81, 1, mSampleRate), 0.5, 1);
+        newLoop->pushInst(new CWavetableOscillator(sine, 164.81, 1, mSampleRate), 1, 0.5);
         mainProcessor.pushLooper(newLoop, 3);
     };
 
@@ -41,7 +41,7 @@ MainComponent::MainComponent()
     oscButton.onClick = [this]() {
         CWavetableOscillator* newOsc = new CWavetableOscillator(sine, 800, 1, mSampleRate);
         newOsc->setADSRParameters(3, .3, 0.5, 3);
-        mainProcessor.pushInst(newOsc, 5, 0);
+        mainProcessor.pushInst(newOsc, 0, 5);
     };
 
     addAndMakeVisible(pawnButton);
@@ -82,9 +82,9 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 
     mainProcessor.addInstRef(pawnOsc);
 
-    loop.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0.5, 0);
+    loop.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0, 0.5);
     loop.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
-    loop.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 0.5, 1);
+    loop.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 1, 0.5);
     loop.setLoopLength(3);
     mainProcessor.addScheduleRef(loop);
 }

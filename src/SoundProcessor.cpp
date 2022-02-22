@@ -141,15 +141,15 @@ void CWavetableOscillator::shiftFrequency(float fShift)
 	setFrequency(fNewFrequency);
 }
 
-void CWavetableOscillator::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
 {
-	for (int sample = 0; sample < numSamples; sample++)
+	for (int sample = 0; sample < iNumSamples; sample++)
 	{
 
-		if (hasBeenScheduled)
+		if (m_fHasBeenScheduled)
 		{
-			if (masterClock + sample == noteOnSample) noteOn();
-			if (masterClock + sample == noteOffSample) noteOff();
+			if (iMasterClock + sample == m_iNoteOnSample) noteOn();
+			if (iMasterClock + sample == m_iNoteOffSample) noteOff();
 		}
 
 		unsigned index0 = (unsigned)m_fCurrentIndex;
@@ -170,8 +170,8 @@ void CWavetableOscillator::process(float** outBuffer, int numChannels, int numSa
 
 		currentSample *= m_adsr.getNextSample() * m_fGain;
 
-		for (int channel = 0; channel < numChannels; channel++)
-			outBuffer[channel][sample] += currentSample;
+		for (int channel = 0; channel < iNumChannels; channel++)
+			ppfOutBuffer[channel][sample] += currentSample;
 	} 
 }
 

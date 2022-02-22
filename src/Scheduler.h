@@ -15,20 +15,20 @@ public:
 	CScheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
 	virtual ~CScheduler();
 
-	virtual void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f);
+	virtual void pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
 	void start();
 	void stop();
 	int getLength() const;
 
-	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
+	virtual void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock);
 
 protected:
 
-	bool isPlaying = false;
-	unordered_set<CInstrument*> setInsts;
-	unordered_set<CSoundProcessor*> garbageCollector;
-	long long sampleCounter = 0;
-	int scheduleLength = 0;
+	bool m_bIsPlaying = false;
+	unordered_set<CInstrument*> m_SetInsts;
+	unordered_set<CSoundProcessor*> m_GarbageCollector;
+	long long m_iSampleCounter = 0;
+	int m_iScheduleLength = 0;
 
 };
 
@@ -38,9 +38,9 @@ public:
 	CLooper(float sampleRate = 48000) : CScheduler(sampleRate) {};
 	~CLooper() = default;
 
-	void setLoopLength(float newLoopLength);
+	void setLoopLength(float fNewLoopLengthInSec);
 
-	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
+	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock);
 };
 
 

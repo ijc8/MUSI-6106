@@ -11,7 +11,7 @@ public:
 	CSoundProcessor(float fSampleRate);
 	virtual ~CSoundProcessor() = default;
 
-	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock) = 0;
+	virtual void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock) = 0;
 
 	virtual Error_t setSampleRate(float fNewSampleRate);
 	float getSampleRate();
@@ -48,17 +48,17 @@ protected:
 	float m_fGain = 0.0f;
 	juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
-	int noteOnSample = 0;
-	int noteOffSample = 0;
-	bool hasBeenScheduled = false;
+	int m_iNoteOnSample = 0;
+	int m_iNoteOffSample = 0;
+	bool m_fHasBeenScheduled = false;
 
 private:
 
-	void schedule(int noteOn, int noteOff)
+	void schedule(int iNoteOn, int iNoteOff)
 	{
-		noteOnSample = noteOn;
-		noteOffSample = noteOff;
-		hasBeenScheduled = true;
+		m_iNoteOnSample = iNoteOn;
+		m_iNoteOffSample = iNoteOff;
+		m_fHasBeenScheduled = true;
 	};
 };
 
@@ -73,7 +73,7 @@ public:
 	void shiftFrequency(float fShift);
 
 	Error_t setSampleRate(float fNewSampleRate) override;
-	void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock) override;
+	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock) override;
 
 protected:
 

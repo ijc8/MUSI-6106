@@ -2,68 +2,68 @@
 
 CScheduler::~CScheduler()
 {
-	for (CSoundProcessor* inst : garbageCollector)
+	for (CSoundProcessor* inst : m_GarbageCollector)
 		delete inst;
 }
 
-void CScheduler::pushInst(CInstrument* instrumentToPush, float duration, float onset)
+void CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
-	int releaseInSamp = secToSamp(instrumentToPush->getADSRParameters().release, m_fSampleRateInHz);
-	int durationInSamp = secToSamp(duration, m_fSampleRateInHz);
-	int noteOn = secToSamp(onset, m_fSampleRateInHz);
-	int totalSampleLength = noteOn + durationInSamp;
-	int noteOff = totalSampleLength - releaseInSamp;
-	assert(noteOff > noteOn);
+	int iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
+	int iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
+	int iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
+	int iTotalLengthInSamp = iNoteOn + iDurationInSamp;
+	int iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
+	assert(iNoteOff > iNoteOn);
 
-	instrumentToPush->schedule(noteOn, noteOff);
+	pInstToPush->schedule(iNoteOn, iNoteOff);
 
-	setInsts.insert(instrumentToPush);
-	garbageCollector.insert(instrumentToPush);
+	m_SetInsts.insert(pInstToPush);
+	m_GarbageCollector.insert(pInstToPush);
 
-	if (totalSampleLength > scheduleLength)
-		scheduleLength = totalSampleLength;
+	if (iTotalLengthInSamp > m_iScheduleLength)
+		m_iScheduleLength = iTotalLengthInSamp;
 }
 
 void CScheduler::start()
 {
-	sampleCounter = 0;
-	isPlaying = true;
+	m_iSampleCounter = 0;
+	m_bIsPlaying = true;
 }
 
 void CScheduler::stop()
 {
-	for (CInstrument* inst : setInsts)
+	for (CInstrument* inst : m_SetInsts)
 		inst->noteOff();
-	sampleCounter = 0;
-	isPlaying = false;
+	m_iSampleCounter = 0;
+	m_bIsPlaying = false;
 }
 
-void CScheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
 {
-	if (isPlaying)
+	if (m_bIsPlaying)
 	{
-		for (CInstrument* inst : setInsts)
-			inst->process(outBuffer, numChannels, numSamples, sampleCounter);
+		for (CInstrument* inst : m_SetInsts)
+			inst->process(ppfOutBuffer, iNumChannels, iNumSamples, m_iSampleCounter);
 
-		sampleCounter += numSamples;
+		m_iSampleCounter += iNumSamples;
 	}
 }
 
 int CScheduler::getLength() const
 {
-	return scheduleLength;
+	return m_iScheduleLength;
 }
 
-void CLooper::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CLooper::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
 {
-	CScheduler::process(outBuffer, numChannels, numSamples, masterClock);
-	sampleCounter %= scheduleLength;
+	CScheduler::process(ppfOutBuffer, iNumChannels, iNumSamples, iMasterClock);
+	m_iSampleCounter %= m_iScheduleLength;
 }
 
-void CLooper::setLoopLength(float newLoopLength)
+void CLooper::setLoopLength(float fNewLoopLengthInSec)
 {
-	assert(newLoopLength > 0);
-	scheduleLength = secToSamp(newLoopLength, m_fSampleRateInHz);
+	assert(fNewLoopLengthInSec > 0);
+	m_iScheduleLength = secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz);
 }
 
 

@@ -1,75 +1,75 @@
 #include "MainProcessor.h"
 
-void CMainProcessor::addInstRef(CInstrument& instrumentToAdd)
+void CMainProcessor::addInstRef(CInstrument& rInstToAdd)
 {
-	setInsts.insert(&instrumentToAdd);
+	m_SetInsts.insert(&rInstToAdd);
 }
 
-void CMainProcessor::removeInstRef(CInstrument& instrumentToRemove)
+void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
 {
-	setInsts.erase(&instrumentToRemove);
+	m_SetInsts.erase(&rInstToRemove);
 }
 
-void CMainProcessor::addScheduleRef(CScheduler& scheduleToAdd)
+void CMainProcessor::addScheduleRef(CScheduler& rScheduleToAdd)
 {
-	setSchedules.insert(&scheduleToAdd);
+	m_SetSchedules.insert(&rScheduleToAdd);
 }
 
 void CMainProcessor::removeScheduleRef(CScheduler& scheduleToRemove)
 {
-	setSchedules.erase(&scheduleToRemove);
+	m_SetSchedules.erase(&scheduleToRemove);
 }
 
-void CMainProcessor::pushInst(CInstrument* oscillatorToPush, float duration, float onset)
+void CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
-	CScheduler::pushInst(oscillatorToPush, duration, onset + sampToSec(sampleCounter, m_fSampleRateInHz));
-	int deleteSample = secToSamp(onset + duration, m_fSampleRateInHz) + sampleCounter;
-	instRemover[deleteSample].insert(oscillatorToPush);
+	CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(m_iSampleCounter, m_fSampleRateInHz), fDurationInSec);
+	int iDeleteSample = secToSamp(fOnsetInSec + fDurationInSec, m_fSampleRateInHz) + m_iSampleCounter;
+	m_InstRemover[iDeleteSample].insert(pInstToPush);
 }
 
-void CMainProcessor::pushSchedule(CScheduler* scheduleToPush)
+void CMainProcessor::pushSchedule(CScheduler* pScheduleToPush)
 {
-	setSchedules.insert(scheduleToPush);
-	garbageCollector.insert(scheduleToPush);
-	int deleteSample = scheduleToPush->getLength() + sampleCounter;
-	scheduleRemover[deleteSample].insert(scheduleToPush);
-	scheduleToPush->start();
+	m_SetSchedules.insert(pScheduleToPush);
+	m_GarbageCollector.insert(pScheduleToPush);
+	int iDeleteSample = pScheduleToPush->getLength() + m_iSampleCounter;
+	m_ScheduleRemover[iDeleteSample].insert(pScheduleToPush);
+	pScheduleToPush->start();
 }
 
-void CMainProcessor::pushLooper(CLooper* loopToPush, int numTimesToLoop)
+void CMainProcessor::pushLooper(CLooper* pLoopToPush, int iNumTimesToLoop)
 {
-	setSchedules.insert(loopToPush);
-	garbageCollector.insert(loopToPush);
-	int deleteSample = loopToPush->getLength() * numTimesToLoop + sampleCounter;
-	scheduleRemover[deleteSample].insert(loopToPush);
-	loopToPush->start();
+	m_SetSchedules.insert(pLoopToPush);
+	m_GarbageCollector.insert(pLoopToPush);
+	int iDeleteSample = pLoopToPush->getLength() * iNumTimesToLoop + m_iSampleCounter;
+	m_ScheduleRemover[iDeleteSample].insert(pLoopToPush);
+	pLoopToPush->start();
 }
 
-void CMainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
+void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
 {
 	// removes any temporary instruments that are done processing
-	auto upperBoundInst = instRemover.upper_bound(sampleCounter);
-	for (auto it = instRemover.begin(); it != upperBoundInst; it++)
+	auto itUpperBoundInst = m_InstRemover.upper_bound(m_iSampleCounter);
+	for (auto it = m_InstRemover.begin(); it != itUpperBoundInst; it++)
 	{
-		for (CInstrument* inst : it->second)
+		for (CInstrument* pInst : it->second)
 		{
-			setInsts.erase(inst);
+			m_SetInsts.erase(pInst);
 		}
 	}
-	instRemover.erase(instRemover.begin(), upperBoundInst);
+	m_InstRemover.erase(m_InstRemover.begin(), itUpperBoundInst);
 
 	// removes any temporary schedules/loops that are done processing
-	auto upperBoundSchedule = scheduleRemover.upper_bound(sampleCounter);
-	for (auto it = scheduleRemover.begin(); it != upperBoundSchedule; it++)
+	auto itUpperBoundSchedule = m_ScheduleRemover.upper_bound(m_iSampleCounter);
+	for (auto it = m_ScheduleRemover.begin(); it != itUpperBoundSchedule; it++)
 	{
-		for (CScheduler* schedule : it->second)
+		for (CScheduler* pSchedule : it->second)
 		{
-			setSchedules.erase(schedule);
+			m_SetSchedules.erase(pSchedule);
 		}
 	}
-	scheduleRemover.erase(scheduleRemover.begin(), upperBoundSchedule);
+	m_ScheduleRemover.erase(m_ScheduleRemover.begin(), itUpperBoundSchedule);
 
-	for (CScheduler* schedule : setSchedules)
-		schedule->process(outBuffer, numChannels, numSamples, sampleCounter);
-	CScheduler::process(outBuffer, numChannels, numSamples, sampleCounter);
+	for (CScheduler* pSchedule : m_SetSchedules)
+		pSchedule->process(ppfOutBuffer, iNumChannels, iNumSamples, m_iSampleCounter);
+	CScheduler::process(ppfOutBuffer, iNumChannels, iNumSamples, m_iSampleCounter);
 }
