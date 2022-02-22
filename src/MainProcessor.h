@@ -10,21 +10,25 @@ public:
 	CMainProcessor() { m_bIsPlaying = true; };
 	~CMainProcessor() {};
 
-	// Use these to add pre-existing instruments to output stream
-	// noteOn() and noteOff() are up to you to call
-	// Should be used for chess pieces
+	// Use for chess pieces or other class member instruments
+	// noteOn() and noteOff() calls will be up to you
 	void addInstRef(CInstrument& rInstToAdd);
 	void removeInstRef(CInstrument& rInstToRemove);
 
-	// Use these to add pre-existing schedule/loop to output stream
+	// Use for any class member loops or schedules
 	void addScheduleRef(CScheduler& rScheduleToAdd);
 	void removeScheduleRef(CScheduler& rScheduleToRemove);
 
-	// Adds a temporary instrument or schedule
-	// Use for dynamically-allocated instances ( 'pushInst(new CWavetableOscillator(...))' )
+	// Use for dynamically-allocated instruments
 	// Will handle deletion
 	void pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f) override;
+
+	// Use for dynamically-allocated schedules
+	// Will handle deletion
 	void pushSchedule(CScheduler* pScheduleToPush);
+
+	// Use for dynamically-allocated schedules
+	// Will handle deletion
 	void pushLooper(CLooper* pLoopToPush, int iNumTimesToLoop);
 
 	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock);

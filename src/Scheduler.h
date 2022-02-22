@@ -15,9 +15,17 @@ public:
 	CScheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
 	virtual ~CScheduler();
 
+	// Schedule a dynamically-allocated instrument relative to the start of the container
+	// Will handle deletion
 	virtual void pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
+
+	// Resets and starts playback
 	void start();
+
+	// Resets and stops playback
 	void stop();
+
+	// Returns schedule length in samples
 	int getLength() const;
 
 	virtual void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock);

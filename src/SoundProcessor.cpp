@@ -64,12 +64,12 @@ void CInstrument::shiftGain(float fShift)
 	setGain(fNewGain);
 }
 
-Error_t CInstrument::setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease)
+Error_t CInstrument::setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainInSec, float fReleaseInSec)
 {
-	m_adsrParameters.attack = fAttack;
-	m_adsrParameters.decay = fDecay;
-	m_adsrParameters.sustain = fSustain;
-	m_adsrParameters.release = fRelease;
+	m_adsrParameters.attack = fAttackInSec;
+	m_adsrParameters.decay = fDecayInSec;
+	m_adsrParameters.sustain = fSustainInSec;
+	m_adsrParameters.release = fReleaseInSec;
 	m_adsr.setParameters(m_adsrParameters);
 	return Error_t::kNoError;
 }
@@ -102,19 +102,19 @@ Error_t CInstrument::setSampleRate(float fNewSampleRate)
 //=======================================================================
 
 //=======================================================================
-CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency, float fGain, float fSampleRate) :
+CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequencyInHz, float fGain, float fSampleRate) :
 	CInstrument(fGain, fSampleRate),
 	m_Wavetable(wavetableToUse),
 	m_iTableSize(wavetableToUse.getNumSamples())
 {
 	//assert(wavetableToUse.hasBeenGenerated());
-	setFrequency(fFrequency);
+	setFrequency(fFrequencyInHz);
 }
 
-Error_t CWavetableOscillator::setFrequency(float fNewFrequency)
+Error_t CWavetableOscillator::setFrequency(float fNewFrequencyInHz)
 {
-	assert(fNewFrequency >= 0 && fNewFrequency <= 20000);
-	if (fNewFrequency < 0 || fNewFrequency > 20000)
+	assert(fNewFrequencyInHz >= 0 && fNewFrequencyInHz <= 20000);
+	if (fNewFrequencyInHz < 0 || fNewFrequencyInHz > 20000)
 		return Error_t::kFunctionInvalidArgsError;
 	
 	if (m_fSampleRateInHz == 0)
@@ -123,8 +123,8 @@ Error_t CWavetableOscillator::setFrequency(float fNewFrequency)
 	}
 	else
 	{
-		m_fFrequencyInHz = fNewFrequency;
-		m_fTableDelta = (m_fSampleRateInHz == 0.0f) ? 0.0f : (m_iTableSize / m_fSampleRateInHz) * fNewFrequency;
+		m_fFrequencyInHz = fNewFrequencyInHz;
+		m_fTableDelta = (m_fSampleRateInHz == 0.0f) ? 0.0f : (m_iTableSize / m_fSampleRateInHz) * fNewFrequencyInHz;
 	}
 	return Error_t::kNoError;
 }
@@ -134,9 +134,9 @@ float CWavetableOscillator::getFrequency() const
 	return m_fFrequencyInHz;
 }
 
-void CWavetableOscillator::shiftFrequency(float fShift)
+void CWavetableOscillator::shiftFrequency(float fShiftInHz)
 {
-	float fNewFrequency = m_fFrequencyInHz + fShift;
+	float fNewFrequency = m_fFrequencyInHz + fShiftInHz;
 	assert(fNewFrequency >= 0);
 	setFrequency(fNewFrequency);
 }

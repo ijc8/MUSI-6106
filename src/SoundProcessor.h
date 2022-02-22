@@ -13,7 +13,10 @@ public:
 
 	virtual void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock) = 0;
 
+	// Call this in the prepareToPlay() function for correct initialization
+	// Value must be greater than 0
 	virtual Error_t setSampleRate(float fNewSampleRate);
+
 	float getSampleRate();
 
 	
@@ -32,13 +35,21 @@ public:
 	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument() = default;
 
+	// Value must be between -1.0 and 1.0 (inclusive)
 	Error_t setGain(float fNewGain);
+
 	float getGain() const;
+
+	// Value can be negative or positive
 	void shiftGain(float fShift);
 
-	Error_t setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease);
+	Error_t setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainLevel, float fReleaseInSec);
 	const juce::ADSR::Parameters& getADSRParameters() const;
+
+	// Activates instrument's internal ADSR
 	virtual void noteOn();
+
+	// Enters release state of instrument's ADSR
 	void noteOff();
 
 	virtual Error_t setSampleRate(float fNewSampleRate) override;
@@ -65,14 +76,19 @@ private:
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
+	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequencyInHz = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
 	virtual ~CWavetableOscillator() = default;
 
-	Error_t setFrequency(float fNewFrequency);
+	// Value must be between 0 and 20000 (inclusive)
+	Error_t setFrequency(float fNewFrequencyInHz);
+
 	float getFrequency() const;
-	void shiftFrequency(float fShift);
+
+	// Value can be negative or positive
+	void shiftFrequency(float fShiftInHz);
 
 	Error_t setSampleRate(float fNewSampleRate) override;
+
 	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock) override;
 
 protected:
