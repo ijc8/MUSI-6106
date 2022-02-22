@@ -20,6 +20,41 @@ MainComponent::MainComponent()
         setAudioChannels(0, 2);
     }
 
+    addAndMakeVisible(loopButton);
+    loopButton.setButtonText("Add Loop");
+    loopButton.onClick = [this]() {
+        Looper* newLoop = new Looper(mSampleRate);
+        newLoop->pushInst(new CWavetableOscillator(sine, 110, 1, mSampleRate), 0.5, 0);
+        newLoop->pushInst(new CWavetableOscillator(sine, 130.81, 1, mSampleRate), 0.5, 0.5);
+        newLoop->pushInst(new CWavetableOscillator(sine, 164.81, 1, mSampleRate), 0.5, 1);
+        mainProcessor.pushLooper(newLoop, 3);
+    };
+
+    addAndMakeVisible(increaseFreqButton);
+    increaseFreqButton.setButtonText("Increase Freq");
+    increaseFreqButton.onClick = [this]() {
+        pawnOsc.shiftFrequency(50);
+    };
+
+    addAndMakeVisible(oscButton);
+    oscButton.setButtonText("Add Oscillator");
+    oscButton.onClick = [this]() {
+        CWavetableOscillator* newOsc = new CWavetableOscillator(sine, 800, 1, mSampleRate);
+        newOsc->setADSRParameters(3, .3, 0.5, 3);
+        mainProcessor.pushInst(newOsc, 5, 0);
+    };
+
+    addAndMakeVisible(pawnButton);
+    pawnButton.setButtonText("Pawn");
+    pawnButton.setClickingTogglesState(true);
+    pawnButton.onClick = [this]() {
+        if (pawnButton.getToggleState())
+            pawnOsc.noteOn();
+        else
+            pawnOsc.noteOff();
+    };
+
+
 
 }
 
@@ -36,32 +71,8 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     for (auto& processor : processors)
         processor->setSampleRate(sampleRate);
 
-    //Scheduler* schedule = new Scheduler(sampleRate);
-
-    //schedule->pushInst(new CWavetableOscillator(sine, 110, 1, sampleRate), 0.5, 0);
-    //schedule->pushInst(new CWavetableOscillator(sine, 130.81, 1, sampleRate), 0.5, 0.5);
-    //schedule->pushInst(new CWavetableOscillator(sine, 164.81, 1, sampleRate), 0.5, 1);
-    //mainProcessor.pushInst(schedule);
-
-    loop.setADSRParameters(4, .5, 1, 2);
-    loop.pushInst(new CWavetableOscillator(sine, 110, 1, sampleRate), 0.5, 0);
-    loop.pushInst(new CWavetableOscillator(sine, 130.81, 1, sampleRate), 0.5, 0.5);
-    loop.pushInst(new CWavetableOscillator(sine, 164.81, 1, sampleRate), 0.5, 1);
-    mainProcessor.addInstRef(loop);
-
-    pawnOsc.setADSRParameters(1, .3, 0.5, 4);
     mainProcessor.addInstRef(pawnOsc);
-
-    knightOsc.setADSRParameters(0.5, 0.1, 0.75, 3);
-    mainProcessor.addInstRef(knightOsc);
-
-    mainProcessor.addInstRef(queenOsc);
-    mainProcessor.addInstRef(kingOsc);
-
-    for (auto instrument : instruments)
-        instrument->noteOn();
-
-    //mainProcessor.pushInst(new CWavetableOscillator(sine, 560, 1, sampleRate), 4, 0);
+    
 }
 
 
@@ -88,7 +99,13 @@ void MainComponent::paint(juce::Graphics& g)
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
+    auto area = getBounds().reduced(10);
+
+    const int numButtons = 4;
+
+    loopButton.setBounds(area.removeFromTop(getHeight()/ numButtons));
+    increaseFreqButton.setBounds(area.removeFromTop(getHeight() / numButtons));
+    oscButton.setBounds(area.removeFromTop(getHeight() / numButtons));
+    pawnButton.setBounds(area.removeFromTop(getHeight() / numButtons));
+
 }

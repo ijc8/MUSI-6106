@@ -32,6 +32,11 @@ private:
     // Your private member variables go here...
     float mSampleRate = 0.0f;
 
+    juce::TextButton loopButton;
+    juce::TextButton increaseFreqButton;
+    juce::TextButton oscButton;
+    juce::TextButton pawnButton;
+
     CSineWavetable sine;
 
     MainProcessor mainProcessor;
@@ -56,8 +61,7 @@ private:
         &pawnOsc,
         &knightOsc,
         &queenOsc,
-        &kingOsc,
-        &loop
+        &kingOsc
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)

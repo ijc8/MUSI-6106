@@ -8,24 +8,20 @@
 using std::map;
 using std::unordered_set;
 
-class Scheduler : public CInstrument
+class Scheduler : public CSoundProcessor
 {
 public:
-	Scheduler(float sampleRate = 48000) : CInstrument(1.0f, sampleRate) {};
+	Scheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
 	virtual ~Scheduler();
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f);
 	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 	int getLength() const;
-	void noteOn() override;
 
 protected:
 
-	void updateGainNorm();
-
 	unordered_set<CInstrument*> setInsts;
-	unordered_set<CInstrument*> garbageCollector;
-	float gainNorm = 0.0f;
+	unordered_set<CSoundProcessor*> garbageCollector;
 	long long sampleCounter = 0;
 	int scheduleLength = 0;
 
