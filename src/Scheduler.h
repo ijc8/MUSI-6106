@@ -16,12 +16,15 @@ public:
 	virtual ~CScheduler();
 
 	virtual void pushInst(CInstrument* instrumentToPush, float duration = 1.0f, float onset = 0.0f);
+	void start();
+	void stop();
 	int getLength() const;
 
 	virtual void process(float** outBuffer, int numChannels, int numSamples, const int& masterClock);
 
 protected:
 
+	bool isPlaying = false;
 	unordered_set<CInstrument*> setInsts;
 	unordered_set<CSoundProcessor*> garbageCollector;
 	long long sampleCounter = 0;

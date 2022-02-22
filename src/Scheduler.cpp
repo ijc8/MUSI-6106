@@ -24,13 +24,27 @@ void CScheduler::pushInst(CInstrument* instrumentToPush, float duration, float o
 		scheduleLength = totalSampleLength;
 }
 
+void CScheduler::start()
+{
+	sampleCounter = 0;
+	isPlaying = true;
+}
+
+void CScheduler::stop()
+{
+	sampleCounter = 0;
+	isPlaying = false;
+}
+
 void CScheduler::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
+	if (isPlaying)
+	{
+		for (CInstrument* inst : setInsts)
+			inst->process(outBuffer, numChannels, numSamples, sampleCounter);
 
-	for (CInstrument* inst : setInsts)
-		inst->process(outBuffer, numChannels, numSamples, sampleCounter);
-
-	sampleCounter += numSamples;
+		sampleCounter += numSamples;
+	}
 }
 
 int CScheduler::getLength() const

@@ -33,6 +33,7 @@ void CMainProcessor::pushSchedule(CScheduler* scheduleToPush)
 	garbageCollector.insert(scheduleToPush);
 	int deleteSample = scheduleToPush->getLength() + sampleCounter;
 	scheduleRemover[deleteSample].insert(scheduleToPush);
+	scheduleToPush->start();
 }
 
 void CMainProcessor::pushLooper(CLooper* loopToPush, int numTimesToLoop)
@@ -41,37 +42,32 @@ void CMainProcessor::pushLooper(CLooper* loopToPush, int numTimesToLoop)
 	garbageCollector.insert(loopToPush);
 	int deleteSample = loopToPush->getLength() * numTimesToLoop + sampleCounter;
 	scheduleRemover[deleteSample].insert(loopToPush);
+	loopToPush->start();
 }
 
 void CMainProcessor::process(float** outBuffer, int numChannels, int numSamples, const int& masterClock)
 {
 	// removes any temporary instruments that are done processing
-	for (auto const& [sample, set] : instRemover)
+	auto upperBoundInst = instRemover.upper_bound(sampleCounter);
+	for (auto it = instRemover.begin(); it != upperBoundInst; it++)
 	{
-		if (sample < sampleCounter)
+		for (CInstrument* inst : it->second)
 		{
-			for (CInstrument* inst : set)
-			{
-				setInsts.erase(inst);
-			}
-			instRemover.erase(sample);
-			if (instRemover.empty()) break;
+			setInsts.erase(inst);
 		}
 	}
+	instRemover.erase(instRemover.begin(), upperBoundInst);
 
 	// removes any temporary schedules/loops that are done processing
-	for (auto const& [sample, set] : scheduleRemover)
+	auto upperBoundSchedule = scheduleRemover.upper_bound(sampleCounter);
+	for (auto it = scheduleRemover.begin(); it != upperBoundSchedule; it++)
 	{
-		if (sample < sampleCounter)
+		for (CScheduler* schedule : it->second)
 		{
-			for (CScheduler* schedule : set)
-			{
-				setSchedules.erase(schedule);
-			}
-			scheduleRemover.erase(sample);
-			if (scheduleRemover.empty()) break;
+			setSchedules.erase(schedule);
 		}
 	}
+	scheduleRemover.erase(scheduleRemover.begin(), upperBoundSchedule);
 
 	for (CScheduler* schedule : setSchedules)
 		schedule->process(outBuffer, numChannels, numSamples, sampleCounter);

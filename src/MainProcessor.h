@@ -7,7 +7,7 @@
 class CMainProcessor : public CScheduler
 {
 public:
-	CMainProcessor() {};
+	CMainProcessor() { isPlaying = true; };
 	~CMainProcessor() {};
 
 	// Use these to add pre-existing instruments to output stream
