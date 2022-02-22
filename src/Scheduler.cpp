@@ -32,6 +32,8 @@ void CScheduler::start()
 
 void CScheduler::stop()
 {
+	for (CInstrument* inst : setInsts)
+		inst->noteOff();
 	sampleCounter = 0;
 	isPlaying = false;
 }

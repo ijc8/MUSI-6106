@@ -36,6 +36,7 @@ private:
     juce::TextButton increaseFreqButton;
     juce::TextButton oscButton;
     juce::TextButton pawnButton;
+    juce::TextButton loopButton1;
 
     CSineWavetable sine;
 

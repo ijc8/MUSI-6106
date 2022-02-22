@@ -54,6 +54,15 @@ MainComponent::MainComponent()
             pawnOsc.noteOff();
     };
 
+    addAndMakeVisible(loopButton1);
+    loopButton1.setButtonText("Loop");
+    loopButton1.setClickingTogglesState(true);
+    loopButton1.onClick = [this]() {
+        if (loopButton1.getToggleState())
+            loop.start();
+        else
+            loop.stop();
+    };
 
 
 }
@@ -72,7 +81,12 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
         processor->setSampleRate(sampleRate);
 
     mainProcessor.addInstRef(pawnOsc);
-    
+
+    loop.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0.5, 0);
+    loop.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
+    loop.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 0.5, 1);
+    loop.setLoopLength(3);
+    mainProcessor.addScheduleRef(loop);
 }
 
 
@@ -101,11 +115,12 @@ void MainComponent::resized()
 {
     auto area = getBounds().reduced(10);
 
-    const int numButtons = 4;
+    const int numButtons = 5;
 
     loopButton.setBounds(area.removeFromTop(getHeight()/ numButtons));
     increaseFreqButton.setBounds(area.removeFromTop(getHeight() / numButtons));
     oscButton.setBounds(area.removeFromTop(getHeight() / numButtons));
     pawnButton.setBounds(area.removeFromTop(getHeight() / numButtons));
+    loopButton1.setBounds(area.removeFromTop(getHeight() / numButtons));
 
 }
