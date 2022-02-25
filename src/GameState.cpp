@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cctype>
 #include <sstream>
+#include <vector>
 
 #include "GameState.h"
 
@@ -147,9 +148,32 @@ void GameState::setFen(const std::string fen) {
 
 std::unordered_set<Move> GameState::generateMoves(Square src) const {
     // This generates all moves possible from a given square - including moves that may not be legal due to leaving the king in check.
+    // TODO: Split this function up more.
     assert(getPieceAt(src).has_value());
     Piece piece = getPieceAt(src).value();
     std::unordered_set<Move> moves;
+
+    auto generateSlidingMoves = [=, &moves](std::vector<std::array<int, 2>> &delta) {
+        for (auto [dr, df] : delta) {
+            Square dst = src;
+            dst.rank += dr;
+            dst.file += df;
+            // NOTE: The `< 0` cases are handled automatically due to overflow.
+            while (dst.rank <= 7 && dst.file <= 7) {
+                std::optional<Piece> capture = getPieceAt(dst);
+                if (capture.has_value()) {
+                    if (capture->color != piece.color) {
+                        moves.emplace(src, dst);
+                    }
+                    break;
+                }
+                moves.emplace(src, dst);
+                dst.rank += dr;
+                dst.file += df;
+            }
+        }
+    };
+
     if (piece.type == Piece::Type::King) {
         int delta[][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
         for (auto [dr, df] : delta) {
@@ -162,12 +186,21 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
         }
     } else if (piece.type == Piece::Type::Pawn) {
         int dr = piece.color == Color::White ? 1 : -1;
+        std::unordered_set<Move> pawnMoves;
         {
             Square dst(src.rank + dr, src.file);
-            // TODO: Generate all possible promotions if pawn has reached back rank.
             if (!getPieceAt(dst).has_value()) {
                 // Pawn isn't blocked, can push it up the board.
-                moves.emplace(src, dst);
+                pawnMoves.emplace(src, dst);
+                if ((piece.color == Color::White && src.rank == 1) ||
+                    (piece.color == Color::Black && src.rank == 6)) {
+                    // Pawns can initially forward 2 squares (if there's nothing in the way.)
+                    Square dst2(src.rank + dr * 2, src.file);
+                    if (!getPieceAt(dst2).has_value()) {
+                        // No possibility of promotion on first move, so we just add this directly to `moves`.
+                        moves.emplace(src, dst2);
+                    }
+                }
             }
         }
         for (int df : {-1, 1}) {
@@ -175,11 +208,30 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
             Square dst(src.rank + dr, src.file + df);
             std::optional<Piece> capture = getPieceAt(dst);
             if ((enPassant.has_value() && *enPassant == dst) || (capture.has_value() && capture->color != turn)) {
-                moves.emplace(src, dst);
+                pawnMoves.emplace(src, dst);
             }
         }
+        // Generate all possible promotions if pawn has reached back rank.
+        for (auto move : pawnMoves) {
+            if ((piece.color == Color::White && move.dst.rank == 7) ||
+                (piece.color == Color::Black && move.dst.rank == 0)) {
+                for (auto promotion : {Piece::Type::Knight, Piece::Type::Bishop, Piece::Type::Rook, Piece::Type::Queen}) {
+                    moves.emplace(move.src, move.dst, promotion);
+                }
+            } else {
+                moves.insert(move);
+            }
+        }
+    } else if (piece.type == Piece::Type::Rook) {
+        std::vector<std::array<int, 2>> delta{{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+        generateSlidingMoves(delta);
+    } else if (piece.type == Piece::Type::Bishop) {
+        std::vector<std::array<int, 2>> delta{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+        generateSlidingMoves(delta);
+    } else if (piece.type == Piece::Type::Queen) {
+        std::vector<std::array<int, 2>> delta{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+        generateSlidingMoves(delta);
     }
-    // TODO: Sliding pieces: bishop, rook, queen.
     // TODO: Filter out (or avoid adding in the first place) moves that go off the board.
     return moves;
 }
@@ -206,7 +258,11 @@ bool GameState::isLegal(Move move) const {
 
     // TODO: Handle castling.
 
-    // TODO: Check if movement is valid for piece type.
+    // Check if movement is valid for piece type.
+    auto moves = generateMoves(move.src);
+    if (moves.find(move) == moves.end()) {
+        return false;
+    }
 
     // TODO: Check if move leaves king in check.
     return true;

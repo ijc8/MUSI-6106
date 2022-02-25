@@ -49,6 +49,10 @@ int main() {
     assert(game.pop() == Move(Square("b8"), Square("c6")));
     assert(game.pop() == Move(Square("d2"), Square("d4")));
 
+    assert(game.getFen() == GameState::initialFen);
+    assert(game.isLegal(Move(Square("e2"), Square("e4"))));
+    assert(!game.isLegal(Move(Square("e2"), Square("e5"))));
+
     // Ensure singleton works as expected.
     AppState &state = AppState::getInstance();
     state.getGame().setPieceAt(Square("h4"), Piece('Q'));
