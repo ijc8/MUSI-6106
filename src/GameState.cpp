@@ -102,6 +102,16 @@ std::unordered_map<Square, Piece> Board::getPieceMap() const {
     return pieceMap;
 }
 
+std::unordered_set<Square> Board::getPieces(Piece piece) const {
+    std::unordered_set<Square> squares;
+    for (const auto [square, candidate] : pieceMap) {
+        if (candidate == piece) {
+            squares.insert(square);
+        }
+    }
+    return squares;
+}
+
 
 GameState::GameState(const std::string fen) {
     setFen(fen);
@@ -236,6 +246,20 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
     return moves;
 }
 
+bool GameState::isCheck(Color color) const {
+    Square kingPos = *getPieces(Piece(Piece::Type::King, color)).begin();
+    for (const auto [square, piece] : pieceMap) {
+        // If an opposing piece could capture our king, we're in check.
+        if (piece.color == color) continue;
+        for (auto move : generateMoves(square)) {
+            if (move.dst == kingPos) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool GameState::isLegal(Move move) const {
     std::optional<Piece> piece = getPieceAt(move.src);
     std::optional<Piece> capture = getPieceAt(move.dst);
@@ -264,13 +288,17 @@ bool GameState::isLegal(Move move) const {
         return false;
     }
 
-    // TODO: Check if move leaves king in check.
+    // Check if move leaves king in check.
+    GameState copy(*this);
+    copy.execute(move);
+    if (copy.isCheck(turn)) {
+        return false;
+    }
+
     return true;
 }
 
-void Game::push(Move move) {
-    // Push the move and a copy of the game state on to the history stack.
-    history.emplace(move, GameState(*this));
+void GameState::execute(Move move) {
     // NOTE: This does not check `move` for legality.
     Piece piece = getPieceAt(move.src).value();
     setPieceAt(move.src, std::nullopt);
@@ -288,7 +316,14 @@ void Game::push(Move move) {
     } else {
         enPassant.reset();
     }
+
     // TODO: Update move clocks, castling rights.
+}
+
+void Game::push(Move move) {
+    // Push the move and a copy of the game state on to the history stack.
+    history.emplace(move, GameState(*this));
+    execute(move);
 }
 
 Move Game::pop() {

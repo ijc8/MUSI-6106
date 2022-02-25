@@ -89,6 +89,7 @@ namespace Chess {
         std::optional<Piece> getPieceAt(const Square square) const;
         void setPieceAt(const Square square, const std::optional<Piece>);
         std::unordered_map<Square, Piece> getPieceMap() const;
+        std::unordered_set<Square> getPieces(const Piece piece) const;
 
     protected:
         std::optional<Piece> board[8][8];
@@ -130,7 +131,9 @@ namespace Chess {
         int getFullmoveNumber() const { return fullmoveNumber; }
 
         std::unordered_set<Move> generateMoves(Square src) const;
+        bool isCheck(Color color) const;
         bool isLegal(Move move) const;
+        void execute(Move move);
 
     protected:
         Color turn;
@@ -142,6 +145,7 @@ namespace Chess {
 
     class Game: public GameState {
     public:
+        using GameState::GameState;
         void push(Move move);
         Move pop();
     
