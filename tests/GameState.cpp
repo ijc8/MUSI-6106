@@ -5,7 +5,7 @@
 
 using namespace Chess;
 
-int main() {
+void runTests() {
     // Test basic board (positions only).
     Board board;
     std::cout << "Board FEN: " << board.getBoardFen() << std::endl;
@@ -60,6 +60,50 @@ int main() {
     AppState &state2 = AppState::getInstance();
     assert(&state == &state2);
     assert(state2.getGame().getPieceAt(Square("h4")) == Piece('Q'));
+}
 
+void runGame() {
+    Game game;
+    bool playing = true;
+    while (playing) {
+        for (int rank = 7; rank >= 0; rank--) {
+            std::cout << "12345678"[rank] << "|";
+            for (int file = 0; file < 8; file++) {
+                std::optional<Piece> p = game.getPieceAt(Square(rank, file));
+                std::cout << (p.has_value() ? p->toChar() : ' ') << "|";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "  ";
+        for (int file = 0; file < 8; file++) {
+            std::cout << (char)('a' + file) << " ";
+        }
+        std::cout << std::endl;
+        while (true) {
+            std::string s1, s2;
+            std::cout << "> ";
+            std::cin >> s1 >> s2;
+            if (s1.empty() || s2.empty()) {
+                playing = false;
+                break;
+            }
+            Square src(s1), dst(s2);
+            Move move(src, dst);
+            if (game.isLegal(move)) {
+                game.push(move);
+                break;
+            } else {
+                std::cout << "Illegal move!" << std::endl;
+            }
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        runGame();
+    } else {
+        runTests();
+    }
     return 0;
 }

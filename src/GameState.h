@@ -29,6 +29,10 @@ namespace Chess {
         bool operator==(const Piece& other) const {
             return type == other.type && color == other.color;
         }
+        char toChar() const {
+            char typeChar = ToChar.at(type);
+            return color == Color::Black ? tolower(typeChar) : typeChar;
+        }
         Type type;
         Color color;
     };
