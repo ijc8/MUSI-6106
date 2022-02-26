@@ -79,6 +79,11 @@ const juce::ADSR::Parameters& CInstrument::getADSRParameters() const
 	return m_adsrParameters;
 }
 
+void CInstrument::resetADSR()
+{
+	m_adsr.reset();
+}
+
 void CInstrument::noteOn()
 {
 	m_adsr.noteOn();

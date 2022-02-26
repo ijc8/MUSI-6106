@@ -1,7 +1,5 @@
 #include "MainProcessor.h"
 
-long long CMainProcessor::s_iMasterClock = 0;
-
 void CMainProcessor::addInstRef(CInstrument& rInstToAdd)
 {
 	m_SetInsts.insert(&rInstToAdd);
@@ -14,9 +12,7 @@ void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
 
 void CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
-	CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(s_iMasterClock, m_fSampleRateInHz), fDurationInSec);
-	int iDeleteSample = secToSamp(fOnsetInSec + fDurationInSec, m_fSampleRateInHz) + s_iMasterClock;
-	m_InstRemover[iDeleteSample].insert(pInstToPush);
+	CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(m_iSampleCounter, m_fSampleRateInHz), fDurationInSec);
 }
 
 
@@ -25,7 +21,18 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 	for (int frame = 0; frame < iNumFrames; frame++)
 	{
 		CScheduler::process(ppfOutBuffer, iNumChannels, frame);
-		s_iMasterClock++;
 	}
+}
+
+unordered_set<CInstrument*> CMainProcessor::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
+{
+	auto triggerSample = mapToCheck.find(currentSample);
+	if (triggerSample != mapToCheck.end())
+	{
+		unordered_set setToReturn = triggerSample->second;
+		mapToCheck.erase(triggerSample);
+		return setToReturn;
+	}
+	return unordered_set<CInstrument*>();
 }
 

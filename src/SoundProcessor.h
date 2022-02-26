@@ -45,6 +45,9 @@ public:
 	Error_t setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainLevel, float fReleaseInSec);
 	const juce::ADSR::Parameters& getADSRParameters() const;
 
+	// Resets ADSR regardless of current state
+	void resetADSR();
+
 	// Activates instrument's internal ADSR
 	virtual void noteOn();
 

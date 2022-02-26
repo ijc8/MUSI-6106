@@ -12,7 +12,7 @@ using std::unordered_set;
 class CScheduler : public CInstrument
 {
 public:
-	CScheduler(float sampleRate = 48000) : CInstrument(1.0f, sampleRate) {};
+	CScheduler(float sampleRate = 48000);
 	virtual ~CScheduler();
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
@@ -37,10 +37,16 @@ protected:
 	long long m_iSampleCounter = 0;
 	int m_iScheduleLength = 0;
 
+	// Extra buffer space to apply adsr and gain
+	const int m_iMaxChannels = 6;
+	float** m_ppfTempBuffer = 0;
+
+
 	map<int, unordered_set<CInstrument*>> m_MapNoteOn;
 	map<int, unordered_set<CInstrument*>> m_MapNoteOff;
 	map<int, unordered_set<CInstrument*>> m_MapRemover;
 
+	virtual unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
 };
 
 class CLooper : public CScheduler

@@ -22,16 +22,12 @@ public:
 	//void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples) override;
 	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames) override;
 
-	static long long getMasterClock() { return s_iMasterClock; };
+	float getInternalClockInSeconds() { return m_iSampleCounter / m_fSampleRateInHz; };
+	long long getInternalClockInSamples() { return m_iSampleCounter; };
 
-private:
+protected:
 
-	static long long s_iMasterClock;
-
-	map<int, unordered_set<CInstrument*>> m_InstRemover;
-	map<int, unordered_set<CScheduler*>> m_ScheduleRemover;
-
-	unordered_set<CScheduler*> m_SetSchedules;
+	virtual unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
 
 };
 

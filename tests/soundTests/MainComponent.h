@@ -37,6 +37,7 @@ private:
     juce::TextButton oscButton;
     juce::TextButton pawnButton;
     juce::TextButton loopButton1;
+    juce::TextButton timeButton;
 
     ////////////////////////////////////////////////////
     /// Synthesis stuff
@@ -45,7 +46,7 @@ private:
     CMainProcessor mainProcessor;
     CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 343, 1);
     CLooper loop;
-    CScheduler schedule;
+    CLooper schedule;
 
     CSoundProcessor* processors[4]
     {

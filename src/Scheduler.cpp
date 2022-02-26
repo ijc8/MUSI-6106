@@ -1,7 +1,19 @@
 #include "Scheduler.h"
 
+CScheduler::CScheduler(float sampleRate) :
+	CInstrument(1.0f, sampleRate)
+{
+	m_ppfTempBuffer = new float*[m_iMaxChannels];
+	for (int channel = 0; channel < m_iMaxChannels; channel++)
+		m_ppfTempBuffer[channel] = new float[] {0};
+}
+
 CScheduler::~CScheduler()
 {
+	for (int channel = 0; channel < m_iMaxChannels; channel++)
+		delete[] m_ppfTempBuffer[channel];
+	delete[] m_ppfTempBuffer;
+
 	for (CSoundProcessor* inst : m_GarbageCollector)
 		delete inst;
 }
@@ -27,7 +39,6 @@ void CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDu
 
 void CScheduler::noteOn()
 {
-	m_iSampleCounter = 0;
 	m_adsr.noteOn();
 }
 
@@ -40,39 +51,55 @@ void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFra
 {
 	if (m_adsr.isActive())
 	{
-		auto itNoteOn = m_MapNoteOn.find(m_iSampleCounter);
-		if (itNoteOn != m_MapNoteOn.end())
+		unordered_set noteOnSet = checkTriggers(m_iSampleCounter, m_MapNoteOn);
+		for (CInstrument* inst : noteOnSet)
 		{
-			for (CInstrument* inst : itNoteOn->second)
-			{
-				inst->noteOn();
-				m_SetInsts.insert(inst);
-			}
+			inst->noteOn();
+			m_SetInsts.insert(inst);
 		}
 
-		auto itNoteOff = m_MapNoteOff.find(m_iSampleCounter);
-		if (itNoteOff != m_MapNoteOff.end())
+		unordered_set noteOffSet = checkTriggers(m_iSampleCounter, m_MapNoteOff);
+		for (CInstrument* inst : noteOffSet)
 		{
-			for (CInstrument* inst : itNoteOff->second)
-			{
-				inst->noteOff();
-			}
+			inst->noteOff();
 		}
 
-		auto itRemover = m_MapRemover.find(m_iSampleCounter);
-		if (itRemover != m_MapRemover.end())
+		unordered_set removerSet = checkTriggers(m_iSampleCounter, m_MapRemover);
+		for (CInstrument* inst : removerSet)
 		{
-			for (CInstrument* inst : itRemover->second)
-			{
-				m_SetInsts.erase(inst);
-			}
+			m_SetInsts.erase(inst);			
 		}
 
 		for (CInstrument* inst : m_SetInsts)
-			inst->process(ppfOutBuffer, iNumChannels, iCurrentFrame);
+			inst->process(m_ppfTempBuffer, iNumChannels, 0);
+
+		float fAdsrValue = m_adsr.getNextSample();
+		for (int channel = 0; channel < iNumChannels; channel++)
+		{
+			ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * m_ppfTempBuffer[channel][0];
+			m_ppfTempBuffer[channel][0] = 0;
+		}
 
 		m_iSampleCounter++;
+	} 
+	else
+	{
+		m_iSampleCounter = 0;
+		for (CInstrument* inst : m_SetInsts)
+			inst->resetADSR();
 	}
+
+}
+
+unordered_set<CInstrument*> CScheduler::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
+{
+	auto triggerSample = mapToCheck.find(currentSample);
+	if (triggerSample != mapToCheck.end())
+	{
+		unordered_set setToReturn = triggerSample->second;
+		return setToReturn;
+	}
+	return unordered_set<CInstrument*>();
 }
 
 int CScheduler::getLength() const

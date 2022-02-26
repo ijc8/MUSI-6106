@@ -64,6 +64,14 @@ MainComponent::MainComponent()
             schedule.noteOff();
     };
 
+    addAndMakeVisible(timeButton);
+    timeButton.setButtonText("Press for internal time");
+    timeButton.onClick = [this]() {
+        juce::String time = juce::String(mainProcessor.getInternalClockInSeconds());
+        timeButton.setButtonText(time + " seconds");
+    };
+
+
 
 }
 
@@ -83,6 +91,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     schedule.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0, 0.5);
     schedule.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
     schedule.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 1, 0.5);
+    schedule.setADSRParameters(2, 0, 1, 2);
 
     mainProcessor.addInstRef(pawnOsc);
     mainProcessor.addInstRef(schedule);
@@ -91,9 +100,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-
     mainProcessor.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-
 }
 
 void MainComponent::releaseResources()
@@ -114,12 +121,13 @@ void MainComponent::resized()
 {
     auto area = getBounds().reduced(10);
 
-    const int numButtons = 5;
+    const int numButtons = 6;
 
     loopButton.setBounds(area.removeFromTop(getHeight()/ numButtons));
     increaseFreqButton.setBounds(area.removeFromTop(getHeight() / numButtons));
     oscButton.setBounds(area.removeFromTop(getHeight() / numButtons));
     pawnButton.setBounds(area.removeFromTop(getHeight() / numButtons));
     loopButton1.setBounds(area.removeFromTop(getHeight() / numButtons));
+    timeButton.setBounds(area.removeFromTop(getHeight() / numButtons));
 
 }
