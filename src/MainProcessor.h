@@ -19,7 +19,8 @@ public:
 	// Will handle deletion
 	void pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f) override;
 
-	//void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples) override;
+	// Pass the entire buffer into this process function
+	// It will internally do frame-by-frame processing
 	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames) override;
 
 	float getInternalClockInSeconds() { return m_iSampleCounter / m_fSampleRateInHz; };
@@ -27,7 +28,9 @@ public:
 
 protected:
 
-	virtual unordered_set<CInstrument*> checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck);
+	// Helper function to check maps for events like noteOn(), noteOff(), etc
+	// This overrides from CScheduler, removing the key/value pair after being triggered
+	virtual void checkTriggers() override;
 
 };
 

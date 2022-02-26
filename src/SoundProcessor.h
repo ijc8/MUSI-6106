@@ -5,7 +5,7 @@
 #include "ErrorDef.h"
 #include "Wavetable.h"
 
-class CSoundProcessor abstract
+class CSoundProcessor
 {
 public:
 	CSoundProcessor(float fSampleRate);
@@ -16,6 +16,10 @@ public:
 	virtual Error_t setSampleRate(float fNewSampleRate);
 
 	float getSampleRate();
+
+	// This is a flexible process function that should cover all current and future needs
+	// Most classes implement this as frame-by-frame processing
+	virtual void process(float**, int, int) = 0;
 
 	
 protected:
@@ -32,7 +36,6 @@ public:
 	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument() = default;
 
-	virtual void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) = 0;
 
 	// Value must be between -1.0 and 1.0 (inclusive)
 	Error_t setGain(float fNewGain);
@@ -54,6 +57,7 @@ public:
 	// Enters release state of instrument's ADSR
 	virtual void noteOff();
 
+	// Overrides to reinitialize ADSR valuesS
 	virtual Error_t setSampleRate(float fNewSampleRate) override;
 
 protected:
@@ -80,9 +84,11 @@ public:
 	// Value can be negative or positive
 	void shiftFrequency(float fShiftInHz);
 
+	// Overrides because frequency must be reinitialized
 	Error_t setSampleRate(float fNewSampleRate) override;
 
-	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples) override;
+	// Processes frame-by-frame
+	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
 protected:
 

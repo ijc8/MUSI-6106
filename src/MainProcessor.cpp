@@ -19,20 +19,16 @@ void CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float
 void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFrames)
 {
 	for (int frame = 0; frame < iNumFrames; frame++)
-	{
+	{	
 		CScheduler::process(ppfOutBuffer, iNumChannels, frame);
 	}
 }
 
-unordered_set<CInstrument*> CMainProcessor::checkTriggers(int currentSample, map<int, unordered_set<CInstrument*>>& mapToCheck)
+void CMainProcessor::checkTriggers()
 {
-	auto triggerSample = mapToCheck.find(currentSample);
-	if (triggerSample != mapToCheck.end())
-	{
-		unordered_set setToReturn = triggerSample->second;
-		mapToCheck.erase(triggerSample);
-		return setToReturn;
-	}
-	return unordered_set<CInstrument*>();
+	CScheduler::checkTriggers();
+	m_MapNoteOn.erase(m_iSampleCounter);
+	m_MapNoteOff.erase(m_iSampleCounter);
+	m_MapRemover.erase(m_iSampleCounter);
 }
 

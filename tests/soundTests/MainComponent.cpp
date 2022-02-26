@@ -41,6 +41,7 @@ MainComponent::MainComponent()
     oscButton.onClick = [this]() {
         CWavetableOscillator* newOsc = new CWavetableOscillator(sine, 800, 1, mSampleRate);
         newOsc->setADSRParameters(3, .3, 0.5, 3);
+        newOsc->setGain(0.5);
         mainProcessor.pushInst(newOsc, 0, 5);
     };
 
@@ -92,6 +93,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     schedule.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
     schedule.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 1, 0.5);
     schedule.setADSRParameters(2, 0, 1, 2);
+    schedule.setGain(0.33);
 
     mainProcessor.addInstRef(pawnOsc);
     mainProcessor.addInstRef(schedule);
