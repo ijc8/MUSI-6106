@@ -141,38 +141,28 @@ void CWavetableOscillator::shiftFrequency(float fShiftInHz)
 	setFrequency(fNewFrequency);
 }
 
-void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
+void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int currentFrame)
 {
-	for (int sample = 0; sample < iNumSamples; sample++)
-	{
+	unsigned index0 = (unsigned)m_fCurrentIndex;
+	unsigned index1 = index0 + 1;
+	if (index1 >= (unsigned)m_iTableSize)
+		index1 = (unsigned)0;
 
-		if (m_fHasBeenScheduled)
-		{
-			if (iMasterClock + sample == m_iNoteOnSample) noteOn();
-			if (iMasterClock + sample == m_iNoteOffSample) noteOff();
-		}
+	float frac = m_fCurrentIndex - (float)index0;
 
-		unsigned index0 = (unsigned)m_fCurrentIndex;
-		unsigned index1 = index0 + 1;
-		if (index1 >= (unsigned)m_iTableSize)
-			index1 = (unsigned)0;
+	const float* wavetableReader = m_Wavetable.getReadPointer(0);
+	float value0 = wavetableReader[index0];
+	float value1 = wavetableReader[index1];
 
-		float frac = m_fCurrentIndex - (float)index0;
+	float currentSample = value0 + frac * (value1 - value0);
 
-		const float* wavetableReader = m_Wavetable.getReadPointer(0);
-		float value0 = wavetableReader[index0];
-		float value1 = wavetableReader[index1];
+	if ((m_fCurrentIndex += m_fTableDelta) > (float)m_iTableSize)
+		m_fCurrentIndex -= (float)m_iTableSize;
 
-		float currentSample = value0 + frac * (value1 - value0);
+	currentSample *= m_adsr.getNextSample() * m_fGain;
 
-		if ((m_fCurrentIndex += m_fTableDelta) > (float)m_iTableSize)
-			m_fCurrentIndex -= (float)m_iTableSize;
-
-		currentSample *= m_adsr.getNextSample() * m_fGain;
-
-		for (int channel = 0; channel < iNumChannels; channel++)
-			ppfOutBuffer[channel][sample] += currentSample;
-	} 
+	for (int channel = 0; channel < iNumChannels; channel++)
+		ppfOutBuffer[channel][currentFrame] += currentSample;
 }
 
 Error_t CWavetableOscillator::setSampleRate(float fNewSampleRate)

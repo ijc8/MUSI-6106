@@ -38,32 +38,24 @@ private:
     juce::TextButton pawnButton;
     juce::TextButton loopButton1;
 
-    CSineWavetable sine;
+    ////////////////////////////////////////////////////
+    /// Synthesis stuff
 
+    CSineWavetable sine;
     CMainProcessor mainProcessor;
     CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 343, 1);
-    CWavetableOscillator knightOsc = CWavetableOscillator(sine, 170, 1);
-    CWavetableOscillator queenOsc = CWavetableOscillator(sine, 900, 0.5);
-    CWavetableOscillator kingOsc = CWavetableOscillator(sine, 55, 0.25);
     CLooper loop;
+    CScheduler schedule;
 
-    CSoundProcessor* processors[6]
+    CSoundProcessor* processors[4]
     {
         &mainProcessor,
+        &schedule,
         &pawnOsc,
-        &knightOsc,
-        &queenOsc,
-        &kingOsc,
         &loop
     };
 
-    CInstrument* instruments[5]
-    {
-        &pawnOsc,
-        &knightOsc,
-        &queenOsc,
-        &kingOsc
-    };
+    ////////////////////////////////////////////////////
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

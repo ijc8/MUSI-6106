@@ -9,10 +9,10 @@ using std::map;
 using std::unordered_set;
 
 // Class that contains a set of instruments scheduled for particular times and durations
-class CScheduler : public CSoundProcessor
+class CScheduler : public CInstrument
 {
 public:
-	CScheduler(float sampleRate = 48000) : CSoundProcessor(sampleRate) {};
+	CScheduler(float sampleRate = 48000) : CInstrument(1.0f, sampleRate) {};
 	virtual ~CScheduler();
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
@@ -20,23 +20,26 @@ public:
 	virtual void pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
 
 	// Resets and starts playback
-	void start();
+	void noteOn() override;
 
 	// Resets and stops playback
-	void stop();
+	void noteOff() override;
 
 	// Returns schedule length in samples
 	int getLength() const;
 
-	virtual void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock);
+	virtual void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
 protected:
 
-	bool m_bIsPlaying = false;
 	unordered_set<CInstrument*> m_SetInsts;
 	unordered_set<CSoundProcessor*> m_GarbageCollector;
 	long long m_iSampleCounter = 0;
 	int m_iScheduleLength = 0;
+
+	map<int, unordered_set<CInstrument*>> m_MapNoteOn;
+	map<int, unordered_set<CInstrument*>> m_MapNoteOff;
+	map<int, unordered_set<CInstrument*>> m_MapRemover;
 
 };
 
@@ -48,7 +51,7 @@ public:
 
 	void setLoopLength(float fNewLoopLengthInSec);
 
-	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock);
+	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 };
 
 

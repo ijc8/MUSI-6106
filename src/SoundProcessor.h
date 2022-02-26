@@ -5,13 +5,11 @@
 #include "ErrorDef.h"
 #include "Wavetable.h"
 
-class CSoundProcessor
+class CSoundProcessor abstract
 {
 public:
 	CSoundProcessor(float fSampleRate);
 	virtual ~CSoundProcessor() = default;
-
-	virtual void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock) = 0;
 
 	// Call this in the prepareToPlay() function for correct initialization
 	// Value must be greater than 0
@@ -30,10 +28,11 @@ protected:
 
 class CInstrument : public CSoundProcessor
 {
-	friend class CScheduler;
 public:
 	CInstrument(float fGain, float fSampleRate);
 	virtual ~CInstrument() = default;
+
+	virtual void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) = 0;
 
 	// Value must be between -1.0 and 1.0 (inclusive)
 	Error_t setGain(float fNewGain);
@@ -50,7 +49,7 @@ public:
 	virtual void noteOn();
 
 	// Enters release state of instrument's ADSR
-	void noteOff();
+	virtual void noteOff();
 
 	virtual Error_t setSampleRate(float fNewSampleRate) override;
 
@@ -59,18 +58,9 @@ protected:
 	float m_fGain = 0.0f;
 	juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
-	int m_iNoteOnSample = 0;
-	int m_iNoteOffSample = 0;
-	bool m_fHasBeenScheduled = false;
 
 private:
 
-	void schedule(int iNoteOn, int iNoteOff)
-	{
-		m_iNoteOnSample = iNoteOn;
-		m_iNoteOffSample = iNoteOff;
-		m_fHasBeenScheduled = true;
-	};
 };
 
 class CWavetableOscillator : public CInstrument
@@ -89,7 +79,7 @@ public:
 
 	Error_t setSampleRate(float fNewSampleRate) override;
 
-	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock) override;
+	void process(float** ppfOutBuffer, int iNumChannels, int iNumSamples) override;
 
 protected:
 

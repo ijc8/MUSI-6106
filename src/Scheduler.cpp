@@ -15,37 +15,63 @@ void CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDu
 	int iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
 	assert(iNoteOff > iNoteOn);
 
-	pInstToPush->schedule(iNoteOn, iNoteOff);
+	m_MapNoteOn[iNoteOn].insert(pInstToPush);
+	m_MapNoteOff[iNoteOff].insert(pInstToPush);
+	m_MapRemover[iTotalLengthInSamp].insert(pInstToPush);
 
-	m_SetInsts.insert(pInstToPush);
 	m_GarbageCollector.insert(pInstToPush);
 
 	if (iTotalLengthInSamp > m_iScheduleLength)
 		m_iScheduleLength = iTotalLengthInSamp;
 }
 
-void CScheduler::start()
+void CScheduler::noteOn()
 {
 	m_iSampleCounter = 0;
-	m_bIsPlaying = true;
+	m_adsr.noteOn();
 }
 
-void CScheduler::stop()
+void CScheduler::noteOff()
 {
-	for (CInstrument* inst : m_SetInsts)
-		inst->noteOff();
-	m_iSampleCounter = 0;
-	m_bIsPlaying = false;
+	m_adsr.noteOff();
 }
 
-void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
+void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
-	if (m_bIsPlaying)
+	if (m_adsr.isActive())
 	{
-		for (CInstrument* inst : m_SetInsts)
-			inst->process(ppfOutBuffer, iNumChannels, iNumSamples, m_iSampleCounter);
+		auto itNoteOn = m_MapNoteOn.find(m_iSampleCounter);
+		if (itNoteOn != m_MapNoteOn.end())
+		{
+			for (CInstrument* inst : itNoteOn->second)
+			{
+				inst->noteOn();
+				m_SetInsts.insert(inst);
+			}
+		}
 
-		m_iSampleCounter += iNumSamples;
+		auto itNoteOff = m_MapNoteOff.find(m_iSampleCounter);
+		if (itNoteOff != m_MapNoteOff.end())
+		{
+			for (CInstrument* inst : itNoteOff->second)
+			{
+				inst->noteOff();
+			}
+		}
+
+		auto itRemover = m_MapRemover.find(m_iSampleCounter);
+		if (itRemover != m_MapRemover.end())
+		{
+			for (CInstrument* inst : itRemover->second)
+			{
+				m_SetInsts.erase(inst);
+			}
+		}
+
+		for (CInstrument* inst : m_SetInsts)
+			inst->process(ppfOutBuffer, iNumChannels, iCurrentFrame);
+
+		m_iSampleCounter++;
 	}
 }
 
@@ -54,9 +80,9 @@ int CScheduler::getLength() const
 	return m_iScheduleLength;
 }
 
-void CLooper::process(float** ppfOutBuffer, int iNumChannels, int iNumSamples, const int& iMasterClock)
+void CLooper::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
-	CScheduler::process(ppfOutBuffer, iNumChannels, iNumSamples, iMasterClock);
+	CScheduler::process(ppfOutBuffer, iNumChannels, iCurrentFrame);
 	m_iSampleCounter %= m_iScheduleLength;
 }
 

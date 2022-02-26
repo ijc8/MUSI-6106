@@ -27,7 +27,7 @@ MainComponent::MainComponent()
         newLoop->pushInst(new CWavetableOscillator(sine, 110, 1, mSampleRate), 0, 0.5);
         newLoop->pushInst(new CWavetableOscillator(sine, 130.81, 1, mSampleRate), 0.5, 0.5);
         newLoop->pushInst(new CWavetableOscillator(sine, 164.81, 1, mSampleRate), 1, 0.5);
-        mainProcessor.pushLooper(newLoop, 3);
+        mainProcessor.pushInst(newLoop, 0, 2);
     };
 
     addAndMakeVisible(increaseFreqButton);
@@ -59,9 +59,9 @@ MainComponent::MainComponent()
     loopButton1.setClickingTogglesState(true);
     loopButton1.onClick = [this]() {
         if (loopButton1.getToggleState())
-            loop.start();
+            schedule.noteOn();
         else
-            loop.stop();
+            schedule.noteOff();
     };
 
 
@@ -80,20 +80,19 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     for (auto& processor : processors)
         processor->setSampleRate(sampleRate);
 
-    mainProcessor.addInstRef(pawnOsc);
+    schedule.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0, 0.5);
+    schedule.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
+    schedule.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 1, 0.5);
 
-    loop.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0, 0.5);
-    loop.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
-    loop.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 1, 0.5);
-    loop.setLoopLength(3);
-    mainProcessor.addScheduleRef(loop);
+    mainProcessor.addInstRef(pawnOsc);
+    mainProcessor.addInstRef(schedule);
 }
 
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
 
-    mainProcessor.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples, 0);
+    mainProcessor.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
 
 }
 
