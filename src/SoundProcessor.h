@@ -9,16 +9,23 @@ class CSoundProcessor
 {
 public:
 	CSoundProcessor(float fSampleRate);
-	virtual ~CSoundProcessor();
+	virtual ~CSoundProcessor() = default;
 
-	virtual float process() = 0;
-
+	// Call this in the prepareToPlay() function for correct initialization
+	// Value must be greater than 0
 	virtual Error_t setSampleRate(float fNewSampleRate);
+
 	float getSampleRate();
+
+	// This is a flexible process function that should cover all current and future needs
+	// Most classes implement this as frame-by-frame processing
+	virtual void process(float**, int, int) = 0;
 
 	
 protected:
 
+	int secToSamp(float sec, float sampleRate) const;
+	float sampToSec(int sample, float sampleRate) const;
 	float m_fSampleRateInHz = 48000.0f;
 
 };
@@ -27,36 +34,61 @@ class CInstrument : public CSoundProcessor
 {
 public:
 	CInstrument(float fGain, float fSampleRate);
-	virtual ~CInstrument();
+	virtual ~CInstrument() = default;
 
+
+	// Value must be between -1.0 and 1.0 (inclusive)
 	Error_t setGain(float fNewGain);
+
 	float getGain() const;
-	Error_t setADSRParameters(float fAttack, float fDecay, float fSustain, float fRelease);
+
+	// Value can be negative or positive
+	void shiftGain(float fShift);
+
+	Error_t setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainLevel, float fReleaseInSec);
 	const juce::ADSR::Parameters& getADSRParameters() const;
 
-	void noteOn();
-	void noteOff();
+	// Resets ADSR regardless of current state
+	void resetADSR();
 
-	virtual Error_t setSampleRate(float fNewSampleRate) = 0;
+	// Activates instrument's internal ADSR
+	virtual void noteOn();
+
+	// Enters release state of instrument's ADSR
+	virtual void noteOff();
+
+	// Overrides to reinitialize ADSR valuesS
+	virtual Error_t setSampleRate(float fNewSampleRate) override;
 
 protected:
 
 	float m_fGain = 0.0f;
 	juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
+
+private:
+
 };
 
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequency = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
-	virtual ~CWavetableOscillator();
+	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequencyInHz = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
+	virtual ~CWavetableOscillator() = default;
 
-	Error_t setFrequency(float fNewFrequency);
+	// Value must be between 0 and 20000 (inclusive)
+	Error_t setFrequency(float fNewFrequencyInHz);
+
 	float getFrequency() const;
 
+	// Value can be negative or positive
+	void shiftFrequency(float fShiftInHz);
+
+	// Overrides because frequency must be reinitialized
 	Error_t setSampleRate(float fNewSampleRate) override;
-	float process() override;
+
+	// Processes frame-by-frame
+	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
 protected:
 
