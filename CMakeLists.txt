@@ -94,6 +94,9 @@ target_sources(SonifierTest
 		PRIVATE
 		src/GameState.cpp
 		src/SoundProcessor.cpp
+        src/MainProcessor.cpp
+        src/Scheduler.cpp
+        src/SoundProcessor.cpp
 		src/DebugSonifier.cpp
 		tests/SonifierTest.cpp)
 target_sources(SoundTests
