@@ -42,6 +42,11 @@ public:
 
 	float getGain() const;
 
+    // Set Pan
+    Error_t setPan(float fPan);
+
+    float getPan() const;
+
 	// Value can be negative or positive
 	void shiftGain(float fShift);
 
@@ -50,6 +55,9 @@ public:
 
 	// Resets ADSR regardless of current state
 	void resetADSR();
+
+    // Check active oscillators
+    bool isActive() const;
 
 	// Activates instrument's internal ADSR
 	virtual void noteOn();
@@ -63,7 +71,8 @@ public:
 protected:
 
 	float m_fGain = 0.0f;
-	juce::ADSR m_adsr;
+    float m_fPan = 0.0f;
+    juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
 
 private:

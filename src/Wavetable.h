@@ -27,7 +27,7 @@ class CSineWavetable : public CWavetable
 {
 public:
 
-    CSineWavetable() {};
+    CSineWavetable() {generateWavetable();}
     ~CSineWavetable() {};
 
 	void generateWavetable() override
@@ -52,7 +52,7 @@ public:
 class CSawWavetable : public CWavetable {
 public:
 
-    CSawWavetable() {};
+    CSawWavetable() {generateWavetable();};
     ~CSawWavetable() {};
 
     void generateWavetable() override{
@@ -71,7 +71,7 @@ public:
 class CTriWavetable : public CWavetable {
 public:
 
-    CTriWavetable() {};
+    CTriWavetable() {generateWavetable();};
     ~CTriWavetable() {};
 
     void generateWavetable() override{
@@ -91,7 +91,7 @@ public:
 class CSqrWavetable : public CWavetable {
 public:
 
-    CSqrWavetable() {};
+    CSqrWavetable() {generateWavetable();};
     ~CSqrWavetable() {};
 
     void generateWavetable() override{

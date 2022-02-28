@@ -31,19 +31,44 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
         assert(false);
     }
     oscillators.back().noteOn();
+    oscillators.back().setADSRParameters(2,0,1,2);
+    m_mainProcessor.addInstRef(oscillators.back());
 }
 
-float DebugSonifier::process(){
-    float out = 0;
-    for (CWavetableOscillator &osc: oscillators){
-        out += osc.process();
-    }
-    return out/64;
+void DebugSonifier::process(float **ppfOutBuffer, int iNumChannels, int iNumFrames) {
+
+    m_mainProcessor.process(ppfOutBuffer, iNumChannels, iNumFrames);
 }
+
+
+void DebugSonifier::prepareToPlay(int iExpectedBlockSize, double fsampleRate){
+
+    m_fSampleRate = fsampleRate;
+    m_mainProcessor.setSampleRate(fsampleRate);
+    m_mainProcessor.setGain(0.25);
+    m_mainProcessor.setADSRParameters(4,0,1,2);
+    m_fExpectedBlockSize = iExpectedBlockSize;
+
+};
+
+
+void DebugSonifier::releaseResources(){
+
+};
 
 
 Error_t DebugSonifier::onMove(Chess::Board &board) {
-    oscillators.clear();
+    auto it = oscillators.begin();
+    while (it != oscillators.end()){
+        if (it->isActive()){
+            it->noteOff();
+            it++;
+        }
+        else {
+            m_mainProcessor.removeInstRef(*it);
+            it = oscillators.erase(it);
+        }
+    }
     for( const auto [square, piece] : board.getPieceMap() ) {
         sonifyPiece(square, piece);
     }
