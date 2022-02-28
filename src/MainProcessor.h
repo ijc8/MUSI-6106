@@ -3,19 +3,34 @@
 
 #include "Scheduler.h"
 
-class MainProcessor : public Scheduler
+// To be used as a singleton
+class CMainProcessor : public CScheduler
 {
 public:
-	MainProcessor() {};
-	virtual ~MainProcessor() {};
+	CMainProcessor() { noteOn(); };
+	~CMainProcessor() {};
 
-	void addInstRef(CInstrument& referenceToAdd, float duration, float onset);
-	virtual void pushInst(CInstrument* instrumentToPush, float duration, float onset) override;
-	void pushLoop(Looper* loopToPush, int numLoops);
-	void pushSchedule(Scheduler* scheduleToPush);
+	// Use for chess pieces or other class member instruments
+	// noteOn() and noteOff() calls will be up to you
+	void addInstRef(CInstrument& rInstToAdd);
+	void removeInstRef(CInstrument& rInstToRemove);
+
+	// Use for dynamically-allocated instruments
+	// Will handle deletion
+	void pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f) override;
+
+	// Pass the entire buffer into this process function
+	// It will internally do frame-by-frame processing
+	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames) override;
+
+	float getInternalClockInSeconds() { return m_iSampleCounter / m_fSampleRateInHz; };
+	long long getInternalClockInSamples() { return m_iSampleCounter; };
 
 protected:
-private:
+
+	// Helper function to check maps for events like noteOn(), noteOff(), etc
+	// This overrides from CScheduler, removing the key/value pair after being triggered
+	virtual void checkTriggers() override;
 
 };
 
