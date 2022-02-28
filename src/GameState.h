@@ -136,6 +136,7 @@ namespace Chess {
 
         std::unordered_set<Move> generateMoves(Square src) const;
         bool isCheck(Color color) const;
+        bool wouldBeInCheck(Move move) const;
         bool isLegal(Move move) const;
         void execute(Move move);
 

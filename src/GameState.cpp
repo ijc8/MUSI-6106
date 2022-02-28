@@ -160,9 +160,15 @@ void GameState::setFen(const std::string &fen) {
 std::unordered_set<Move> GameState::generateMoves(Square src) const {
     // This generates all moves possible from a given square - including moves that may not be legal due to leaving the king in check.
     // TODO: Split this function up more.
-    assert(getPieceAt(src).has_value());
-    Piece piece = getPieceAt(src).value();
     std::unordered_set<Move> moves;
+    if (!getPieceAt(src)) {
+        return moves;  // No piece to move!
+    }
+
+    Piece piece = getPieceAt(src).value();
+    if (piece.color != turn) {
+        return moves;  // Not our piece to move!
+    }
 
     auto generateSlidingMoves = [=, &moves](std::vector<std::array<int, 2>> &delta) {
         for (auto [dr, df] : delta) {
@@ -185,15 +191,57 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
         }
     };
 
+    auto canCastle = [=](std::initializer_list<const char *> squares) {
+        // Do the cheap test (piece blocking the castle) first.
+        for (auto square : squares) {
+            if (getPieceAt(Square(square))) {
+                return false;
+            }
+        }
+        // Then do the expensive test (some intermediate square would involve check).
+        for (auto square : squares) {
+            if (wouldBeInCheck(Move(src, Square(square)))) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     if (piece.type == Piece::Type::King) {
         int delta[][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
         for (auto [dr, df] : delta) {
-            moves.emplace(src, Square(src.rank + dr, src.file + df));
+            Square dst(src.rank + dr, src.file + df);
+            std::optional<Piece> capture;
+            if (dst.rank < 8 && dst.file < 8 && !((capture = getPieceAt(dst)) && capture->color == turn)) {
+                moves.emplace(src, dst);
+            }
+        }
+        // Handle castling.
+        if (src == Square(turn == Color::White ? "e1" : "e8")) {
+            if (turn == Color::White) {
+                if (castleRights.whiteShort && canCastle({"f1", "g1"})) {
+                    moves.emplace(src, Square("h1"));
+                }
+                if (castleRights.whiteLong && canCastle({"b1", "c1", "d1"})) {
+                    moves.emplace(src, Square("a1"));
+                }
+            } else {
+                if (castleRights.blackShort && canCastle({"f8", "g8"})) {
+                    moves.emplace(src, Square("h8"));
+                }
+                if (castleRights.blackLong && canCastle({"b8", "c8", "d8"})) {
+                    moves.emplace(src, Square("a8"));
+                }
+            }
         }
     } else if (piece.type == Piece::Type::Knight) {
         int delta[][2] = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
         for (auto [dr, df] : delta) {
-            moves.emplace(src, Square(src.rank + dr, src.file + df));
+            Square dst(src.rank + dr, src.file + df);
+            std::optional<Piece> capture;
+            if (dst.rank < 8 && dst.file < 8 && !((capture = getPieceAt(dst)) && capture->color == turn)) {
+                moves.emplace(src, dst);
+            }
         }
     } else if (piece.type == Piece::Type::Pawn) {
         int dr = piece.color == Color::White ? 1 : -1;
@@ -244,16 +292,6 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
         std::vector<std::array<int, 2>> delta{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
         generateSlidingMoves(delta);
     }
-    // Filter out moves that go off the board or are already occupied by a piece of the same color.
-    for (auto it = moves.begin(); it != moves.end();) {
-        Square dst = it->dst;
-        std::optional<Piece> capture;
-        if (dst.rank > 7 || dst.file > 7 || ((capture = getPieceAt(dst)) && capture->color == turn)) {
-            it = moves.erase(it);
-        } else {
-            it++;
-        }
-    }
     return moves;
 }
 
@@ -271,38 +309,21 @@ bool GameState::isCheck(Color color) const {
     return false;
 }
 
+bool GameState::wouldBeInCheck(Move move) const {
+    GameState copy(*this);
+    copy.execute(move);
+    return copy.isCheck(turn);
+}
+
 bool GameState::isLegal(Move move) const {
-    std::optional<Piece> piece = getPieceAt(move.src);
-    std::optional<Piece> capture = getPieceAt(move.dst);
-    if (!piece.has_value() || piece->color != turn) {
-        // Source square is empty or contains opponent's piece.
-        return false;
-    } else if (capture.has_value() && capture->color == turn) {
-        // Destination square is blocked by our piece.
-        return false;
-    }
-
-    if (move.promotion.has_value()) {
-        // Must be a pawn.
-        if (piece->type != Piece::Type::Pawn) return false;
-        // Must be moving to the opponent's backrank.
-        if (!((turn == Color::White && move.dst.rank == 7) || (turn == Color::Black && move.dst.rank == 0))) return false;
-        // Can't promote to pawn or king.
-        if (*move.promotion == Piece::Type::Pawn || *move.promotion == Piece::Type::King) return false;
-    }
-
-    // TODO: Handle castling.
-
-    // Check if movement is valid for piece type.
+    // Check if this is a valid motion for the piece at the source (ignoring check).
     auto moves = generateMoves(move.src);
     if (moves.find(move) == moves.end()) {
         return false;
     }
 
-    // Check if move leaves king in check.
-    GameState copy(*this);
-    copy.execute(move);
-    if (copy.isCheck(turn)) {
+    // Check if the move leaves our king in check.
+    if (wouldBeInCheck(move)) {
         return false;
     }
 
@@ -319,6 +340,8 @@ void GameState::execute(Move move) {
         setPieceAt(move.dst, piece);
     }
 
+    // TODO: Handle castling.
+
     // Flip turn.
     turn = turn == Color::White ? Color::Black : Color::White;
     // Handle en passant.
@@ -328,7 +351,7 @@ void GameState::execute(Move move) {
         enPassant.reset();
     }
 
-    // TODO: Update move clocks, castling rights.
+    // TODO: Update move clocks.
 }
 
 void Game::push(Move move) {

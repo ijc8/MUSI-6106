@@ -53,6 +53,10 @@ void runTests() {
     assert(game.isLegal(Move(Square("e2"), Square("e4"))));
     assert(!game.isLegal(Move(Square("e2"), Square("e5"))));
 
+    game.setFen("rnbqkbnr/ppp2ppp/3pp3/8/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1");
+    Move move(Square("e1"), Square("h1"));
+    assert(game.isLegal(move));
+
     // Ensure singleton works as expected.
     AppState &state = AppState::getInstance();
     state.getGame().setPieceAt(Square("h4"), Piece('Q'));
@@ -79,6 +83,7 @@ void runGame() {
             std::cout << (char)('a' + file) << " ";
         }
         std::cout << std::endl;
+        std::cout << "FEN: " << game.getFen() << std::endl;
         while (true) {
             std::string s1, s2;
             std::cout << "> ";
