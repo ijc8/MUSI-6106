@@ -24,7 +24,7 @@ namespace Chess {
 
         // Default constructor is required for use in a map.
         Piece(): Piece(Type::Pawn, Color::White) {}
-        Piece(const Type type_, const Color color_) : type(type_), color(color_) {}
+        Piece(Type type_, Color color_) : type(type_), color(color_) {}
         Piece(char c) : type(FromChar.at(toupper(c))), color(islower(c) ? Color::Black : Color::White) {}
         bool operator==(const Piece& other) const {
             return type == other.type && color == other.color;
@@ -39,7 +39,7 @@ namespace Chess {
 
     struct Square {
         Square(uint8_t rank_, uint8_t file_) : rank(rank_), file(file_) {}
-        Square(const std::string square) : Square(square[1] - '1', square[0] - 'a') {}
+        Square(const std::string &square) : Square(square[1] - '1', square[0] - 'a') {}
         bool operator==(const Square &other) const {
             return rank == other.rank && file == other.file;
         }
@@ -85,15 +85,15 @@ namespace Chess {
     public:
         static const std::string initialBoardFen;
 
-        Board(const std::string boardFen = initialBoardFen);
+        Board(const std::string &boardFen = initialBoardFen);
 
         std::string getBoardFen() const;
-        void setBoardFen(const std::string boardFen);
+        void setBoardFen(const std::string &boardFen);
 
-        std::optional<Piece> getPieceAt(const Square square) const;
-        void setPieceAt(const Square square, const std::optional<Piece>);
+        std::optional<Piece> getPieceAt(Square square) const;
+        void setPieceAt(Square square, std::optional<Piece>);
         std::unordered_map<Square, Piece> getPieceMap() const;
-        std::unordered_set<Square> getPieces(const Piece piece) const;
+        std::unordered_set<Square> getPieces(Piece piece) const;
 
     protected:
         std::optional<Piece> board[8][8];
@@ -111,10 +111,10 @@ namespace Chess {
     public:
         static const std::string initialFen;
 
-        GameState(const std::string fen = initialFen);
+        GameState(const std::string &fen = initialFen);
 
         std::string getFen() const;
-        void setFen(const std::string fen);
+        void setFen(const std::string &fen);
 
         Color getTurn() const { return turn; }
         std::optional<Square> getEnPassant() const { return enPassant; }

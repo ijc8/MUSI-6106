@@ -30,7 +30,7 @@ const std::unordered_map<Piece::Type, char> Piece::ToChar{
     {Piece::Type::King, 'K'},
 };
 
-Board::Board(std::string boardFen) {
+Board::Board(const std::string &boardFen) {
     setBoardFen(boardFen);
 }
 
@@ -66,7 +66,7 @@ std::string Board::getBoardFen() const {
     return fen;
 }
 
-void Board::setBoardFen(const std::string boardFen) {
+void Board::setBoardFen(const std::string &boardFen) {
     int rank = 7, file = 0;
     for (const char c : boardFen) {
         assert(rank >= 0 && rank < 8 && file >= 0 && (file < 8 || c == '/'));
@@ -85,11 +85,12 @@ void Board::setBoardFen(const std::string boardFen) {
     }
 }
 
-std::optional<Piece> Board::getPieceAt(const Square square) const {
+std::optional<Piece> Board::getPieceAt(Square square) const {
+    assert(square.rank < 8 && square.file < 8);
     return board[square.rank][square.file];
 }
 
-void Board::setPieceAt(const Square square, const std::optional<Piece> piece) {
+void Board::setPieceAt(Square square, std::optional<Piece> piece) {
     board[square.rank][square.file] = piece;
     if (piece.has_value()) {
         pieceMap[square] = piece.value();
@@ -113,7 +114,7 @@ std::unordered_set<Square> Board::getPieces(Piece piece) const {
 }
 
 
-GameState::GameState(const std::string fen) {
+GameState::GameState(const std::string &fen) {
     setFen(fen);
 }
 
@@ -135,7 +136,7 @@ std::string GameState::getFen() const {
     return boardFen + " " + turnc + " " + castleFen + " " + ep + " " + halfmove + " " + fullmove;
 }
 
-void GameState::setFen(const std::string fen) {
+void GameState::setFen(const std::string &fen) {
     std::istringstream stream(fen);
     std::string boardFen, castleFen, ep;
     char turnc;
@@ -216,6 +217,7 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
         for (int df : {-1, 1}) {
             // Check for pawn captures (including en passant!).
             Square dst(src.rank + dr, src.file + df);
+            if (dst.rank > 7 || dst.file > 7) continue;
             std::optional<Piece> capture = getPieceAt(dst);
             if ((enPassant.has_value() && *enPassant == dst) || (capture.has_value() && capture->color != turn)) {
                 pawnMoves.emplace(src, dst);
@@ -242,7 +244,16 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
         std::vector<std::array<int, 2>> delta{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
         generateSlidingMoves(delta);
     }
-    // TODO: Filter out (or avoid adding in the first place) moves that go off the board.
+    // Filter out moves that go off the board or are already occupied by a piece of the same color.
+    for (auto it = moves.begin(); it != moves.end();) {
+        Square dst = it->dst;
+        std::optional<Piece> capture;
+        if (dst.rank > 7 || dst.file > 7 || ((capture = getPieceAt(dst)) && capture->color == turn)) {
+            it = moves.erase(it);
+        } else {
+            it++;
+        }
+    }
     return moves;
 }
 
