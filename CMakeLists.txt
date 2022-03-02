@@ -88,7 +88,7 @@ target_sources(MusicalChess
 target_sources(Tests
     PRIVATE
         src/GameState.cpp
-	      tests/GameState.cpp)
+        tests/TestGameState.cpp)
 
 target_sources(SonifierTest
 		PRIVATE

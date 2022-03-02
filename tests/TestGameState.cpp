@@ -5,7 +5,7 @@
 
 using namespace Chess;
 
-int main() {
+void runTests() {
     // Test basic board (positions only).
     Board board;
     std::cout << "Board FEN: " << board.getBoardFen() << std::endl;
@@ -49,6 +49,20 @@ int main() {
     assert(game.pop() == Move(Square("b8"), Square("c6")));
     assert(game.pop() == Move(Square("d2"), Square("d4")));
 
+    assert(game.getFen() == GameState::initialFen);
+    assert(game.isLegal(Move(Square("e2"), Square("e4"))));
+    assert(!game.isLegal(Move(Square("e2"), Square("e5"))));
+
+    // Test castling.
+    game.setFen("rnbqkbnr/pp3ppp/2ppp3/8/4P3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 1");
+    Move move(Square("e1"), Square("g1"));
+    assert(game.isLegal(move));
+    game.push(move);
+    assert(!game.canCastle(Piece('K')) && !game.canCastle(Piece('K')));
+    assert(game.getPieceAt(Square("f1")) == Piece('R'));
+    assert(game.getPieceAt(Square("g1")) == Piece('K'));
+    assert(!game.getPieceAt(Square("e1")) && !game.getPieceAt(Square("h1")));
+
     // Ensure singleton works as expected.
     AppState &state = AppState::getInstance();
     state.getGame().setPieceAt(Square("h4"), Piece('Q'));
@@ -56,6 +70,51 @@ int main() {
     AppState &state2 = AppState::getInstance();
     assert(&state == &state2);
     assert(state2.getGame().getPieceAt(Square("h4")) == Piece('Q'));
+}
 
+void runGame(const std::string &fen) {
+    Game game(fen.empty() ? Game::initialFen : fen);
+    bool playing = true;
+    while (playing) {
+        for (int rank = 7; rank >= 0; rank--) {
+            std::cout << "12345678"[rank] << "|";
+            for (int file = 0; file < 8; file++) {
+                std::optional<Piece> p = game.getPieceAt(Square(rank, file));
+                std::cout << (p.has_value() ? p->toChar() : ' ') << "|";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "  ";
+        for (int file = 0; file < 8; file++) {
+            std::cout << (char)('a' + file) << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "FEN: " << game.getFen() << std::endl;
+        while (true) {
+            std::string s1, s2;
+            std::cout << "> ";
+            std::cin >> s1 >> s2;
+            if (s1.empty() || s2.empty()) {
+                playing = false;
+                break;
+            }
+            Square src(s1), dst(s2);
+            Move move(src, dst);
+            if (game.isLegal(move)) {
+                game.push(move);
+                break;
+            } else {
+                std::cout << "Illegal move!" << std::endl;
+            }
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        runGame(argv[1]);
+    } else {
+        runTests();
+    }
     return 0;
 }
