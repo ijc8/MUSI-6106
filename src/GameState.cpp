@@ -312,6 +312,16 @@ bool GameState::wouldBeInCheck(Move move) const {
     return copy.isCheck(turn);
 }
 
+std::optional<std::optional<Color>> GameState::getOutcome() const {
+    // I swear this nested use of `optional` is reasonable!
+    // We return nullopt if the game is not yet over (no outcome).
+    // Otherwise, we return the winner: White, Black, or (nested) nullopt for a stalemate.
+    // TODO:
+    // If we're in check, see if there's a way to get out. (If not, our opponent wins.)
+    // If we're not in check, see if there's any move that doesn't put us in check. (If not, it's stalemate.)
+    return std::nullopt;
+}
+
 bool GameState::isLegal(Move move) const {
     // Check if this is a valid motion for the piece at the source (ignoring check).
     auto moves = generateMoves(move.src);
