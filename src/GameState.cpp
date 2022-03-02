@@ -144,14 +144,11 @@ void GameState::setFen(const std::string &fen) {
     setBoardFen(boardFen);
     turn = turnc == 'w' ? Color::White : Color::Black;
     for (char p : castleFen) {
-        if (p == 'K') {
-            castleRights.whiteShort = true;
-        } else if (p == 'Q') {
-            castleRights.whiteLong = true;
-        } else if (p == 'k') {
-            castleRights.blackShort = true;
-        } else if (p == 'q') {
-            castleRights.blackLong = true;
+        PlayerCastleRights &rights = (isupper(p) ? castleRights.white : castleRights.black);
+        if (toupper(p) == 'K') {
+            rights.kingSide = true;
+        } else if (toupper(p) == 'Q') {
+            rights.queenSide = true;
         }
     }
     enPassant = ep == "-" ? std::nullopt : std::make_optional(Square(ep));
@@ -219,18 +216,18 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
         // Handle castling.
         if (src == Square(turn == Color::White ? "e1" : "e8")) {
             if (turn == Color::White) {
-                if (castleRights.whiteShort && canCastle({"f1", "g1"})) {
-                    moves.emplace(src, Square("h1"));
+                if (castleRights.white.kingSide && canCastle({"f1", "g1"})) {
+                    moves.emplace(src, Square("g1"));
                 }
-                if (castleRights.whiteLong && canCastle({"b1", "c1", "d1"})) {
-                    moves.emplace(src, Square("a1"));
+                if (castleRights.white.queenSide && canCastle({"c1", "d1"})) {
+                    moves.emplace(src, Square("c1"));
                 }
             } else {
-                if (castleRights.blackShort && canCastle({"f8", "g8"})) {
-                    moves.emplace(src, Square("h8"));
+                if (castleRights.black.kingSide && canCastle({"f8", "g8"})) {
+                    moves.emplace(src, Square("g8"));
                 }
-                if (castleRights.blackLong && canCastle({"b8", "c8", "d8"})) {
-                    moves.emplace(src, Square("a8"));
+                if (castleRights.black.queenSide && canCastle({"c8", "d8"})) {
+                    moves.emplace(src, Square("c8"));
                 }
             }
         }
@@ -331,8 +328,9 @@ bool GameState::isLegal(Move move) const {
 }
 
 void GameState::execute(Move move) {
-    // NOTE: This does not check `move` for legality.
+    // NOTE: This does not check `move` for legality. You can do that beforehand with `isLegal()`.
     Piece piece = getPieceAt(move.src).value();
+    std::optional<Piece> capture = getPieceAt(move.dst);
     setPieceAt(move.src, std::nullopt);
     if (move.promotion.has_value()) {
         setPieceAt(move.dst, Piece(move.promotion.value(), piece.color));
@@ -340,7 +338,45 @@ void GameState::execute(Move move) {
         setPieceAt(move.dst, piece);
     }
 
-    // TODO: Handle castling.
+    // Handle castling.
+    if (piece.type == Piece::Type::King && abs(move.src.file - move.dst.file) > 1) {
+        // We represent castling by the king's move to the rook's square.
+        // We already moved the king, but we still need to move the rook to the other side of the king.
+        if (move.dst.file > move.src.file) {
+            setPieceAt(Square(move.dst.rank, 5), Piece(Piece::Type::Rook, piece.color));
+            setPieceAt(Square(move.dst.rank, 7), std::nullopt);
+        } else {
+            setPieceAt(Square(move.dst.rank, 3), Piece(Piece::Type::Rook, piece.color));
+            setPieceAt(Square(move.dst.rank, 0), std::nullopt);
+        }
+    }
+
+    // Update castling rights.
+    PlayerCastleRights &rights = (piece.color == Color::White) ? castleRights.white : castleRights.black;
+    if (piece.type == Piece::Type::King) {
+        // If the king moves, both castling rights are lost.
+        rights.kingSide = false;
+        rights.queenSide = false;
+    } else if (piece.type == Piece::Type::Rook) {
+        // If a rook moves, only rights for that rook's side are lost.
+        if (move.src.rank == (piece.color == Color::White ? 0 : 7)) {
+            if (move.src.rank == 0) {
+                rights.queenSide = false;
+            } else if (move.src.rank == 7) {
+                rights.kingSide = false;
+            }
+        }
+    } else if (capture && capture->type == Piece::Type::Rook) {
+        // For completeness, update the castle rights when a rook is captured.
+        PlayerCastleRights &opRights = (capture->color == Color::White) ? castleRights.white : castleRights.black;
+        if (move.dst.rank == (capture->color == Color::White ? 0 : 7)) {
+            if (move.dst.rank == 0) {
+                opRights.queenSide = false;
+            } else if (move.dst.rank == 7) {
+                opRights.kingSide = false;
+            }
+        }
+    }
 
     // Flip turn.
     turn = turn == Color::White ? Color::Black : Color::White;

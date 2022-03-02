@@ -53,9 +53,15 @@ void runTests() {
     assert(game.isLegal(Move(Square("e2"), Square("e4"))));
     assert(!game.isLegal(Move(Square("e2"), Square("e5"))));
 
-    game.setFen("rnbqkbnr/ppp2ppp/3pp3/8/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1");
-    Move move(Square("e1"), Square("h1"));
+    // Test castling.
+    game.setFen("rnbqkbnr/pp3ppp/2ppp3/8/4P3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 1");
+    Move move(Square("e1"), Square("g1"));
     assert(game.isLegal(move));
+    game.push(move);
+    assert(!game.canCastle(Piece('K')) && !game.canCastle(Piece('K')));
+    assert(game.getPieceAt(Square("f1")) == Piece('R'));
+    assert(game.getPieceAt(Square("g1")) == Piece('K'));
+    assert(!game.getPieceAt(Square("e1")) && !game.getPieceAt(Square("h1")));
 
     // Ensure singleton works as expected.
     AppState &state = AppState::getInstance();
@@ -66,8 +72,8 @@ void runTests() {
     assert(state2.getGame().getPieceAt(Square("h4")) == Piece('Q'));
 }
 
-void runGame() {
-    Game game;
+void runGame(const std::string &fen) {
+    Game game(fen.empty() ? Game::initialFen : fen);
     bool playing = true;
     while (playing) {
         for (int rank = 7; rank >= 0; rank--) {
@@ -106,7 +112,7 @@ void runGame() {
 
 int main(int argc, char **argv) {
     if (argc > 1) {
-        runGame();
+        runGame(argv[1]);
     } else {
         runTests();
     }

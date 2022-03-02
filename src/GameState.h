@@ -100,11 +100,14 @@ namespace Chess {
         std::unordered_map<Square, Piece> pieceMap;
     };
 
+    struct PlayerCastleRights {
+        bool kingSide;
+        bool queenSide;
+    };
+
     struct CastleRights {
-        bool whiteShort;
-        bool whiteLong;
-        bool blackShort;
-        bool blackLong;
+        PlayerCastleRights white;
+        PlayerCastleRights black;
     };
 
     class GameState: public Board {
@@ -119,14 +122,11 @@ namespace Chess {
         Color getTurn() const { return turn; }
         std::optional<Square> getEnPassant() const { return enPassant; }
         bool canCastle(Piece castleType) const {
-            if (castleType == Piece('K')) {
-                return castleRights.whiteShort;
-            } else if (castleType == Piece('Q')) {
-                return castleRights.whiteLong;
-            } else if (castleType == Piece('k')) {
-                return castleRights.blackShort;
-            } else if (castleType == Piece('q')) {
-                return castleRights.blackLong;
+            PlayerCastleRights rights = (castleType.color == Color::White ? castleRights.white : castleRights.black);
+            if (castleType.type == Piece::Type::King) {
+                return rights.kingSide;
+            } else if (castleType.type == Piece::Type::Queen) {
+                return rights.queenSide;
             }
             assert(false);
             return false;
