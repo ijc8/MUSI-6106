@@ -3,8 +3,10 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-#include "../../src/MainProcessor.h"
+#include "../../src/DebugSonifier.h"
+#include "../../src/GameState.h"
 #include <vector>
+
 
 //==============================================================================
 /*
@@ -31,30 +33,13 @@ private:
     //==============================================================================
     // Your private member variables go here...
     float mSampleRate = 0.0f;
-
-    juce::TextButton loopButton;
-    juce::TextButton increaseFreqButton;
-    juce::TextButton oscButton;
-    juce::TextButton pawnButton;
-    juce::TextButton loopButton1;
-    juce::TextButton timeButton;
+    DebugSonifier m_DebugSonifier;
+    Chess::Board m_Board;
+    juce::TextButton Board1;
+    juce::TextButton Board2;
+    juce::TextButton Board3;
 
     ////////////////////////////////////////////////////
-    /// Synthesis stuff
-
-    CSineWavetable sine;
-    CMainProcessor mainProcessor;
-    CWavetableOscillator pawnOsc = CWavetableOscillator(sine, 343, 1);
-    CLooper loop;
-    CLooper schedule;
-
-    CSoundProcessor* processors[4]
-    {
-        &mainProcessor,
-        &schedule,
-        &pawnOsc,
-        &loop
-    };
 
     ////////////////////////////////////////////////////
 

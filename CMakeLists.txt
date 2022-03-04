@@ -94,6 +94,9 @@ target_sources(SonifierTest
 		PRIVATE
 		src/GameState.cpp
 		src/SoundProcessor.cpp
+        src/MainProcessor.cpp
+        src/Scheduler.cpp
+        src/SoundProcessor.cpp
 		src/DebugSonifier.cpp
 		tests/SonifierTest.cpp)
 target_sources(SoundTests
@@ -106,6 +109,10 @@ target_sources(SoundTests
         src/ErrorDef.h
         src/Scheduler.h
         src/MainProcessor.h
+		src/DebugSonifier.h
+		src/DebugSonifier.cpp
+		src/GameState.cpp
+		src/GameState.h
         tests/soundTests/MainComponent.h
         tests/soundTests/MainComponent.cpp
         tests/soundTests/Main.cpp)

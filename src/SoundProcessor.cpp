@@ -57,6 +57,18 @@ float CInstrument::getGain() const
 	return m_fGain;
 }
 
+Error_t CInstrument::setPan(float fPan)
+{
+    m_fPan = fPan;
+    return Error_t::kNoError;
+}
+
+float CInstrument::getPan() const
+{
+    return m_fPan;
+}
+
+
 void CInstrument::shiftGain(float fShift)
 {
 	float fNewGain = m_fGain + fShift;
@@ -82,6 +94,11 @@ const juce::ADSR::Parameters& CInstrument::getADSRParameters() const
 void CInstrument::resetADSR()
 {
 	m_adsr.reset();
+}
+
+bool CInstrument::isActive() const
+{
+    return m_adsr.isActive();
 }
 
 void CInstrument::noteOn()
@@ -167,7 +184,17 @@ void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int c
 	currentSample *= m_adsr.getNextSample() * m_fGain;
 
 	for (int channel = 0; channel < iNumChannels; channel++)
-		ppfOutBuffer[channel][currentFrame] += currentSample;
+    {
+		float fPanGain;
+        if (channel == 0) {
+            fPanGain = (1.0f - m_fPan);
+        }
+        if (channel == 1) {
+            fPanGain = m_fPan;
+        }
+		ppfOutBuffer[channel][currentFrame] += fPanGain * currentSample;
+    }
+
 }
 
 Error_t CWavetableOscillator::setSampleRate(float fNewSampleRate)

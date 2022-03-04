@@ -19,61 +19,27 @@ MainComponent::MainComponent()
         // Specify the number of input and output channels that we want to open
         setAudioChannels(0, 2);
     }
-
-    addAndMakeVisible(loopButton);
-    loopButton.setButtonText("Add Loop");
-    loopButton.onClick = [this]() {
-        CLooper* newLoop = new CLooper(mSampleRate);
-        newLoop->pushInst(new CWavetableOscillator(sine, 110, 1, mSampleRate), 0, 0.5);
-        newLoop->pushInst(new CWavetableOscillator(sine, 130.81, 1, mSampleRate), 0.5, 0.5);
-        newLoop->pushInst(new CWavetableOscillator(sine, 164.81, 1, mSampleRate), 1, 0.5);
-        mainProcessor.pushInst(newLoop, 0, 2);
+    // text buttons
+    addAndMakeVisible(Board1);
+    Board1.setButtonText("8/8/8/4p1K1/2k1P3/8/8/8");
+    Board1.onClick = [this](){
+        m_Board.setBoardFen("8/8/8/4p1K1/2k1P3/8/8/8");
+        m_DebugSonifier.onMove(m_Board);
     };
 
-    addAndMakeVisible(increaseFreqButton);
-    increaseFreqButton.setButtonText("Increase Freq");
-    increaseFreqButton.onClick = [this]() {
-        pawnOsc.shiftFrequency(50);
+    addAndMakeVisible(Board2);
+    Board2.setButtonText("4k2r/6r1/8/8/8/8/3R4/R3K3");
+    Board2.onClick = [this](){
+        m_Board.setBoardFen("4k2r/6r1/8/8/8/8/3R4/R3K3");
+        m_DebugSonifier.onMove(m_Board);
     };
 
-    addAndMakeVisible(oscButton);
-    oscButton.setButtonText("Add Oscillator");
-    oscButton.onClick = [this]() {
-        CWavetableOscillator* newOsc = new CWavetableOscillator(sine, 800, 1, mSampleRate);
-        newOsc->setADSRParameters(3, .3, 0.5, 3);
-        newOsc->setGain(0.5);
-        mainProcessor.pushInst(newOsc, 0, 5);
+    addAndMakeVisible(Board3);
+    Board3.setButtonText("8/8/8/8/8/8/8/8");
+    Board3.onClick = [this](){
+        m_Board.setBoardFen("8/8/8/8/8/8/8/8");
+        m_DebugSonifier.onMove(m_Board);
     };
-
-    addAndMakeVisible(pawnButton);
-    pawnButton.setButtonText("Pawn");
-    pawnButton.setClickingTogglesState(true);
-    pawnButton.onClick = [this]() {
-        if (pawnButton.getToggleState())
-            pawnOsc.noteOn();
-        else
-            pawnOsc.noteOff();
-    };
-
-    addAndMakeVisible(loopButton1);
-    loopButton1.setButtonText("Loop");
-    loopButton1.setClickingTogglesState(true);
-    loopButton1.onClick = [this]() {
-        if (loopButton1.getToggleState())
-            schedule.noteOn();
-        else
-            schedule.noteOff();
-    };
-
-    addAndMakeVisible(timeButton);
-    timeButton.setButtonText("Press for internal time");
-    timeButton.onClick = [this]() {
-        juce::String time = juce::String(mainProcessor.getInternalClockInSeconds());
-        timeButton.setButtonText(time + " seconds");
-    };
-
-
-
 }
 
 MainComponent::~MainComponent()
@@ -85,29 +51,19 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    mSampleRate = sampleRate;
-    for (auto& processor : processors)
-        processor->setSampleRate(sampleRate);
-
-    schedule.pushInst(new CWavetableOscillator(sine, 220, 1, mSampleRate), 0, 0.5);
-    schedule.pushInst(new CWavetableOscillator(sine, 260, 1, mSampleRate), 0.5, 0.5);
-    schedule.pushInst(new CWavetableOscillator(sine, 328, 1, mSampleRate), 1, 0.5);
-    schedule.setADSRParameters(2, 0, 1, 2);
-    schedule.setGain(0.33);
-
-    mainProcessor.addInstRef(pawnOsc);
-    mainProcessor.addInstRef(schedule);
+    m_DebugSonifier.prepareToPlay(samplesPerBlockExpected,sampleRate);
+    m_DebugSonifier.onMove(m_Board);
 }
 
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    mainProcessor.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    m_DebugSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.buffer->getNumSamples());
 }
 
 void MainComponent::releaseResources()
 {
-
+    m_DebugSonifier.releaseResources();
 }
 
 //==============================================================================
@@ -123,13 +79,10 @@ void MainComponent::resized()
 {
     auto area = getBounds().reduced(10);
 
-    const int numButtons = 6;
+    const int numButtons = 3;
 
-    loopButton.setBounds(area.removeFromTop(getHeight()/ numButtons));
-    increaseFreqButton.setBounds(area.removeFromTop(getHeight() / numButtons));
-    oscButton.setBounds(area.removeFromTop(getHeight() / numButtons));
-    pawnButton.setBounds(area.removeFromTop(getHeight() / numButtons));
-    loopButton1.setBounds(area.removeFromTop(getHeight() / numButtons));
-    timeButton.setBounds(area.removeFromTop(getHeight() / numButtons));
+    Board1.setBounds(area.removeFromTop(getHeight()/ numButtons));
+    Board2.setBounds(area.removeFromTop(getHeight() / numButtons));
+    Board3.setBounds(area.removeFromTop(getHeight() / numButtons));
 
 }
