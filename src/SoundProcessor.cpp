@@ -185,13 +185,14 @@ void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int c
 
 	for (int channel = 0; channel < iNumChannels; channel++)
     {
+		float fPanGain;
         if (channel == 0) {
-            currentSample *= (1.0f - m_fPan);
+            fPanGain = (1.0f - m_fPan);
         }
-        else if (channel ==1) {
-            currentSample *= m_fPan;
+        if (channel == 1) {
+            fPanGain = m_fPan;
         }
-		ppfOutBuffer[channel][currentFrame] += currentSample;
+		ppfOutBuffer[channel][currentFrame] += fPanGain * currentSample;
     }
 
 }

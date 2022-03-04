@@ -5,6 +5,7 @@
 #include "DebugSonifier.h"
 
 DebugSonifier::DebugSonifier (){
+    srand(time(0));
 }
 
 DebugSonifier::~DebugSonifier() {
@@ -13,8 +14,10 @@ DebugSonifier::~DebugSonifier() {
 void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece) {
     float frequencies[8] = {262, 294.8, 327.5, 349.3, 393, 436.7, 491.2, 524};
     float gains[8] = {1, 0.8, 0.6, 0.4, 0.4, 0.6, 0.8, 1};
+    float pans[8] = { 0.0, 0.2, 0.4, 0.5, 0.5, 0.6, 0.8, 1.0 };
     int freqIdx = static_cast<int>(square.file);
     int gainIdx = static_cast<int>(square.rank);
+    int panIdx = rand() % 8;
 
     if (piece.color == Chess::Color::Black && piece.type == Chess::Piece::Type::Pawn){
         oscillators.emplace_back(sine, frequencies[freqIdx], gains[gainIdx],44100);
@@ -32,6 +35,7 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     }
     oscillators.back().noteOn();
     oscillators.back().setADSRParameters(2,0,1,2);
+    oscillators.back().setPan(pans[panIdx]);
     m_mainProcessor.addInstRef(oscillators.back());
 }
 
