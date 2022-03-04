@@ -47,89 +47,92 @@
 #pragma once
 
 #include "DemoUtilities.h"
+#include<windows.h>
+#include<cstdio>
+#include<map>
+#include <ctime>
+#include <time.h>
+
+
+#pragma once
 
 //==============================================================================
-struct GridDemo   : public Component
+class GridDemo   : public Component
 {
-    GridDemo()
-    {
-        addGridItemPanel (Colours::white, "0");
-        addGridItemPanel (Colours::black,        "1");
-        addGridItemPanel (Colours::white,       "2");
-        addGridItemPanel (Colours::black,      "3");
-        addGridItemPanel (Colours::white,     "4");
-        addGridItemPanel (Colours::black,      "5");
-        addGridItemPanel (Colours::white, "6");
-        addGridItemPanel (Colours::black,        "7");
-        addGridItemPanel (Colours::black,       "8");
-        addGridItemPanel (Colours::white,      "9");
-        addGridItemPanel (Colours::black,     "10");
-        addGridItemPanel (Colours::white,      "11");
-        addGridItemPanel (Colours::black,      "12");
-        addGridItemPanel (Colours::white,        "13");
-        addGridItemPanel (Colours::black,       "14");
-        addGridItemPanel (Colours::white,      "15");
-        addGridItemPanel (Colours::white,     "16");
-        addGridItemPanel (Colours::black,      "17");
-        addGridItemPanel (Colours::white, "18");
-        addGridItemPanel (Colours::black,        "19");
-        addGridItemPanel (Colours::white,       "20");
-        addGridItemPanel (Colours::black,      "21");
-        addGridItemPanel (Colours::white,     "22");
-        addGridItemPanel (Colours::black,      "23");
-        addGridItemPanel (Colours::black,      "24");
-        addGridItemPanel (Colours::white,        "25");
-        addGridItemPanel (Colours::black,       "26");
-        addGridItemPanel (Colours::white,      "27");
-        addGridItemPanel (Colours::black,     "28");
-        addGridItemPanel (Colours::white,      "29");
-        addGridItemPanel (Colours::black, "30");
-        addGridItemPanel (Colours::white,        "31");
-        addGridItemPanel (Colours::white,       "32");
-        addGridItemPanel (Colours::black,      "33");
-        addGridItemPanel (Colours::white,     "34");
-        addGridItemPanel (Colours::black,      "35");
-        addGridItemPanel (Colours::white,      "36");
-        addGridItemPanel (Colours::black,        "37");
-        addGridItemPanel (Colours::white,       "38");
-        addGridItemPanel (Colours::black,      "39");
-        addGridItemPanel (Colours::black,     "40");
-        addGridItemPanel (Colours::white,      "41");
-        addGridItemPanel (Colours::black, "42");
-        addGridItemPanel (Colours::white,        "43");
-        addGridItemPanel (Colours::black,       "44");
-        addGridItemPanel (Colours::white,      "45");
-        addGridItemPanel (Colours::black,     "46");
-        addGridItemPanel (Colours::white,      "47");
-        addGridItemPanel (Colours::white,      "48");
-        addGridItemPanel (Colours::black,      "49");
-        addGridItemPanel (Colours::white, "50");
-        addGridItemPanel (Colours::black,        "51");
-        addGridItemPanel (Colours::white,       "52");
-        addGridItemPanel (Colours::black,      "53");
-        addGridItemPanel (Colours::white,     "54");
-        addGridItemPanel (Colours::black,      "55");
-        addGridItemPanel (Colours::black,      "56");
-        addGridItemPanel (Colours::white,        "57");
-        addGridItemPanel (Colours::black,       "58");
-        addGridItemPanel (Colours::white,      "59");
-        addGridItemPanel (Colours::black,     "60");
-        addGridItemPanel (Colours::white,      "61");
-        addGridItemPanel (Colours::black, "62");
-        addGridItemPanel (Colours::white,        "63");
-        addGridItemPanel (Colours::white,       "64");
+public:
+    //const juce::String getName() const override { return "Arpeggiator"; };
 
-        setSize (640, 640);
+    
+    GridDemo(std::map<int,const char*> board_state)
+    {
+        
+
+        //
+        ImageComponent imagePreview;
+        //juce::File select("C:\\ASE\\project\\GUI\\GUI_BUILD\\Chess\\GridDemo\\Builds\\VisualStudio2019\\B_Bishop.png");
+        auto select= juce::File("C:\\ASE\\project\\GUI\\GUI_BUILD\\Chess\\GridDemo\\Builds\\VisualStudio2019\\B_Bishop.png");
+        imagePreview.setImage(ImageCache::getFromFile(select));
+        juce::Image x=Image(Image::ARGB, 100, 100, true);
+        x=imagePreview.getImage();
+        juce::Rectangle<int> y = imagePreview.getImage().getBounds();
+
+
+        //
+
+        int count = 0;
+        for (int i = 0; i <= 63; i++) {
+            if ((static_cast<int>(count/8)) % 2 == 0) {
+                if (i % 2 == 0) {
+                    addGridItemPanel(Colours::white, board_state[i], imagePreview);
+                }
+                else {
+                    addGridItemPanel(Colours::black, board_state[i], imagePreview);
+                }
+            }
+            else {
+                if ((i+1) % 2 == 0) {
+                    addGridItemPanel(Colours::white, board_state[i], imagePreview);
+                }
+                else {
+                    addGridItemPanel(Colours::black, board_state[i], imagePreview);
+                }
+            }
+            count++;
+        }
+        
+        
+
+        
+        addGridItemPanel(Colours::burlywood, board_state[64], imagePreview);
+
+        addGridItemPanel(Colours::burlywood, board_state[65], imagePreview);
+        
+        
+        setSize (720, 640);
+
+        //==============================================================================
+        
+
+    
+
     }
 
-    void addGridItemPanel (Colour colour, const char* text)
+    
+
+    void addGridItemPanel (Colour colour, const char* text, ImageComponent& imagePreview)
     {
-        addAndMakeVisible (items.add (new GridItemPanel (colour, text)));
+        addAndMakeVisible (items.add (new GridItemPanel (colour, text, imagePreview)));
+        addAndMakeVisible(imagePreview);
     }
 
     void paint (Graphics& g) override
     {
-        g.fillAll (Colours::white);
+        g.fillAll (Colours::burlywood);
+
+
+        
+
+        //imagePreview.setImage(ImageCache::getFromFile(selectedFile));
     }
 
     void resized() override
@@ -158,91 +161,73 @@ struct GridDemo   : public Component
 
         grid.autoFlow = Grid::AutoFlow::column;
 
-        grid.items.addArray ({ GridItem (items[0]),//.withArea (2, 2, 4, 4),
-                               GridItem (items[1]),
-                               GridItem (items[2]),//.withArea ({}, 3),
-                               GridItem (items[3]),
-                               GridItem (items[4]),//withArea (GridItem::Span (2), {}),
-                               GridItem (items[5]),
-                               GridItem (items[6]),
-                               GridItem (items[7]),
-                               GridItem (items[8]),
-                               GridItem (items[9]),
-                               GridItem (items[10]),
-                               GridItem (items[11]),
-                               GridItem (items[12]),
-                               GridItem (items[13]),
-                               GridItem (items[14]),
-                               GridItem (items[15]),
-                               GridItem (items[16]),
-                               GridItem (items[17]),
-                               GridItem (items[18]),
-                               GridItem (items[19]),
-                               GridItem (items[20]),
-                               GridItem (items[21]),
-                               GridItem (items[22]),
-                               GridItem (items[23]),
-                               GridItem (items[24]),
-                               GridItem (items[25]),
-                               GridItem (items[26]),
-                               GridItem (items[27]),
-                               GridItem (items[28]),
-                               GridItem (items[29]),
-                               GridItem (items[30]),
-                               GridItem (items[31]),
-                               GridItem (items[32]),
-                               GridItem (items[33]),
-                               GridItem (items[34]),
-                               GridItem (items[35]),
-                               GridItem (items[36]),
-                               GridItem (items[37]),
-                               GridItem (items[38]),
-                               GridItem (items[39]),
-                               GridItem (items[40]),
-                               GridItem (items[41]),
-                               GridItem (items[42]),
-                               GridItem (items[43]),
-                               GridItem (items[44]),
-                               GridItem (items[45]),
-                               GridItem (items[46]),
-                               GridItem (items[47]),
-                               GridItem (items[48]),
-                               GridItem (items[49]),
-                               GridItem (items[50]),
-                               GridItem (items[51]),
-                               GridItem (items[52]),
-                               GridItem (items[53]),
-                               GridItem (items[54]),
-                               GridItem (items[55]),
-                               GridItem (items[56]),
-                               GridItem (items[57]),
-                               GridItem (items[58]),
-                               GridItem (items[59]),
-                               GridItem (items[60]),
-                               GridItem (items[61]),
-                               GridItem (items[62]),
-                               GridItem (items[63])
-                            });
+        for (int i = 0; i <= 65; i++) {
+            grid.items.addArray({ GridItem(items[i]) });
+        }
+        
+
+        auto r = getLocalBounds().reduced(4);
+
+        
 
         grid.performLayout (getLocalBounds());
+
+        //int x;
+        //x = MessageBox(GetForegroundWindow(), "Black Turn!", "Message", 1);
     }
+
+   
+
+    
 
     //==============================================================================
     struct GridItemPanel  : public Component
     {
-        GridItemPanel (Colour colourToUse, const String& textToUse)
+        GridItemPanel (Colour colourToUse, const String& textToUse,const ImageComponent& imagePreview)
             : colour (colourToUse),
-              text (textToUse)
+              text (textToUse),
+            imageGrid(imagePreview)
         {}
 
         void paint (Graphics& g) override
         {
+            
             g.fillAll (colour.withAlpha (0.5f));
 
             g.setColour (Colours::black);
-            g.drawText (text, getLocalBounds().withSizeKeepingCentre (100, 100), Justification::centred, false);
+            //g.drawText (text, getLocalBounds().withSizeKeepingCentre (100, 100), Justification::centred, false);
+            if (text != "")
+            {
+                if (text[text.length() - 3] == 'p' && text[text.length() - 2] == 'n' && text[text.length() - 1] == 'g')
+                {
+                    juce::Rectangle<int> r = getLocalBounds().withSizeKeepingCentre(75, 75);
+                    ImageComponent imageGrid;
+                    auto select = juce::File("C:\\ASE\\project\\GUI\\GUI_BUILD\\Chess\\GridDemo\\Builds\\VisualStudio2019\\" + text);
+                    imageGrid.setImage(ImageCache::getFromFile(select));
+                    juce::Image x = Image(Image::RGB, 60, 60, false);
+                    x = imageGrid.getImage();
+                    //
+                    g.drawImage(x, juce::Rectangle<float>(static_cast<float>(r.getX()), static_cast<float>(r.getY()), static_cast<float>(r.getWidth()), static_cast<float>(r.getHeight())), imageGrid.getImagePlacement(), false);
+
+                }
+                else {
+                    g.drawText (text, getLocalBounds().withSizeKeepingCentre (100, 100), Justification::centred, false);
+
+                }
+            }
+
+           
         }
 
+        
+
+
+        
+        //
+        
+        //
+
+        const ImageComponent& imageGrid;
         Colour colour;
         String text;
     };
