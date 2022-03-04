@@ -31,9 +31,13 @@
 *.out
 *.app
 
+# CMake + build artifacts
 build/
 CMakeFiles/
 *_artefacts/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
+
+# MacOS
+.DS_Store
