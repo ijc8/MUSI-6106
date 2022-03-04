@@ -8,7 +8,7 @@ CScheduler::CScheduler(float sampleRate) :
 	// I arbitrarily am using a max channels value of 6 to be safe, but this can likely be passed in as a parameter somewhere
 	m_ppfTempBuffer = new float*[m_iMaxChannels];
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
-		m_ppfTempBuffer[channel] = new float[] {0};
+		m_ppfTempBuffer[channel] = new float[1] {0};
 }
 
 CScheduler::~CScheduler()
@@ -122,4 +122,3 @@ void CLooper::setLoopLength(float fNewLoopLengthInSec)
 	assert(fNewLoopLengthInSec > 0);
 	m_iScheduleLength = secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz);
 }
-

@@ -1,6 +1,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include <cassert>
 #include <cstdint>
 #include <optional>
 #include <stack>
