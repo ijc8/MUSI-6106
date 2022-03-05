@@ -82,6 +82,7 @@ target_sources(MusicalChess
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp
+        src/MainComponent.h
         src/SoundProcessor.h
         src/Wavetable.h
         src/ErrorDef.h
@@ -178,7 +179,7 @@ target_link_libraries(MusicalChess
     PRIVATE
         # GuiAppData            # If we'd created a binary data target, we'd link to it here
         juce::juce_gui_extra
-        juce::juce_audio_processors
+        juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
