@@ -94,7 +94,13 @@ target_sources(MusicalChess
 target_sources(Tests
     PRIVATE
         src/GameState.cpp
-        tests/TestGameState.cpp)
+        src/MainProcessor.cpp
+        src/Wavetable.h
+        src/SoundProcessor.cpp
+        src/Scheduler.cpp
+        tests/TestGameState.cpp
+        tests/TestSynthesis.cpp
+        tests/main.cpp)
 
 target_sources(TerminalChess
     PRIVATE
@@ -197,6 +203,15 @@ target_link_libraries(SonifierTest
 target_link_libraries(SoundTests
     PRIVATE
         juce::juce_gui_extra
+        juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
+
+target_link_libraries(Tests
+    PRIVATE
         juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
