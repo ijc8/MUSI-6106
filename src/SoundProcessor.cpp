@@ -8,7 +8,6 @@ CSoundProcessor::CSoundProcessor(float fSampleRate)
 
 Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 {
-	assert(fNewSampleRate > 0.0);
 	if (fNewSampleRate <= 0.0)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -44,7 +43,6 @@ CInstrument::CInstrument(float fGain, float fSampleRate) :
 
 Error_t CInstrument::setGain(float fNewGain)
 {
-	assert(fNewGain >= -1.0 && fNewGain <= 1.0);
 	if (fNewGain < -1.0 || fNewGain > 1.0)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -72,7 +70,6 @@ float CInstrument::getPan() const
 void CInstrument::shiftGain(float fShift)
 {
 	float fNewGain = m_fGain + fShift;
-	assert(fNewGain <= 1 && fNewGain >= -1);
 	setGain(fNewGain);
 }
 
@@ -129,13 +126,11 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 	m_Wavetable(wavetableToUse),
 	m_iTableSize(wavetableToUse.getNumSamples())
 {
-	//assert(wavetableToUse.hasBeenGenerated());
 	setFrequency(fFrequencyInHz);
 }
 
 Error_t CWavetableOscillator::setFrequency(float fNewFrequencyInHz)
 {
-	assert(fNewFrequencyInHz >= 0 && fNewFrequencyInHz <= 20000);
 	if (fNewFrequencyInHz < 0 || fNewFrequencyInHz > 20000)
 		return Error_t::kFunctionInvalidArgsError;
 	
@@ -159,7 +154,6 @@ float CWavetableOscillator::getFrequency() const
 void CWavetableOscillator::shiftFrequency(float fShiftInHz)
 {
 	float fNewFrequency = m_fFrequencyInHz + fShiftInHz;
-	assert(fNewFrequency >= 0);
 	setFrequency(fNewFrequency);
 }
 
