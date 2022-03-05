@@ -19,6 +19,8 @@ project(MUSICAL_CHESS VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include_directories(catch2)
+
 # If you've installed JUCE somehow (via a package manager, or directly using the CMake install
 # target), you'll need to tell this project that it depends on the installed copy of JUCE. If you've
 # included JUCE directly in your source tree (perhaps as a submodule), you'll need to tell CMake to
@@ -48,6 +50,9 @@ juce_add_gui_app(MusicalChess
 
 juce_add_console_app(Tests
     PRODUCT_NAME "Tests")
+
+juce_add_console_app(TerminalChess
+    PRODUCT_NAME "TerminalChess")
 
 juce_add_console_app(SonifierTest
 		PRODUCT_NAME "SonifierTest")
@@ -89,6 +94,11 @@ target_sources(Tests
     PRIVATE
         src/GameState.cpp
         tests/TestGameState.cpp)
+
+target_sources(TerminalChess
+    PRIVATE
+        src/GameState.cpp
+        tests/TerminalChess.cpp)
 
 target_sources(SonifierTest
 		PRIVATE
