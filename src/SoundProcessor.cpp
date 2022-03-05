@@ -57,6 +57,9 @@ float CInstrument::getGain() const
 
 Error_t CInstrument::setPan(float fPan)
 {
+	if (fPan <= 0 || fPan > 1.0f)
+		return Error_t::kFunctionInvalidArgsError;
+
     m_fPan = fPan;
     return Error_t::kNoError;
 }
