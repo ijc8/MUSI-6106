@@ -48,7 +48,7 @@ public:
     float getPan() const;
 
 	// Value can be negative or positive
-	void shiftGain(float fShift);
+	Error_t shiftGain(float fShift);
 
 	Error_t setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainLevel, float fReleaseInSec);
 	const juce::ADSR::Parameters& getADSRParameters() const;
@@ -94,7 +94,7 @@ public:
 	float getFrequency() const;
 
 	// Value can be negative or positive
-	void shiftFrequency(float fShiftInHz);
+	Error_t shiftFrequency(float fShiftInHz);
 
 	void reset() override;
 

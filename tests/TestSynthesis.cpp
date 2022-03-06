@@ -102,7 +102,7 @@ TEST_CASE("CWavetableOscillator Accuracy", "[CWavetableOscillator]")
 
 	SECTION("Check Various Frequencies")
 	{
-		std::vector<float> fFreqs{ 440, 220, 110 };
+		std::vector<float> fFreqs{ 440, 220, 110, 500, 700, 1000};
 		float fGain = 1.0f;
 		float fPan = 0.5f;
 		float fSampleRate = 44100;
@@ -124,7 +124,7 @@ TEST_CASE("CWavetableOscillator Accuracy", "[CWavetableOscillator]")
 	SECTION("Check Various Gains")
 	{
 		float fFreq = 440.0f;
-		std::vector<float> fGains{ 1.0f, 0.5f, 0.25f };
+		std::vector<float> fGains{ 1.0f, 0.5f, 0.25f, 0.0f, -0.25, -0.5, -1.0f };
 		float fPan = 0.5f;
 		float fSampleRate = 44100;
 
@@ -193,4 +193,29 @@ TEST_CASE("CWavetableOscillator Accuracy", "[CWavetableOscillator]")
 	}
 	delete[] ppfGroundBuffer;
 	delete[] ppfOscBuffer;
+}
+
+TEST_CASE("Shifting Parameters", "[CWavetableOscillator]")
+{
+	CSineWavetable sine;
+	CWavetableOscillator osc(sine);
+
+	osc.setFrequency(440);
+	osc.setGain(0.5);
+
+	osc.shiftFrequency(20);
+	REQUIRE(osc.getFrequency() == 460);
+	osc.shiftFrequency(-50);
+	REQUIRE(osc.getFrequency() == 410);
+
+	osc.shiftGain(0.25);
+	REQUIRE(osc.getGain() == 0.75);
+	osc.shiftGain(-1.0);
+	REQUIRE(osc.getGain() == -0.25);
+
+	REQUIRE(osc.shiftGain(500) == Error_t::kFunctionInvalidArgsError);
+	REQUIRE(osc.shiftGain(-125) == Error_t::kFunctionInvalidArgsError);
+	REQUIRE(osc.shiftFrequency(30000) == Error_t::kFunctionInvalidArgsError);
+	REQUIRE(osc.shiftFrequency(-30000) == Error_t::kFunctionInvalidArgsError);
+
 }

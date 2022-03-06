@@ -70,10 +70,10 @@ float CInstrument::getPan() const
 }
 
 
-void CInstrument::shiftGain(float fShift)
+Error_t CInstrument::shiftGain(float fShift)
 {
 	float fNewGain = m_fGain + fShift;
-	setGain(fNewGain);
+	return setGain(fNewGain);
 }
 
 Error_t CInstrument::setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainInSec, float fReleaseInSec)
@@ -162,10 +162,10 @@ float CWavetableOscillator::getFrequency() const
 	return m_fFrequencyInHz;
 }
 
-void CWavetableOscillator::shiftFrequency(float fShiftInHz)
+Error_t CWavetableOscillator::shiftFrequency(float fShiftInHz)
 {
 	float fNewFrequency = m_fFrequencyInHz + fShiftInHz;
-	setFrequency(fNewFrequency);
+	return setFrequency(fNewFrequency);
 }
 
 void CWavetableOscillator::reset()
