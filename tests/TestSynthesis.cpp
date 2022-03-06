@@ -15,6 +15,21 @@ void genSine(float* ppfBuffer, float fFreq, float fGain, float fSampleRate, int 
 	}
 }
 
+void genOsc(CWavetableOscillator* pOsc, float** ppfBuffer, float fFreq, float fGain, float fPan, float fSampleRate, int iNumChannels, int iNumFrames)
+{
+	pOsc->setFrequency(fFreq);
+	pOsc->setGain(fGain);
+	pOsc->setPan(0.5f);
+	pOsc->setSampleRate(fSampleRate);
+	pOsc->setADSRParameters(0, 0, 1, 0);
+	pOsc->noteOn();
+	for (int frame = 0; frame < iNumFrames; frame++)
+	{
+		pOsc->process(ppfBuffer, iNumChannels, frame);
+	}
+	pOsc->reset();
+}
+
 void CHECK_ARRAY_CLOSE(float** ppfBuffer1, float** ppfBuffer2, int iNumChannels, int iNumSamples, float fTolerance)
 {
 	for (int channel = 0; channel < iNumChannels; channel++)
@@ -78,32 +93,76 @@ TEST_CASE("CWavetableOscillator Accuracy", "[synthesis]")
 	}
 
 	CSineWavetable sineWavetable;
-	CWavetableOscillator wavetableOscillator(sineWavetable);
+	CWavetableOscillator* osc = new CWavetableOscillator(sineWavetable);
 
-	SECTION("Check different frequencies")
+	SECTION("Check Various Frequencies")
 	{
-		float fFreq = 440;
-		float fGain = 0.5f;
+		std::vector<float> fFreqs{ 440, 220, 110 };
+		float fGain = 1.0f;
+		float fPan = 0.5f;
 		float fSampleRate = 44100;
 
-		for (int channel = 0; channel < iNumChannels; channel++)
+		for (float fFreq : fFreqs)
 		{
-			genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
-		}
+			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+			for (int channel = 0; channel < iNumChannels; channel++)
+				genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
 
-		wavetableOscillator.setFrequency(fFreq);
-		wavetableOscillator.setGain(fGain);
-		wavetableOscillator.setSampleRate(fSampleRate);
-		wavetableOscillator.setADSRParameters(0, 0, 1, 0);
-		wavetableOscillator.noteOn();
-		for (int frame = 0; frame < iNumFrames; frame++)
-		{
-			wavetableOscillator.process(ppfOscBuffer, iNumChannels, frame);
+			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
+			for (int channel = 0; channel < iNumChannels; channel++)
+			{
+				memset(ppfOscBuffer[channel], 0, sizeof(float) * iNumFrames);
+				memset(ppfGroundBuffer[channel], 0, sizeof(float) * iNumFrames);
+			}
 		}
-
-		CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
 	}
 
+	SECTION("Check Various Gains")
+	{
+		float fFreq = 440.0f;
+		std::vector<float> fGains{ 1.0f, 0.5f, 0.25f };
+		float fPan = 0.5f;
+		float fSampleRate = 44100;
+
+		for (float fGain : fGains)
+		{
+			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+			for (int channel = 0; channel < iNumChannels; channel++)
+				genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
+
+			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
+			for (int channel = 0; channel < iNumChannels; channel++)
+			{
+				memset(ppfOscBuffer[channel], 0, sizeof(float) * iNumFrames);
+				memset(ppfGroundBuffer[channel], 0, sizeof(float) * iNumFrames);
+			}
+		}
+	}
+
+	SECTION("Check Various Sample Rates")
+	{
+		float fFreq = 440.0f;
+		float fGain = 1.0f;
+		float fPan = 0.5f;
+		std::vector<float> fSampleRates{ 44100, 22050, 11025 };
+
+		for (float fSampleRate : fSampleRates)
+		{
+			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+			for (int channel = 0; channel < iNumChannels; channel++)
+				genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
+
+			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
+			for (int channel = 0; channel < iNumChannels; channel++)
+			{
+				memset(ppfOscBuffer[channel], 0, sizeof(float) * iNumFrames);
+				memset(ppfGroundBuffer[channel], 0, sizeof(float) * iNumFrames);
+			}
+		}
+	}
+
+
+	delete osc;
 	for (int channel = 0; channel < iNumChannels; channel++)
 	{
 		delete[] ppfGroundBuffer[channel];

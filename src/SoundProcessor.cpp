@@ -91,6 +91,14 @@ const juce::ADSR::Parameters& CInstrument::getADSRParameters() const
 	return m_adsrParameters;
 }
 
+void CInstrument::reset()
+{
+	setGain(0.0f);
+	setPan(0.5f);
+	setSampleRate(48000.0f);
+	m_adsr.reset();
+}
+
 void CInstrument::resetADSR()
 {
 	m_adsr.reset();
@@ -158,6 +166,14 @@ void CWavetableOscillator::shiftFrequency(float fShiftInHz)
 {
 	float fNewFrequency = m_fFrequencyInHz + fShiftInHz;
 	setFrequency(fNewFrequency);
+}
+
+void CWavetableOscillator::reset()
+{
+	setFrequency(0.0f);
+	m_fCurrentIndex = 0.0f;
+	CInstrument::reset();
+
 }
 
 void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int currentFrame)

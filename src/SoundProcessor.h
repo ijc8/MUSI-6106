@@ -53,6 +53,9 @@ public:
 	Error_t setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainLevel, float fReleaseInSec);
 	const juce::ADSR::Parameters& getADSRParameters() const;
 
+	// Reset all parameters and variables to initial states
+	virtual void reset();
+
 	// Resets ADSR regardless of current state
 	void resetADSR();
 
@@ -92,6 +95,8 @@ public:
 
 	// Value can be negative or positive
 	void shiftFrequency(float fShiftInHz);
+
+	void reset() override;
 
 	// Overrides because frequency must be reinitialized
 	Error_t setSampleRate(float fNewSampleRate) override;
