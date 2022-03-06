@@ -18,7 +18,7 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	// Will handle deletion
-	virtual void pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
+	virtual Error_t pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
 
 	// Returns schedule length in samples
 	int64_t getLength() const;
@@ -62,7 +62,7 @@ public:
 	CLooper(float sampleRate = 48000) : CScheduler(sampleRate) {};
 	~CLooper() = default;
 
-	void setLoopLength(float fNewLoopLengthInSec);
+	Error_t setLoopLength(float fNewLoopLengthInSec);
 
 	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 };

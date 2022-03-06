@@ -17,7 +17,7 @@ public:
 
 	// Use for dynamically-allocated instruments
 	// Will handle deletion
-	void pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f) override;
+	Error_t pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f) override;
 
 	// Pass the entire buffer into this process function
 	// It will internally do frame-by-frame processing

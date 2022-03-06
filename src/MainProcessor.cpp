@@ -10,9 +10,9 @@ void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
 	m_SetInsts.erase(&rInstToRemove);
 }
 
-void CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
+Error_t CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
-	CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(m_iSampleCounter, m_fSampleRateInHz), fDurationInSec);
+	return CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(m_iSampleCounter, m_fSampleRateInHz), fDurationInSec);
 }
 
 
