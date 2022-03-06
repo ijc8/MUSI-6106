@@ -71,7 +71,7 @@ public:
 protected:
 
 	float m_fGain = 0.0f;
-    float m_fPan = 0.0f;
+    float m_fPan = 0.5f;
     juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
 
