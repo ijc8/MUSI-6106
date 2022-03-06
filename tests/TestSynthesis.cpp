@@ -7,19 +7,24 @@
 
 #include "../src/MainProcessor.h"
 
-void genSine(float* ppfBuffer, float fFreq, float fGain, float fSampleRate, int iNumSamples)
+void genSine(float** ppfBuffer, float fFreq, float fGain, float fPan, float fSampleRate, int iNumChannels, int iNumSamples)
 {
-	for (int sample = 0; sample < iNumSamples; sample++)
+	for (int channel = 0; channel < iNumChannels; channel++)
 	{
-		ppfBuffer[sample] = fGain * static_cast<float>(sin(2.0f * M_PI * fFreq * sample / fSampleRate));
+		float fChannelPan = (channel == 0) ? (1.0f - fPan) : fPan;
+		for (int sample = 0; sample < iNumSamples; sample++)
+		{
+			ppfBuffer[channel][sample] = fChannelPan * fGain * static_cast<float>(sin(2.0f * M_PI * fFreq * sample / fSampleRate));
+		}
 	}
+
 }
 
 void genOsc(CWavetableOscillator* pOsc, float** ppfBuffer, float fFreq, float fGain, float fPan, float fSampleRate, int iNumChannels, int iNumFrames)
 {
 	pOsc->setFrequency(fFreq);
 	pOsc->setGain(fGain);
-	pOsc->setPan(0.5f);
+	pOsc->setPan(fPan);
 	pOsc->setSampleRate(fSampleRate);
 	pOsc->setADSRParameters(0, 0, 1, 0);
 	pOsc->noteOn();
@@ -42,7 +47,7 @@ void CHECK_ARRAY_CLOSE(float** ppfBuffer1, float** ppfBuffer2, int iNumChannels,
 	}
 }
 
-TEST_CASE("Parameter Setting", "[synthesis]")
+TEST_CASE("Parameter Setting", "[CWavetableOscillator]")
 {
 	CSineWavetable sine;
 	CWavetableOscillator osc(sine);
@@ -80,7 +85,7 @@ TEST_CASE("Parameter Setting", "[synthesis]")
 
 }
 
-TEST_CASE("CWavetableOscillator Accuracy", "[synthesis]")
+TEST_CASE("CWavetableOscillator Accuracy", "[CWavetableOscillator]")
 {
 	int iNumChannels = 2;
 	int iNumFrames = 10000;
@@ -105,8 +110,7 @@ TEST_CASE("CWavetableOscillator Accuracy", "[synthesis]")
 		for (float fFreq : fFreqs)
 		{
 			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
-			for (int channel = 0; channel < iNumChannels; channel++)
-				genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
+			genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
 
 			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
 			for (int channel = 0; channel < iNumChannels; channel++)
@@ -127,8 +131,28 @@ TEST_CASE("CWavetableOscillator Accuracy", "[synthesis]")
 		for (float fGain : fGains)
 		{
 			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+			genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+
+			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
 			for (int channel = 0; channel < iNumChannels; channel++)
-				genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
+			{
+				memset(ppfOscBuffer[channel], 0, sizeof(float) * iNumFrames);
+				memset(ppfGroundBuffer[channel], 0, sizeof(float) * iNumFrames);
+			}
+		}
+	}
+
+	SECTION("Check Various Pans")
+	{
+		float fFreq = 440.0f;
+		float fGain = 1.0f;
+		std::vector<float> fPans{ 0.0f, 0.25f, 0.5f };
+		float fSampleRate = 44100;
+
+		for (float fPan : fPans)
+		{
+			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+			genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
 
 			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
 			for (int channel = 0; channel < iNumChannels; channel++)
@@ -149,8 +173,7 @@ TEST_CASE("CWavetableOscillator Accuracy", "[synthesis]")
 		for (float fSampleRate : fSampleRates)
 		{
 			genOsc(osc, ppfOscBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
-			for (int channel = 0; channel < iNumChannels; channel++)
-				genSine(ppfGroundBuffer[channel], fFreq, fGain / 2.0f, fSampleRate, iNumFrames);
+			genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
 
 			CHECK_ARRAY_CLOSE(ppfOscBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
 			for (int channel = 0; channel < iNumChannels; channel++)
