@@ -66,7 +66,14 @@ void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFra
 		float fAdsrValue = m_adsr.getNextSample();
 		for (int channel = 0; channel < iNumChannels; channel++)
 		{
-			ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * m_ppfTempBuffer[channel][0];
+			float fPanGain{ 0 };
+			if (channel == 0) {
+				fPanGain = (1.0f - m_fPan);
+			}
+			if (channel == 1) {
+				fPanGain = m_fPan;
+			}
+			ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * (iNumChannels * fPanGain) * m_ppfTempBuffer[channel][0];
 			m_ppfTempBuffer[channel][0] = 0;
 		}
 
