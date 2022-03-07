@@ -18,7 +18,7 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	// Will handle deletion
-	virtual Error_t pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
+	virtual Error_t pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f);
 
 	// Returns schedule length in samples
 	int64_t getLength() const;
@@ -33,7 +33,7 @@ protected:
 	unordered_set<CInstrument*> m_SetInsts;
 
 	// All instrument pointers are placed and SHOULD STAY here to be deleted by the destructor
-	unordered_set<CSoundProcessor*> m_GarbageCollector;
+	unordered_set<CInstrument*> m_GarbageCollector;
 
 	// This can be viewed as the schedule's internal clock
 	int64_t m_iSampleCounter = 0;

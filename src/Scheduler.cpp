@@ -17,8 +17,10 @@ CScheduler::~CScheduler()
 		delete[] m_ppfTempBuffer[channel];
 	delete[] m_ppfTempBuffer;
 
-	for (CSoundProcessor* inst : m_GarbageCollector)
+	for (CInstrument* inst : m_GarbageCollector)
+	{
 		delete inst;
+	}
 }
 
 Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)

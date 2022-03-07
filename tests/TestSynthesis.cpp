@@ -219,3 +219,63 @@ TEST_CASE("Shifting Parameters", "[CWavetableOscillator]")
 	REQUIRE(osc.shiftFrequency(-30000) == Error_t::kFunctionInvalidArgsError);
 
 }
+
+TEST_CASE("Scheduler Testing", "[CScheduler]")
+{
+	int iNumChannels = 2;
+	int iLength = 100000;
+
+	float** ppfGroundBuffer = new float* [iNumChannels];
+	float** ppfSchedulerBuffer = new float* [iNumChannels];
+	for (int channel = 0; channel < iNumChannels; channel++)
+	{
+		ppfGroundBuffer[channel] = new float[iLength] {0};
+		ppfSchedulerBuffer[channel] = new float[iLength] {0};
+	}
+
+	float fFreq = 440;
+	float fGain = 1.0f;
+	float fPan = 0.5f;
+	float fSampleRate = 44100;
+	CSineWavetable sine;
+	CWavetableOscillator* pOsc = new CWavetableOscillator(sine, fFreq, fGain, fSampleRate);
+	CScheduler* pSchedule = new CScheduler(fSampleRate);
+
+	SECTION("Triggers NoteOn() and NoteOff() Correctly")
+	{
+		float fOnsetInSec = 0.1f;
+		float fDurationInSec = 0.5f;
+		assert((fDurationInSec + fOnsetInSec) * fSampleRate < iLength);
+
+		pSchedule->setADSRParameters(0, 0, 1, 0);
+		pSchedule->pushInst(new CWavetableOscillator(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
+
+		int iNoteOn = fOnsetInSec * fSampleRate;
+		int iNoteOff = (fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate + iNoteOn;
+
+		pSchedule->noteOn();
+		for (int frame = 0; frame < iLength; frame++)
+		{
+			if (frame == iNoteOn)
+				pOsc->noteOn();
+			if (frame == iNoteOff)
+				pOsc->noteOff();
+
+			pOsc->process(ppfGroundBuffer, iNumChannels, frame);
+			pSchedule->process(ppfSchedulerBuffer, iNumChannels, frame);
+		}
+
+		CHECK_ARRAY_CLOSE(ppfGroundBuffer, ppfSchedulerBuffer, iNumChannels, iLength, 1E-3);
+
+	}
+
+	delete pOsc;
+	delete pSchedule;
+	for (int channel = 0; channel < iNumChannels; channel++)
+	{
+		delete[] ppfGroundBuffer[channel];
+		delete[] ppfSchedulerBuffer[channel];
+	}
+	delete[] ppfGroundBuffer;
+	delete[] ppfSchedulerBuffer;
+}
