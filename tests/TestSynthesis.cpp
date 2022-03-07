@@ -240,6 +240,35 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 	CSineWavetable sine;
 	CWavetableOscillator* pOsc = new CWavetableOscillator(sine, fFreq, fGain, fSampleRate);
 	CScheduler* pSchedule = new CScheduler(fSampleRate);
+	CLooper* pLooper = new CLooper(fSampleRate);
+
+
+	SECTION("Handes Out of Bounds Parameters")
+	{
+		REQUIRE(pSchedule->pushInst(new CWavetableOscillator(sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->pushInst(new CWavetableOscillator(sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->pushInst(new CWavetableOscillator(sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
+		
+		CWavetableOscillator* pOscNULL = nullptr;
+		REQUIRE(pSchedule->pushInst(pOscNULL, 0, 1) == Error_t::kFunctionInvalidArgsError);
+	}
+
+	SECTION("Returns Correct Length")
+	{
+		pSchedule->pushInst(new CWavetableOscillator(sine), 0, 2);
+		REQUIRE(pSchedule->getLengthInSec() == 2);
+		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
+		pSchedule->pushInst(new CWavetableOscillator(sine), 1, 1);
+		REQUIRE(pSchedule->getLengthInSec() == 2);
+		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
+		pSchedule->pushInst(new CWavetableOscillator(sine), 2, 4);
+		REQUIRE(pSchedule->getLengthInSec() == 6);
+		REQUIRE(pSchedule->getLengthInSamp() == 6 * fSampleRate);
+		pSchedule->pushInst(new CWavetableOscillator(sine), 2.25, 4.5);
+		REQUIRE(pSchedule->getLengthInSec() == 6.75);
+		REQUIRE(pSchedule->getLengthInSamp() == 6.75 * fSampleRate);
+	}
+
 
 	SECTION("Triggers NoteOn() and NoteOff() Correctly")
 	{
@@ -266,9 +295,9 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		}
 
 		CHECK_ARRAY_CLOSE(ppfGroundBuffer, ppfSchedulerBuffer, iNumChannels, iLength, 1E-3);
-
 	}
 
+	delete pLooper;
 	delete pOsc;
 	delete pSchedule;
 	for (int channel = 0; channel < iNumChannels; channel++)

@@ -25,7 +25,7 @@ CScheduler::~CScheduler()
 
 Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
-	if (pInstToPush == nullptr)
+	if (pInstToPush == nullptr || fOnsetInSec < 0 || fDurationInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
 
 	/// Computes location and event information
@@ -45,7 +45,10 @@ Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float 
 
 	// Adjusts length of the entire container
 	if (iTotalLengthInSamp > m_iScheduleLength)
+	{
 		m_iScheduleLength = iTotalLengthInSamp;
+	}
+
 
 	return Error_t::kNoError;
 }
@@ -119,9 +122,14 @@ void CScheduler::checkTriggers()
 	}
 }
 
-int64_t CScheduler::getLength() const
+int64_t CScheduler::getLengthInSamp() const
 {
 	return m_iScheduleLength;
+}
+
+float CScheduler::getLengthInSec() const
+{
+	return sampToSec(m_iScheduleLength, m_fSampleRateInHz);
 }
 
 void CLooper::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)

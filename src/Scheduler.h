@@ -21,7 +21,8 @@ public:
 	virtual Error_t pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f);
 
 	// Returns schedule length in samples
-	int64_t getLength() const;
+	int64_t getLengthInSamp() const;
+	float getLengthInSec() const;
 
 	// Frame-by-Frame processing function
 	virtual void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
@@ -65,5 +66,7 @@ public:
 	Error_t setLoopLength(float fNewLoopLengthInSec);
 
 	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
+protected:
+	int m_iMinLoopLength = 0;
 };
 #endif

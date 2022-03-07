@@ -78,6 +78,9 @@ Error_t CInstrument::shiftGain(float fShift)
 
 Error_t CInstrument::setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainInSec, float fReleaseInSec)
 {
+	if (fAttackInSec < 0 || fDecayInSec < 0 || fSustainInSec < 0 || fSustainInSec > 1.0 || fReleaseInSec < 0)
+		return Error_t::kFunctionInvalidArgsError;
+
 	m_adsrParameters.attack = fAttackInSec;
 	m_adsrParameters.decay = fDecayInSec;
 	m_adsrParameters.sustain = fSustainInSec;
