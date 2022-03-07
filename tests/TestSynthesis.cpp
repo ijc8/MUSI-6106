@@ -35,14 +35,20 @@ void genOsc(CWavetableOscillator* pOsc, float** ppfBuffer, float fFreq, float fG
 	pOsc->reset();
 }
 
+void CHECK_VALUE_CLOSE(float fVal1, float fVal2, float fTolerance)
+{
+	float fDiff = fVal1 - fVal2;
+	REQUIRE(abs(fDiff) < fTolerance);
+}
+
+
 void CHECK_ARRAY_CLOSE(float** ppfBuffer1, float** ppfBuffer2, int iNumChannels, int iNumSamples, float fTolerance)
 {
 	for (int channel = 0; channel < iNumChannels; channel++)
 	{
 		for (int sample = 0; sample < iNumSamples; sample++)
 		{
-			float fDiff = ppfBuffer1[channel][sample] - ppfBuffer2[channel][sample];
-			REQUIRE(abs(fDiff) < fTolerance);
+			CHECK_VALUE_CLOSE(ppfBuffer1[channel][sample], ppfBuffer2[channel][sample], fTolerance);
 		}
 	}
 }
@@ -295,6 +301,44 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		}
 
 		CHECK_ARRAY_CLOSE(ppfGroundBuffer, ppfSchedulerBuffer, iNumChannels, iLength, 1E-3);
+	}
+
+	SECTION("CLooper loops correctly")
+	{
+		float fOnsetInSec = 0.0f;
+		float fDurationInSec = 0.5f;
+		int iLoopLengthInSamp = static_cast<int>((fOnsetInSec + fDurationInSec) * fSampleRate);
+		assert(iLoopLengthInSamp < iLength);
+
+		int iNoteOn = fOnsetInSec * fSampleRate;
+		int iNoteOff = (fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate + iNoteOn;
+
+		CWavetableOscillator* tempOsc = new CWavetableOscillator(sine, fFreq, fGain, fSampleRate);
+		pLooper->setADSRParameters(0, 0, 1, 0);
+
+		pLooper->pushInst(tempOsc, fOnsetInSec, fDurationInSec);
+		REQUIRE(pLooper->getLengthInSamp() == iLoopLengthInSamp);
+		REQUIRE(pLooper->getLengthInSec() == 0.5f);
+
+		pLooper->noteOn();
+		pOsc->noteOn();
+
+		int iNumLoops = 3;
+		int iTotalSamples = iNumLoops * iLoopLengthInSamp;
+		assert(iTotalSamples <= iLength);
+		for (int frame = 0; frame < iTotalSamples; frame++)
+		{
+			int iIndexForGround = frame % iLoopLengthInSamp;
+			if (iIndexForGround == iNoteOn) pOsc->noteOn();
+			if (iIndexForGround == iNoteOff) pOsc->noteOff();
+			
+			pOsc->process(ppfGroundBuffer, iNumChannels, frame);
+			pLooper->process(ppfSchedulerBuffer, iNumChannels, frame);
+
+		}
+
+		CHECK_ARRAY_CLOSE(ppfGroundBuffer, ppfSchedulerBuffer, iNumChannels, iLength, 1E-3);
+		
 	}
 
 	delete pLooper;
