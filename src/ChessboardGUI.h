@@ -80,3 +80,43 @@ namespace GUI
 		juce::Colour m_SquareColor;
 
 	};
+
+	class Piece : public juce::ImageButton
+	{
+	public:
+		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId)
+		{
+			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
+			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::yellow);
+			setSize(80, 80);
+		};
+		~Piece() = default;
+
+		juce::String getId() const { return juce::String::charToString(m_Name); };
+		void setSquareId(juce::String newId) { m_SquareId = newId; };
+		juce::String getSquareId() const { return m_SquareId; };
+		bool operator==(const Piece& lhs) const
+		{
+			return (this->m_Name == lhs.m_Name && this->m_SquareId == lhs.m_SquareId);
+		}
+
+		void placeAt(const Square* square)
+		{
+			m_Square = square;
+			m_SquareId = square->getId();
+			setBounds(square->getBounds());
+		}
+
+		void resized()
+		{
+			if (m_Square)
+				setBounds(m_Square->getBounds());
+		}
+
+	private:
+
+		const Square* m_Square = nullptr;
+		juce::Image m_Image;
+		uint8_t m_Name;
+		juce::String m_SquareId;
+	};
