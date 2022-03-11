@@ -37,7 +37,7 @@ protected:
 
     float m_fSampleRate = 0;
 
-    float m_fExpectedBlockSize = 0;
+    int m_fExpectedBlockSize = 0;
 
 
 };

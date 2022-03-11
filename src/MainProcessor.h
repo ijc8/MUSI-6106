@@ -23,8 +23,8 @@ public:
 	// It will internally do frame-by-frame processing
 	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames) override;
 
-	float getInternalClockInSeconds() { return m_iSampleCounter / m_fSampleRateInHz; };
-	long long getInternalClockInSamples() { return m_iSampleCounter; };
+	float getInternalClockInSeconds() { return static_cast<float>(m_iSampleCounter / m_fSampleRateInHz); };
+	int64_t getInternalClockInSamples() { return m_iSampleCounter; };
 
 protected:
 

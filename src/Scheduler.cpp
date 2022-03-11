@@ -8,7 +8,7 @@ CScheduler::CScheduler(float sampleRate) :
 	// I arbitrarily am using a max channels value of 6 to be safe, but this can likely be passed in as a parameter somewhere
 	m_ppfTempBuffer = new float*[m_iMaxChannels];
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
-		m_ppfTempBuffer[channel] = new float[] {0};
+		m_ppfTempBuffer[channel] = new float[1] {0};
 }
 
 CScheduler::~CScheduler()
@@ -24,11 +24,11 @@ CScheduler::~CScheduler()
 void CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
 	/// Computes location and event information
-	int iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
-	int iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
-	int iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
-	int iTotalLengthInSamp = iNoteOn + iDurationInSamp;
-	int iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
+	int64_t iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
+	int64_t iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
+	int64_t iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
+	int64_t iTotalLengthInSamp = iNoteOn + iDurationInSamp;
+	int64_t iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
 	assert(iNoteOff > iNoteOn);
 
 	// Places event and instrument pointer into appropriate container
@@ -104,7 +104,7 @@ void CScheduler::checkTriggers()
 	}
 }
 
-int CScheduler::getLength() const
+int64_t CScheduler::getLength() const
 {
 	return m_iScheduleLength;
 }
@@ -122,4 +122,3 @@ void CLooper::setLoopLength(float fNewLoopLengthInSec)
 	assert(fNewLoopLengthInSec > 0);
 	m_iScheduleLength = secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz);
 }
-

@@ -5,16 +5,16 @@
 #include "DebugSonifier.h"
 
 DebugSonifier::DebugSonifier (){
-    srand(time(0));
+    srand(static_cast<unsigned>(time(0)));
 }
 
 DebugSonifier::~DebugSonifier() {
 }
 
 void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece) {
-    float frequencies[8] = {262, 294.8, 327.5, 349.3, 393, 436.7, 491.2, 524};
-    float gains[8] = {1, 0.8, 0.6, 0.4, 0.4, 0.6, 0.8, 1};
-    float pans[8] = { 0.0, 0.2, 0.4, 0.5, 0.5, 0.6, 0.8, 1.0 };
+    float frequencies[8] = {262.0f, 294.8f, 327.5f, 349.3f, 393.0f, 436.7f, 491.2f, 524.0f};
+    float gains[8] = {1.0f, 0.8f, 0.6f, 0.4f, 0.4f, 0.6f, 0.8f, 1.0f};
+    float pans[8] = { 0.0f, 0.2f, 0.4f, 0.5f, 0.5f, 0.6f, 0.8f, 1.0f };
     int freqIdx = static_cast<int>(square.file);
     int gainIdx = static_cast<int>(square.rank);
     int panIdx = rand() % 8;
@@ -47,8 +47,8 @@ void DebugSonifier::process(float **ppfOutBuffer, int iNumChannels, int iNumFram
 
 void DebugSonifier::prepareToPlay(int iExpectedBlockSize, double fsampleRate){
 
-    m_fSampleRate = fsampleRate;
-    m_mainProcessor.setSampleRate(fsampleRate);
+    m_fSampleRate = static_cast<float>(fsampleRate);
+    m_mainProcessor.setSampleRate(static_cast<float>(fsampleRate));
     m_mainProcessor.setGain(0.25);
     m_mainProcessor.setADSRParameters(4,0,1,2);
     m_fExpectedBlockSize = iExpectedBlockSize;

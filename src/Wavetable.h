@@ -17,7 +17,7 @@ public:
 
 protected:
 
-	const unsigned s_iTableSize = 1 << 9;
+	const int s_iTableSize = 1 << 9;
     juce::AudioSampleBuffer m_fWavetable;
     bool m_bHasBeenGenerated = false;
 
@@ -37,7 +37,7 @@ public:
         auto angleDelta = juce::MathConstants<double>::twoPi / (double)(s_iTableSize - 1); 
         auto currentAngle = 0.0;
 
-        for (unsigned int i = 0; i < s_iTableSize; ++i)
+        for (int i = 0; i < s_iTableSize; ++i)
         {
             auto sample = std::sin(currentAngle);                                       
             samples[i] = (float)sample;

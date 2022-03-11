@@ -21,12 +21,12 @@ float CSoundProcessor::getSampleRate()
 	return m_fSampleRateInHz;
 }
 
-int CSoundProcessor::secToSamp(float sec, float sampleRate) const
+int64_t CSoundProcessor::secToSamp(float sec, float sampleRate) const
 {
-	return static_cast<int>(sec * sampleRate);
+	return static_cast<int64_t>(sec * sampleRate);
 }
 
-float CSoundProcessor::sampToSec(int sample, float sampleRate) const
+float CSoundProcessor::sampToSec(int64_t sample, float sampleRate) const
 {
 	return static_cast<float>(sample / sampleRate);
 }
@@ -185,7 +185,7 @@ void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int c
 
 	for (int channel = 0; channel < iNumChannels; channel++)
     {
-		float fPanGain;
+		float fPanGain{ 0 };
         if (channel == 0) {
             fPanGain = (1.0f - m_fPan);
         }
