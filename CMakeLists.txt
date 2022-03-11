@@ -76,6 +76,8 @@ add_library(Common OBJECT src/GameState.cpp)
 
 target_sources(MusicalChess
     PRIVATE
+        src/ChessboardGUI.h
+        src/ChessboardGUI.cpp
         src/Main.cpp
         src/MainComponent.cpp
         src/Main.cpp
@@ -205,6 +207,23 @@ target_link_libraries(SoundTests
         Common
         juce::juce_gui_extra
         juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
+target_link_libraries(Tests
+    PRIVATE
+        juce::juce_gui_extra
+        juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
+target_link_libraries(TerminalChess
+    PRIVATE
+        juce::juce_gui_extra
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
