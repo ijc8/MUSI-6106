@@ -10,7 +10,7 @@
 #include <list>
 
 
-class DebugSonifier{
+class DebugSonifier : public juce::ChangeListener{
 public:
         DebugSonifier();
 
@@ -23,6 +23,15 @@ public:
         void releaseResources();
 
         Error_t onMove(Chess::Board & board);
+
+		void changeListenerCallback(juce::ChangeBroadcaster* source) override
+		{
+            if (source == &AppState::getInstance().getGame())
+            {
+                onMove(AppState::getInstance().getGame());
+            }
+		}
+
 
 
 protected:
