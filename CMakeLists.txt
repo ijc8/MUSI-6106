@@ -83,7 +83,9 @@ target_sources(MusicalChess
         src/Scheduler.h
         src/MainProcessor.h
 		src/DebugSonifier.h
-		src/DebugSonifier.cpp)
+		src/DebugSonifier.cpp
+		src/ThreatsSonifier.h
+		src/ThreatsSonifier.cpp)
 
 target_sources(Tests
     PRIVATE
