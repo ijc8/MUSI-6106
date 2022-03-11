@@ -18,10 +18,11 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	// Will handle deletion
-	virtual void pushInst(CInstrument* pInstToPush, float fDurationInSec = 1.0f, float fOnsetInSec = 0.0f);
+	virtual Error_t pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f);
 
 	// Returns schedule length in samples
-	int64_t getLength() const;
+	int64_t getLengthInSamp() const;
+	float getLengthInSec() const;
 
 	// Frame-by-Frame processing function
 	virtual void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
@@ -33,7 +34,7 @@ protected:
 	unordered_set<CInstrument*> m_SetInsts;
 
 	// All instrument pointers are placed and SHOULD STAY here to be deleted by the destructor
-	unordered_set<CSoundProcessor*> m_GarbageCollector;
+	unordered_set<CInstrument*> m_GarbageCollector;
 
 	// This can be viewed as the schedule's internal clock
 	int64_t m_iSampleCounter = 0;
@@ -62,8 +63,10 @@ public:
 	CLooper(float sampleRate = 48000) : CScheduler(sampleRate) {};
 	~CLooper() = default;
 
-	void setLoopLength(float fNewLoopLengthInSec);
+	Error_t setLoopLength(float fNewLoopLengthInSec);
 
 	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
+protected:
+	int m_iMinLoopLength = 0;
 };
 #endif

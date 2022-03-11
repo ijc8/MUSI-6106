@@ -34,7 +34,7 @@ public:
 	{
         m_fWavetable.setSize(1, (int)s_iTableSize);
         float* samples = m_fWavetable.getWritePointer(0);     
-        auto angleDelta = juce::MathConstants<double>::twoPi / (double)(s_iTableSize - 1); 
+        auto angleDelta = juce::MathConstants<double>::twoPi / (double)(s_iTableSize); 
         auto currentAngle = 0.0;
 
         for (int i = 0; i < s_iTableSize; ++i)

@@ -96,7 +96,14 @@ target_sources(MusicalChess
 
 target_sources(Tests
     PRIVATE
-        tests/TestGameState.cpp)
+        src/GameState.cpp
+        src/MainProcessor.cpp
+        src/Wavetable.h
+        src/SoundProcessor.cpp
+        src/Scheduler.cpp
+        tests/TestGameState.cpp
+        tests/TestSynthesis.cpp
+        tests/main.cpp)
 
 target_sources(TerminalChess
     PRIVATE
@@ -187,11 +194,23 @@ target_link_libraries(MusicalChess
 
 target_link_libraries(Tests
     PRIVATE
-        Common)
+        Common
+        juce::juce_gui_extra
+        juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
 
 target_link_libraries(TerminalChess
     PRIVATE
-        Common)
+        Common
+        juce::juce_gui_extra
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
 
 target_link_libraries(SonifierTest
     PRIVATE
@@ -211,20 +230,4 @@ target_link_libraries(SoundTests
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
-
-target_link_libraries(Tests
-    PRIVATE
-        juce::juce_gui_extra
-        juce::juce_audio_utils
-    PUBLIC
-        juce::juce_recommended_config_flags
-        juce::juce_recommended_lto_flags
-        juce::juce_recommended_warning_flags)
-
-target_link_libraries(TerminalChess
-    PRIVATE
-        juce::juce_gui_extra
-    PUBLIC
-        juce::juce_recommended_config_flags
-        juce::juce_recommended_lto_flags
-        juce::juce_recommended_warning_flags)
+        

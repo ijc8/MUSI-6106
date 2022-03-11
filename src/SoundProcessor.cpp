@@ -8,7 +8,6 @@ CSoundProcessor::CSoundProcessor(float fSampleRate)
 
 Error_t CSoundProcessor::setSampleRate(float fNewSampleRate)
 {
-	assert(fNewSampleRate > 0.0);
 	if (fNewSampleRate <= 0.0)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -44,7 +43,6 @@ CInstrument::CInstrument(float fGain, float fSampleRate) :
 
 Error_t CInstrument::setGain(float fNewGain)
 {
-	assert(fNewGain >= -1.0 && fNewGain <= 1.0);
 	if (fNewGain < -1.0 || fNewGain > 1.0)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -59,6 +57,9 @@ float CInstrument::getGain() const
 
 Error_t CInstrument::setPan(float fPan)
 {
+	if (fPan < 0 || fPan > 1.0f)
+		return Error_t::kFunctionInvalidArgsError;
+
     m_fPan = fPan;
     return Error_t::kNoError;
 }
@@ -69,15 +70,17 @@ float CInstrument::getPan() const
 }
 
 
-void CInstrument::shiftGain(float fShift)
+Error_t CInstrument::shiftGain(float fShift)
 {
 	float fNewGain = m_fGain + fShift;
-	assert(fNewGain <= 1 && fNewGain >= -1);
-	setGain(fNewGain);
+	return setGain(fNewGain);
 }
 
 Error_t CInstrument::setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainInSec, float fReleaseInSec)
 {
+	if (fAttackInSec < 0 || fDecayInSec < 0 || fSustainInSec < 0 || fSustainInSec > 1.0 || fReleaseInSec < 0)
+		return Error_t::kFunctionInvalidArgsError;
+
 	m_adsrParameters.attack = fAttackInSec;
 	m_adsrParameters.decay = fDecayInSec;
 	m_adsrParameters.sustain = fSustainInSec;
@@ -89,6 +92,14 @@ Error_t CInstrument::setADSRParameters(float fAttackInSec, float fDecayInSec, fl
 const juce::ADSR::Parameters& CInstrument::getADSRParameters() const
 {
 	return m_adsrParameters;
+}
+
+void CInstrument::reset()
+{
+	setGain(0.0f);
+	setPan(0.5f);
+	setSampleRate(48000.0f);
+	m_adsr.reset();
 }
 
 void CInstrument::resetADSR()
@@ -129,13 +140,11 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 	m_Wavetable(wavetableToUse),
 	m_iTableSize(wavetableToUse.getNumSamples())
 {
-	//assert(wavetableToUse.hasBeenGenerated());
 	setFrequency(fFrequencyInHz);
 }
 
 Error_t CWavetableOscillator::setFrequency(float fNewFrequencyInHz)
 {
-	assert(fNewFrequencyInHz >= 0 && fNewFrequencyInHz <= 20000);
 	if (fNewFrequencyInHz < 0 || fNewFrequencyInHz > 20000)
 		return Error_t::kFunctionInvalidArgsError;
 	
@@ -156,11 +165,18 @@ float CWavetableOscillator::getFrequency() const
 	return m_fFrequencyInHz;
 }
 
-void CWavetableOscillator::shiftFrequency(float fShiftInHz)
+Error_t CWavetableOscillator::shiftFrequency(float fShiftInHz)
 {
 	float fNewFrequency = m_fFrequencyInHz + fShiftInHz;
-	assert(fNewFrequency >= 0);
-	setFrequency(fNewFrequency);
+	return setFrequency(fNewFrequency);
+}
+
+void CWavetableOscillator::reset()
+{
+	setFrequency(0.0f);
+	m_fCurrentIndex = 0.0f;
+	CInstrument::reset();
+
 }
 
 void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int currentFrame)

@@ -48,10 +48,13 @@ public:
     float getPan() const;
 
 	// Value can be negative or positive
-	void shiftGain(float fShift);
+	Error_t shiftGain(float fShift);
 
 	Error_t setADSRParameters(float fAttackInSec, float fDecayInSec, float fSustainLevel, float fReleaseInSec);
 	const juce::ADSR::Parameters& getADSRParameters() const;
+
+	// Reset all parameters and variables to initial states
+	virtual void reset();
 
 	// Resets ADSR regardless of current state
 	void resetADSR();
@@ -71,7 +74,7 @@ public:
 protected:
 
 	float m_fGain = 0.0f;
-    float m_fPan = 0.0f;
+    float m_fPan = 0.5f;
     juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
 
@@ -91,7 +94,9 @@ public:
 	float getFrequency() const;
 
 	// Value can be negative or positive
-	void shiftFrequency(float fShiftInHz);
+	Error_t shiftFrequency(float fShiftInHz);
+
+	void reset() override;
 
 	// Overrides because frequency must be reinitialized
 	Error_t setSampleRate(float fNewSampleRate) override;
