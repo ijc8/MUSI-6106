@@ -10,7 +10,7 @@
 #include <list>
 
 
-class DebugSonifier : public juce::ChangeListener{
+class DebugSonifier : public juce::ChangeListener {
 public:
         DebugSonifier();
 
@@ -26,10 +26,7 @@ public:
 
 		void changeListenerCallback(juce::ChangeBroadcaster* source) override
 		{
-            if (source == &AppState::getInstance().getGame())
-            {
-                onMove(AppState::getInstance().getGame());
-            }
+             onMove(AppState::getInstance().getGame());
 		}
 
 

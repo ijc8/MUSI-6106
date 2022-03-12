@@ -244,9 +244,6 @@ namespace GUI
 
 		void changeListenerCallback(juce::ChangeBroadcaster* source) override
 		{
-			if (source == &AppState::getInstance().getGame())
-			{
-
 				std::list<Piece*> pieceList;
 				for (Piece& piece : m_AllPieces)
 				{
@@ -269,9 +266,6 @@ namespace GUI
 
 					}
 				}
-
-
-			}
 		}
 
 
