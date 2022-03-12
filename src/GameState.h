@@ -9,8 +9,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <juce_gui_extra/juce_gui_extra.h>
-
 namespace Chess {
     enum class Color {
         White,
@@ -153,24 +151,11 @@ namespace Chess {
         int fullmoveNumber = 0;
     };
 
-    class Game: public GameState, public juce::ActionListener, public ::juce::ChangeBroadcaster {
+    class Game: public GameState {
     public:
         using GameState::GameState;
         void push(Move move);
         Move pop();
-
-        void actionListenerCallback(const juce::String& message)
-        {
-            Chess::Move move = Chess::Move(Chess::Square(message.substring(0, 2).toStdString()), Chess::Square(message.substring(2, 4).toStdString()));
-            if (isLegal(move))
-            {
-                juce::Logger::outputDebugString("Legal Move");
-                push(move);
-                sendChangeMessage();
-            }
-            else
-                juce::Logger::outputDebugString("Illegal Move");
-        }
     
     private:
         std::stack<std::tuple<Move, GameState>> history;

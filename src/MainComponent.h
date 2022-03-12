@@ -10,6 +10,7 @@
 #include "ChessboardGUI.h"
 #include "DebugSonifier.h"
 #include "GameState.h"
+#include "BroadcastManager.h"
 
 //==============================================================================
 /*
@@ -35,6 +36,7 @@ private:
     //==============================================================================
     // Your private member variables go here...
 
+    BroadcastManager m_BroadcastManager;
     DebugSonifier m_DebugSonifier;
     GUI::ChessBoard m_ChessboardGUI;
     juce::TextButton buttonPreset1;

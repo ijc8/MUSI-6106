@@ -19,36 +19,36 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_ChessboardGUI);
     Chess::Game& game = AppState::getInstance().getGame();
-    game.addChangeListener(&m_ChessboardGUI);
-    game.addChangeListener(&m_DebugSonifier);
-    m_ChessboardGUI.addActionListener(&game);
+    m_ChessboardGUI.addActionListener(&m_BroadcastManager);
+    m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
+    m_BroadcastManager.addChangeListener(&m_DebugSonifier);
 
     // text buttons
     addAndMakeVisible(buttonPreset1);
     buttonPreset1.setButtonText("8/8/8/4p1K1/2k1P3/8/8/8");
-    buttonPreset1.onClick = [&game]() {
+    buttonPreset1.onClick = [this, &game]() {
         game.setBoardFen("8/8/8/4p1K1/2k1P3/8/8/8");
-        game.sendChangeMessage();
+        m_BroadcastManager.sendChangeMessage();
     };
 
     addAndMakeVisible(buttonPreset2);
     buttonPreset2.setButtonText("4k2r/6r1/8/8/8/8/3R4/R3K3");
-    buttonPreset2.onClick = [&game]() {
+    buttonPreset2.onClick = [this, &game]() {
         game.setBoardFen("4k2r/6r1/8/8/8/8/3R4/R3K3");
-        game.sendChangeMessage();
+        m_BroadcastManager.sendChangeMessage();
     };
 
     addAndMakeVisible(buttonPreset3);
     buttonPreset3.setButtonText("8/8/8/8/8/8/8/8");
-    buttonPreset3.onClick = [&game]() {
+    buttonPreset3.onClick = [this, &game]() {
         game.setBoardFen("8/8/8/8/8/8/8/8");
-        game.sendChangeMessage();
+        m_BroadcastManager.sendChangeMessage();
     };
 }
 
 MainComponent::~MainComponent()
 {
-    AppState::getInstance().getGame().removeAllChangeListeners();
+    m_BroadcastManager.removeAllChangeListeners();
     m_ChessboardGUI.removeAllActionListeners();
     shutdownAudio();
 }
