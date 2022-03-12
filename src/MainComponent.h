@@ -17,7 +17,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent   : public juce::AudioAppComponent
+class MainComponent : public juce::AudioAppComponent
 {
 public:
     //==============================================================================
@@ -38,11 +38,14 @@ private:
 
     BroadcastManager m_BroadcastManager;
     DebugSonifier m_DebugSonifier;
+    // Sonifier& m_CurrentSonifier = &m_DebugSonifier;
     GUI::ChessBoard m_ChessboardGUI;
     juce::TextButton buttonPreset1;
     juce::TextButton buttonPreset2;
     juce::TextButton buttonPreset3;
+    juce::ComboBox m_SonifierSelector;
 
+    void onSonifierChange();
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
