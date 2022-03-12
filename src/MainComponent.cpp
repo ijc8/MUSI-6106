@@ -51,6 +51,20 @@ MainComponent::MainComponent()
     m_SonifierSelector.addItem("Debug Sonifier", 1);
     m_SonifierSelector.addItem("Threat Sonifier", 2);
     m_SonifierSelector.setSelectedId(1);
+
+    addAndMakeVisible(m_TitleText);
+    m_TitleText.setText("MUSICAL CHESS", juce::NotificationType::dontSendNotification);
+    m_TitleText.setFont(juce::Font(30));
+    m_TitleText.setColour(juce::Label::backgroundColourId, juce::Colours::black);
+    m_TitleText.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
+    m_TitleText.setJustificationType(juce::Justification::centred);
+
+    addAndMakeVisible(m_pgnButton);
+    m_pgnButton.setButtonText("Load PGN");
+    addAndMakeVisible(m_PrevButton);
+    addAndMakeVisible(m_StopButton);
+    addAndMakeVisible(m_PlayButton);
+    addAndMakeVisible(m_NextButton);
 }
 
 MainComponent::~MainComponent()
@@ -89,16 +103,19 @@ void MainComponent::paint(juce::Graphics& g)
 void MainComponent::resized()
 {
     auto area = getBounds().reduced(10);
-    auto bottomLayer = area.removeFromBottom(getHeight() / 6);
+    auto header = area.removeFromTop(getHeight() / 10);
+    auto footer = area.removeFromBottom(getHeight() / 6);
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
+    m_TitleText.setBounds(header);
     m_ChessboardGUI.setBounds(area);
-    m_SonifierSelector.setBounds(rightThird.removeFromBottom(getHeight() / 4).reduced(0, 20));
+    m_SonifierSelector.setBounds(rightThird.removeFromBottom(rightThird.getHeight()/3).reduced(20));
+    m_pgnButton.setBounds(rightThird.removeFromTop(rightThird.getHeight() / 2).reduced(20));
 
-    buttonPreset1.setBounds(bottomLayer.removeFromLeft(getWidth() / 3));
-    buttonPreset2.setBounds(bottomLayer.removeFromLeft(getWidth() / 3));
-    buttonPreset3.setBounds(bottomLayer.removeFromLeft(getWidth() / 3));
+    buttonPreset1.setBounds(footer.removeFromLeft(getWidth() / 3));
+    buttonPreset2.setBounds(footer.removeFromLeft(getWidth() / 3));
+    buttonPreset3.setBounds(footer.removeFromLeft(getWidth() / 3));
 }
 
 void MainComponent::onSonifierChange()

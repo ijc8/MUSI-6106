@@ -45,6 +45,13 @@ private:
     juce::TextButton buttonPreset3;
     juce::ComboBox m_SonifierSelector;
 
+    juce::Label m_TitleText;
+    juce::TextButton m_pgnButton;
+    juce::TextButton m_NextButton;
+    juce::TextButton m_PrevButton;
+    juce::TextButton m_PlayButton;
+    juce::TextButton m_StopButton;
+
     void onSonifierChange();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
