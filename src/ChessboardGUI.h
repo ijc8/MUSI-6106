@@ -84,7 +84,7 @@ namespace GUI
 	class Piece : public juce::ImageButton
 	{
 	public:
-		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId)
+		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
 		{
 			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
 			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::yellow);
@@ -95,9 +95,15 @@ namespace GUI
 		juce::String getId() const { return juce::String::charToString(m_Name); };
 		void setSquareId(juce::String newId) { m_SquareId = newId; };
 		juce::String getSquareId() const { return m_SquareId; };
+		Chess::Color getTeam() const { return m_Team; };
 		bool operator==(const Piece& lhs) const
 		{
 			return (this->m_Name == lhs.m_Name && this->m_SquareId == lhs.m_SquareId);
+		}
+
+		bool isAlly(const Piece& piece) const
+		{
+			return m_Team == piece.m_Team;
 		}
 
 		void placeAt(const Square* square)
@@ -119,6 +125,7 @@ namespace GUI
 		juce::Image m_Image;
 		uint8_t m_Name;
 		juce::String m_SquareId;
+		const Chess::Color m_Team = Chess::Color::White;
 	};
 
 	class ChessBoard : public juce::Component, public juce::Button::Listener, public juce::ActionBroadcaster, public juce::ChangeListener
@@ -217,8 +224,25 @@ namespace GUI
 			{
 				if (button == &piece)
 				{
-					m_SelectedPiece = &piece;
-					m_CurrentState = state::kPlacing;
+					if (m_SelectedPiece)
+					{
+						if (m_SelectedPiece->isAlly(piece))
+						{
+							m_SelectedPiece = &piece;
+						}
+						else 
+						{
+							juce::String intent = m_SelectedPiece->getSquareId() + piece.getSquareId();
+							sendActionMessage(intent);
+						}
+					}
+					else {
+						if (AppState::getInstance().getGame().getTurn() == piece.getTeam())
+						{
+							m_SelectedPiece = &piece;
+							onStateChange(state::kPlacing);
+						}
+					}
 					return;
 				}
 
@@ -266,6 +290,7 @@ namespace GUI
 
 					}
 				}
+				onStateChange(state::kIdle);
 		}
 
 
