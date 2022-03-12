@@ -72,14 +72,13 @@ juce_add_gui_app(SoundTests
 # Finally, we supply a list of source files that will be built into the target. This is a standard
 # CMake command.
 
-add_library(Common OBJECT src/GameState.cpp)
+# add_library(Common OBJECT src/GameState.cpp)
 
 target_sources(MusicalChess
     PRIVATE
+        src/GameState.cpp
         src/ChessboardGUI.h
         src/ChessboardGUI.cpp
-        src/Main.cpp
-        src/MainComponent.cpp
         src/Main.cpp
         src/MainComponent.cpp
         src/SoundProcessor.cpp
@@ -107,18 +106,22 @@ target_sources(Tests
 
 target_sources(TerminalChess
     PRIVATE
+        src/GameState.cpp
         tests/TerminalChess.cpp)
 
 target_sources(SonifierTest
-		PRIVATE
+	PRIVATE
+        src/GameState.cpp
 		src/SoundProcessor.cpp
         src/MainProcessor.cpp
         src/Scheduler.cpp
         src/SoundProcessor.cpp
 		src/DebugSonifier.cpp
 		tests/SonifierTest.cpp)
+
 target_sources(SoundTests
     PRIVATE
+        src/GameState.cpp
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp
@@ -184,7 +187,7 @@ target_compile_definitions(SoundTests
 target_link_libraries(MusicalChess
     PRIVATE
         # GuiAppData            # If we'd created a binary data target, we'd link to it here
-        Common
+        # Common
         juce::juce_gui_extra
         juce::juce_audio_utils
     PUBLIC
@@ -194,7 +197,7 @@ target_link_libraries(MusicalChess
 
 target_link_libraries(Tests
     PRIVATE
-        Common
+        # Common
         juce::juce_gui_extra
         juce::juce_audio_utils
     PUBLIC
@@ -204,8 +207,9 @@ target_link_libraries(Tests
 
 target_link_libraries(TerminalChess
     PRIVATE
-        Common
+        # Common
         juce::juce_gui_extra
+        juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -214,20 +218,22 @@ target_link_libraries(TerminalChess
 
 target_link_libraries(SonifierTest
     PRIVATE
-        Common
-		juce::juce_audio_processors
-    PUBLIC
-		juce::juce_recommended_config_flags
-		juce::juce_recommended_lto_flags
-		juce::juce_recommended_warning_flags)
-
-target_link_libraries(SoundTests
-    PRIVATE
-        Common
+        # Common
         juce::juce_gui_extra
         juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+target_link_libraries(SoundTests
+    PRIVATE
+        # Common
+        juce::juce_gui_extra
+        juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
         
