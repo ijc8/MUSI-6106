@@ -17,7 +17,7 @@ namespace Chess {
 
     struct Piece {
         enum class Type {
-            Pawn, Knight, Bishop, Rook, Queen, King, Null
+            Pawn, Knight, Bishop, Rook, Queen, King
         };
 
         static const std::unordered_map<char, Type> FromChar;
@@ -141,6 +141,9 @@ namespace Chess {
         bool wouldBeInCheck(Move move) const;
         bool isLegal(Move move) const;
 
+        std::unordered_map<Square, Piece> getThreats();
+        std::unordered_map<Square, Piece> getAttackers();
+
         void execute(Move move);
 
     protected:
@@ -178,20 +181,6 @@ private:
 };
 
 #endif
-
-class ThreatDetection : public Chess::GameState
-{
-
-public:
-
-    Chess::Board getThreats(Chess::Color color);
-    Chess::Board getAttackers(Chess::Color color);
-
-
-    std::vector<float>getValueDifference();
-
-
-};
 
 
 
