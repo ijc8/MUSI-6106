@@ -144,8 +144,7 @@ int main(int argc, const char **argv) {
             std::cout << "> ";
             std::cin >> moveString;
             if (moveString.empty()) {
-                playing = false;
-                break;
+                return 0;
             }
             Move move(moveString);
             if (game.isLegal(move)) {
@@ -163,4 +162,6 @@ int main(int argc, const char **argv) {
         assert(game.isLegal(engineMove));
         game.push(engineMove);
     }
+
+    return 0;
 }
