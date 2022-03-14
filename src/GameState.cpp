@@ -415,48 +415,45 @@ Move Game::pop() {
     setFen(state.getFen());
     return move;
 }
-Chess::Board ThreatDetection::getThreats(Chess::Color color) {
+std::unordered_map<Square, Piece> GameState::getThreats() {
 
 
     auto pieceMap = getPieceMap();
-    Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
-    Chess::Board board;
 
+    Chess::Color color = getTurn();
+    Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
+    std::unordered_map<Square, Piece> threats;
 
     for (const auto [square, piece] : pieceMap) {
         // Iterating over the pieces of the same color and checking for legal moves
         if (piece.color != side) continue;
 
         for (auto move : generateMoves(square)) {
-            if (getPieceAt(move.dst)->type != Chess::Piece::Type::Null) {
-
-                board.setPieceAt(square, piece);
+            if (getPieceAt(move.dst).has_value()) {
+                threats[square] = piece;
             }
         }
     }
 
-    return board;
-
-
+    return threats;
 }
 
-Chess::Board ThreatDetection::getAttackers(Chess::Color color) {
+std::unordered_map<Square, Piece> GameState::getAttackers() {
 
+    Chess::Color color = getTurn();
     auto pieceMap = getPieceMap();
     Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
-    Chess::Board board;
-
+    std::unordered_map<Square, Piece> attackers;
 
     for (const auto [square, piece] : pieceMap) {
         // Iterating over the pieces of the same color and checking for legal moves
         if (piece.color == side) continue;
 
         for (auto move : generateMoves(square)) {
-            if (getPieceAt(move.dst)->type != Chess::Piece::Type::Null) {
-
-                board.setPieceAt(square, piece);
+            if (getPieceAt(move.dst).has_value()) {
+                attackers[square] = piece;
             }
         }
     }
-    return board;
+    return attackers;
 }
