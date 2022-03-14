@@ -415,3 +415,48 @@ Move Game::pop() {
     setFen(state.getFen());
     return move;
 }
+Chess::Board ThreatDetection::getThreats(Chess::Color color) {
+
+
+    auto pieceMap = getPieceMap();
+    Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
+    Chess::Board board;
+
+
+    for (const auto [square, piece] : pieceMap) {
+        // Iterating over the pieces of the same color and checking for legal moves
+        if (piece.color != side) continue;
+
+        for (auto move : generateMoves(square)) {
+            if (getPieceAt(move.dst)->type != Chess::Piece::Type::Null) {
+
+                board.setPieceAt(square, piece);
+            }
+        }
+    }
+
+    return board;
+
+
+}
+
+Chess::Board ThreatDetection::getAttackers(Chess::Color color) {
+
+    auto pieceMap = getPieceMap();
+    Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
+    Chess::Board board;
+
+
+    for (const auto [square, piece] : pieceMap) {
+        // Iterating over the pieces of the same color and checking for legal moves
+        if (piece.color == side) continue;
+
+        for (auto move : generateMoves(square)) {
+            if (getPieceAt(move.dst)->type != Chess::Piece::Type::Null) {
+
+                board.setPieceAt(square, piece);
+            }
+        }
+    }
+    return board;
+}
