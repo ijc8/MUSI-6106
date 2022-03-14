@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "GameState.h"
+
 // Concise way to split a string in C++ >= 11. (Based on https://stackoverflow.com/a/64886763/13204291.)
 std::vector<std::string> split(const std::string &str, const std::regex &regex) {
     return std::vector<std::string>(std::sregex_token_iterator(str.begin(), str.end(), regex, -1), std::sregex_token_iterator());
@@ -83,7 +85,7 @@ public:
         assert(process.readline().starts_with("Stockfish"));
     }
 
-    std::string get_best_move(int time=1000) {
+    Chess::Move getMove(int time=1000) {
         process.write("go movetime ");
         process.writeline(std::to_string(time));
         std::string line = process.readline();
@@ -91,16 +93,74 @@ public:
             line = process.readline();
         }
         auto words = split(line, std::regex(" "));
-        return words[1];
+        return Chess::Move(words[1]);
+    }
+
+    void setState(const Chess::GameState &state) {
+        process.write("position fen ");
+        process.writeline(state.getFen());
     }
 
 private:
     Subprocess process;
 };
 
-int main() {
+// TODO: Put this in a test.
+// int main() {
+//     Stockfish engine;
+//     std::cout << engine.getMove().toString() << std::endl;
+//     std::cout << engine.getMove(100).toString() << std::endl;
+//     return 0;
+// }
+
+using namespace Chess;
+
+int main(int argc, const char **argv) {
     Stockfish engine;
-    std::cout << engine.get_best_move() << std::endl;
-    std::cout << engine.get_best_move(100) << std::endl;
-    return 0;
+    Game game(argc > 1 ? argv[1] : Game::initialFen);
+
+    auto printBoard = [&game](){
+        for (int rank = 7; rank >= 0; rank--) {
+            std::cout << "12345678"[rank] << "|";
+            for (int file = 0; file < 8; file++) {
+                std::optional<Piece> p = game.getPieceAt(Square(rank, file));
+                std::cout << (p.has_value() ? p->toChar() : ' ') << "|";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "  ";
+        for (int file = 0; file < 8; file++) {
+            std::cout << (char)('a' + file) << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "FEN: " << game.getFen() << std::endl;
+    };
+
+    bool playing = true;
+    while (playing) {
+        printBoard();
+        while (true) {
+            std::string moveString;
+            std::cout << "> ";
+            std::cin >> moveString;
+            if (moveString.empty()) {
+                playing = false;
+                break;
+            }
+            Move move(moveString);
+            if (game.isLegal(move)) {
+                game.push(move);
+                break;
+            } else {
+                std::cout << "Illegal move!" << std::endl;
+            }
+        }
+        printBoard();
+        std::cout << "Engine is deciding on a move..." << std::endl;
+        engine.setState(game);
+        Move engineMove = engine.getMove();
+        std::cout << "< " << engineMove.toString() << std::endl;
+        assert(game.isLegal(engineMove));
+        game.push(engineMove);
+    }
 }

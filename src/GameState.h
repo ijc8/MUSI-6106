@@ -52,9 +52,14 @@ namespace Chess {
 
     struct Move {
         Move(Square src_, Square dst_, std::optional<Piece::Type> promotion_ = std::nullopt)
-                : src(src_), dst(dst_), promotion(promotion_) {}
+            : src(src_), dst(dst_), promotion(promotion_) {}
+        Move(const std::string &squares)  // Build from string of form "b1c3".
+            : Move(Square(squares.substr(0, 2)), Square(squares.substr(2))) {}
         bool operator==(const Move &other) const {
             return src == other.src && dst == other.dst && promotion == other.promotion;
+        }
+        std::string toString() const {
+            return src.toString() + dst.toString();
         }
         Square src, dst;
         std::optional<Piece::Type> promotion;
