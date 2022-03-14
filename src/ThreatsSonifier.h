@@ -27,7 +27,7 @@ public:
 
 protected:
 
-    void sonifyThreat(Chess::Square const& predSquare, Chess::Piece const& predPiece, Chess::Square const& preySquare, Chess::Piece const& preyPiece);
+    void sonifyThreatee(Chess::Square const& preySquare, Chess::Piece const& preyPiece);
 
     std::list<CWavetableOscillator> oscillators;
 
