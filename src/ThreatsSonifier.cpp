@@ -65,7 +65,7 @@ void ThreatsSonifier::releaseResources(){
 };
 
 
-Error_t ThreatsSonifier::onMove(Chess::Board &board) {
+Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
     auto it = oscillators.begin();
     while (it != oscillators.end()){
         if (it->isActive()){
@@ -77,7 +77,7 @@ Error_t ThreatsSonifier::onMove(Chess::Board &board) {
             it = oscillators.erase(it);
         }
     }
-    for (const auto [preySquare, preyPiece] : board.getThreatees() ) {
+    for (const auto [preySquare, preyPiece] : gameState.getThreats() ) {
         sonifyThreatee(preySquare, preyPiece);
     }
     return Error_t::kNoError;

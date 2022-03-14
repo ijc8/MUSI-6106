@@ -21,24 +21,24 @@ MainComponent::MainComponent()
     }
     // text buttons
     addAndMakeVisible(Board1);
-    Board1.setButtonText("8/8/8/4p1K1/2k1P3/8/8/8");
+    Board1.setButtonText("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R");
     Board1.onClick = [this](){
-        m_Board.setBoardFen("8/8/8/4p1K1/2k1P3/8/8/8");
-        m_DebugSonifier.onMove(m_Board);
+        m_GameState.setBoardFen("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R");
+        m_ThreatsSonifier.onMove(m_GameState);
     };
 
     addAndMakeVisible(Board2);
-    Board2.setButtonText("4k2r/6r1/8/8/8/8/3R4/R3K3");
+    Board2.setButtonText("3r1rk1/ppp1qpp1/3p1n1p/2b1p3/2BnP3/2NP1N2/PPP1QPPP/R1B2RK1");
     Board2.onClick = [this](){
-        m_Board.setBoardFen("4k2r/6r1/8/8/8/8/3R4/R3K3");
-        m_DebugSonifier.onMove(m_Board);
+        m_GameState.setBoardFen("3r1rk1/ppp1qpp1/3p1n1p/2b1p3/2BnP3/2NP1N2/PPP1QPPP/R1B2RK1");
+        m_ThreatsSonifier.onMove(m_GameState);
     };
 
     addAndMakeVisible(Board3);
     Board3.setButtonText("8/8/8/8/8/8/8/8");
     Board3.onClick = [this](){
-        m_Board.setBoardFen("8/8/8/8/8/8/8/8");
-        m_DebugSonifier.onMove(m_Board);
+        m_GameState.setBoardFen("8/8/8/8/8/8/8/8");
+        m_ThreatsSonifier.onMove(m_GameState);
     };
 }
 
@@ -51,19 +51,19 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    m_DebugSonifier.prepareToPlay(samplesPerBlockExpected,sampleRate);
-    m_DebugSonifier.onMove(m_Board);
+    m_ThreatsSonifier.prepareToPlay(samplesPerBlockExpected,sampleRate);
+    m_ThreatsSonifier.onMove(m_GameState);
 }
 
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    m_DebugSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.buffer->getNumSamples());
+    m_ThreatsSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.buffer->getNumSamples());
 }
 
 void MainComponent::releaseResources()
 {
-    m_DebugSonifier.releaseResources();
+    m_ThreatsSonifier.releaseResources();
 }
 
 //==============================================================================

@@ -4,6 +4,7 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 #include "../../src/DebugSonifier.h"
+#include "../../src/ThreatsSonifier.h"
 #include "../../src/GameState.h"
 #include <vector>
 
@@ -33,8 +34,8 @@ private:
     //==============================================================================
     // Your private member variables go here...
     float mSampleRate = 0.0f;
-    DebugSonifier m_DebugSonifier;
-    Chess::Board m_Board;
+    ThreatsSonifier m_ThreatsSonifier;
+    Chess::GameState m_GameState;
     juce::TextButton Board1;
     juce::TextButton Board2;
     juce::TextButton Board3;

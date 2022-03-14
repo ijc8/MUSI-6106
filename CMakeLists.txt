@@ -123,6 +123,8 @@ target_sources(SoundTests
         src/MainProcessor.h
 		src/DebugSonifier.h
 		src/DebugSonifier.cpp
+		src/ThreatsSonifier.h
+		src/ThreatsSonifier.cpp
 		src/GameState.cpp
 		src/GameState.h
         tests/soundTests/MainComponent.h

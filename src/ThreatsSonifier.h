@@ -1,5 +1,5 @@
-#ifndef MUSI_6106_DEBUGSONIFIER_H
-#define MUSI_6106_DEBUGSONIFIER_H
+#ifndef MUSI_6106_THREATSSONIFIER_H
+#define MUSI_6106_THREATSSONIFIER_H
 
 #include <cassert>
 #include "ErrorDef.h"
@@ -22,7 +22,7 @@ public:
 
     void releaseResources();
 
-    Error_t onMove(Chess::Board & board);
+    Error_t onMove(Chess::GameState &gameState);
 
 
 protected:
@@ -43,8 +43,7 @@ protected:
 
     float pan;
 
-
 };
 
 
-#endif //MUSI_6106_DEBUGSONIFIER_H
+#endif //MUSI_6106_THREATSSONIFIER_H
