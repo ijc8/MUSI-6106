@@ -1,8 +1,16 @@
 #include <iostream>
+#include <regex>
+#include <vector>
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+// Concise way to split a string in C++ >= 11. (Based on https://stackoverflow.com/a/64886763/13204291.)
+std::vector<std::string> split(const std::string &str, const std::regex &regex) {
+    return std::vector<std::string>(std::sregex_token_iterator(str.begin(), str.end(), regex, -1), std::sregex_token_iterator());
+}
 
 class Subprocess {
 public:
@@ -15,6 +23,9 @@ public:
         pid = fork();
         if (pid == 0) {
             // We're in the child process.
+            // Close unused pipe ends.
+            close(inpipe[1]);
+            close(outpipe[0]);
             // Redirect stdin/stdout/stderr to pipes.
             dup2(inpipe[0], STDIN_FILENO);
             // NOTE: Don't print any debug info after this!
@@ -33,6 +44,12 @@ public:
         stdout = fdopen(outpipe[0], "r");
     }
 
+    ~Subprocess() {
+        // NOTE: This sends EOF to child process.
+        fclose(stdin);
+        fclose(stdout);
+    }
+
     std::string readline(int max=512) {
         // NOTE: Could write a fancier version of this that repeatedly `fgets` until reaching a newline.
         // (Dynamically growing a std::string as necessary to contain the full line.)
@@ -42,13 +59,20 @@ public:
         return line;
     }
 
+    void write(const std::string &s) {
+        fputs(s.c_str(), stdin);
+    }
+
     void writeline(const std::string &line) {
-        fputs(line.c_str(), stdin);
+        write(line);
         fputc('\n', stdin);
         fflush(stdin);
     }
 
 private:
+    // PID of child process
+    pid_t pid;
+    // Pipes to child process's stdin (which we can write to) and stdout (which we can read from)
     FILE *stdin, *stdout;
 };
 
@@ -60,13 +84,14 @@ public:
     }
 
     std::string get_best_move(int time=1000) {
-        // TODO use `time`
-        process.writeline("go movetime 1000");
+        process.write("go movetime ");
+        process.writeline(std::to_string(time));
         std::string line = process.readline();
         while (!line.starts_with("bestmove")) {
             line = process.readline();
         }
-        return line; // TODO split
+        auto words = split(line, std::regex(" "));
+        return words[1];
     }
 
 private:
@@ -76,6 +101,6 @@ private:
 int main() {
     Stockfish engine;
     std::cout << engine.get_best_move() << std::endl;
-    std::cout << engine.get_best_move() << std::endl;
+    std::cout << engine.get_best_move(100) << std::endl;
     return 0;
 }

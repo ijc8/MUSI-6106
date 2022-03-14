@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(MUSICAL_CHESS VERSION 0.0.1)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 include_directories(catch2)
 
@@ -50,6 +50,9 @@ juce_add_gui_app(MusicalChess
 
 juce_add_console_app(Tests
     PRODUCT_NAME "Tests")
+
+juce_add_console_app(EngineTest
+    PRODUCT_NAME "EngineTest")
 
 juce_add_console_app(TerminalChess
     PRODUCT_NAME "TerminalChess")
@@ -108,6 +111,10 @@ target_sources(Tests
 target_sources(TerminalChess
     PRIVATE
         tests/TerminalChess.cpp)
+
+target_sources(EngineTest
+    PRIVATE
+        src/EngineBridge.cpp)
 
 target_sources(SonifierTest
 	PRIVATE
