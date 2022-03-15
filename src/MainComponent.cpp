@@ -11,6 +11,7 @@ MainComponent::MainComponent()
     m_ChessboardGUI.addActionListener(&m_BroadcastManager);
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
     m_BroadcastManager.addChangeListener(&m_DebugSonifier);
+    m_BroadcastManager.addChangeListener(&m_ThreatsSonifier);
 
     // text buttons
     addAndMakeVisible(buttonPreset1);
@@ -101,7 +102,7 @@ MainComponent::MainComponent()
     m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     m_VolumeSlider.onValueChange = [this]() {
         m_DebugSonifier.setGain(m_VolumeSlider.getValue());
-        //m_ThreatSonifier.setGain(m_VolumeSlider.getValue());
+        m_ThreatsSonifier.setGain(m_VolumeSlider.getValue());
     };
     m_VolumeSlider.setValue(0.25);
 }
@@ -116,19 +117,19 @@ MainComponent::~MainComponent()
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     m_DebugSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
-    // m_ThreatSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    m_ThreatsSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     m_DebugSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-    // m_ThreatSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    m_ThreatsSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
 }
 
 void MainComponent::releaseResources()
 {
     m_DebugSonifier.releaseResources();
-    // m_ThreatSonifier.releaseResources():
+    m_ThreatsSonifier.releaseResources();
 }
 
 //==============================================================================
@@ -174,11 +175,11 @@ void MainComponent::onSonifierChange()
     switch (m_SonifierSelector.getSelectedId())
     {
     case 1:
-        //m_ThreatSonifier.disable();
+        m_ThreatsSonifier.disable();
         m_DebugSonifier.enable();
         break;
     default:
-        //m_ThreatSonifier.enable();
+        m_ThreatsSonifier.enable();
         m_DebugSonifier.disable();
     }
 }

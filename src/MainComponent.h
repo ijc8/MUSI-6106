@@ -10,6 +10,7 @@
 
 #include "ChessboardGUI.h"
 #include "DebugSonifier.h"
+#include "ThreatsSonifier.h"
 #include "GameState.h"
 #include "BroadcastManager.h"
 
@@ -47,7 +48,10 @@ private:
 
     BroadcastManager m_BroadcastManager;
     DebugSonifier m_DebugSonifier;
+    ThreatsSonifier m_ThreatsSonifier;
     GUI::ChessBoard m_ChessboardGUI;
+
+
     juce::TextButton buttonPreset1;
     juce::TextButton buttonPreset2;
     juce::TextButton buttonPreset3;

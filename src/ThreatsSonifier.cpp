@@ -24,7 +24,7 @@ void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, const std:
         oscillators.emplace_back(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
     }
 
-    else if (preyPiece->type == Chess::Piece::Type::Bishop or preyPiece->type == Chess::Piece::Type::Knight or preyPiece->type == Chess::Piece::Type::Rook){
+    else if (preyPiece->type == Chess::Piece::Type::Bishop || preyPiece->type == Chess::Piece::Type::Knight || preyPiece->type == Chess::Piece::Type::Rook){
         oscillators.emplace_back(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
     }
 

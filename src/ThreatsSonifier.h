@@ -14,7 +14,7 @@
 using namespace Chess;
 
 
-class ThreatsSonifier{
+class ThreatsSonifier : public juce::ChangeListener {
 public:
     ThreatsSonifier();
 
@@ -27,6 +27,16 @@ public:
     void releaseResources();
 
     Error_t onMove(Chess::GameState &gameState);
+
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override
+    {
+        onMove(AppState::getInstance().getGame());
+    }
+
+    void enable() { m_mainProcessor.noteOn(); onMove(AppState::getInstance().getGame()); };
+    void disable() { m_mainProcessor.noteOff(); };
+
+    void setGain(float fNewGain) { m_mainProcessor.setGain(fNewGain); };
 
 
 protected:
