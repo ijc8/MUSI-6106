@@ -94,6 +94,16 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_NextButton);
     m_NextButton.setButtonText("Next");
+
+    addAndMakeVisible(m_VolumeSlider);
+    m_VolumeSlider.setRange(0, 0.25);
+    m_VolumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
+    m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    m_VolumeSlider.onValueChange = [this]() {
+        m_DebugSonifier.setGain(m_VolumeSlider.getValue());
+        //m_ThreatSonifier.setGain(m_VolumeSlider.getValue());
+    };
+    m_VolumeSlider.setValue(0.25);
 }
 
 MainComponent::~MainComponent()
@@ -136,6 +146,9 @@ void MainComponent::resized()
     auto footer = area.removeFromBottom(getHeight() / 6);
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
+
+    auto sliderArea = rightThird.removeFromRight(rightThird.getWidth() / 6);
+    m_VolumeSlider.setBounds(sliderArea);
 
     m_TitleText.setBounds(header);
     m_ChessboardGUI.setBounds(area);

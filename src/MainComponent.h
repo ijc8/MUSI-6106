@@ -56,6 +56,7 @@ private:
     juce::TextButton buttonReset;
     juce::ComboBox m_SonifierSelector;
     juce::ComboBox m_GameModeSelector;
+    juce::Slider m_VolumeSlider;
 
     juce::Label m_TitleText;
     juce::TextButton m_pgnButton;

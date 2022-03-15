@@ -32,6 +32,8 @@ public:
         void enable() { m_mainProcessor.noteOn(); onMove(AppState::getInstance().getGame()); };
         void disable() { m_mainProcessor.noteOff(); };
 
+        void setGain(float fNewGain) { m_mainProcessor.setGain(fNewGain); };
+
 protected:
 
     void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
