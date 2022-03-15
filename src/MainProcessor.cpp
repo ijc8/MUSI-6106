@@ -20,9 +20,10 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 {
 	for (int frame = 0; frame < iNumFrames; frame++)
 	{	
-		CScheduler::process(ppfOutBuffer, iNumChannels, frame);
+		CScheduler::processFrame(ppfOutBuffer, iNumChannels, frame);
 	}
 }
+
 
 void CMainProcessor::checkTriggers()
 {

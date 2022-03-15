@@ -19,7 +19,7 @@ public:
 
 	// This is a flexible process function that should cover all current and future needs
 	// Most classes implement this as frame-by-frame processing
-	virtual void process(float**, int, int) = 0;
+	virtual void processFrame(float**, int, int) = 0;
 
 	
 protected:
@@ -102,7 +102,7 @@ public:
 	Error_t setSampleRate(float fNewSampleRate) override;
 
 	// Processes frame-by-frame
-	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
+	void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
 protected:
 
