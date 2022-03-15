@@ -25,7 +25,7 @@ public:
 	float getLengthInSec() const;
 
 	// Frame-by-Frame processing function
-	virtual void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
+	virtual void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
 protected:
 
@@ -41,7 +41,7 @@ protected:
 	int64_t m_iScheduleLength = 0;
 
 	// Extra buffer space for applying adsr and gain
-	const int m_iMaxChannels = 6;
+	const int m_iMaxChannels = 20;
 	float** m_ppfTempBuffer = 0;
 
 	// These maps are used to trigger events on instruments at the correct sample
@@ -65,7 +65,7 @@ public:
 
 	Error_t setLoopLength(float fNewLoopLengthInSec);
 
-	void process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
+	void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 protected:
 	int m_iMinLoopLength = 0;
 };

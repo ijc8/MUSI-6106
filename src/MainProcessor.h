@@ -21,7 +21,7 @@ public:
 
 	// Pass the entire buffer into this process function
 	// It will internally do frame-by-frame processing
-	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames) override;
+	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames);
 
 	float getInternalClockInSeconds() { return static_cast<float>(m_iSampleCounter / m_fSampleRateInHz); };
 	int64_t getInternalClockInSamples() { return m_iSampleCounter; };

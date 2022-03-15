@@ -179,7 +179,7 @@ void CWavetableOscillator::reset()
 
 }
 
-void CWavetableOscillator::process(float** ppfOutBuffer, int iNumChannels, int currentFrame)
+void CWavetableOscillator::processFrame(float** ppfOutBuffer, int iNumChannels, int currentFrame)
 {
 	unsigned index0 = (unsigned)m_fCurrentIndex;
 	unsigned index1 = index0 + 1;

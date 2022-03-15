@@ -84,7 +84,7 @@ namespace GUI
 	class Piece : public juce::ImageButton
 	{
 	public:
-		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId)
+		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
 		{
 			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
 			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::yellow);
@@ -95,9 +95,15 @@ namespace GUI
 		juce::String getId() const { return juce::String::charToString(m_Name); };
 		void setSquareId(juce::String newId) { m_SquareId = newId; };
 		juce::String getSquareId() const { return m_SquareId; };
+		Chess::Color getTeam() const { return m_Team; };
 		bool operator==(const Piece& lhs) const
 		{
 			return (this->m_Name == lhs.m_Name && this->m_SquareId == lhs.m_SquareId);
+		}
+
+		bool isAlly(const Piece& piece) const
+		{
+			return m_Team == piece.m_Team;
 		}
 
 		void placeAt(const Square* square)
@@ -119,6 +125,7 @@ namespace GUI
 		juce::Image m_Image;
 		uint8_t m_Name;
 		juce::String m_SquareId;
+		const Chess::Color m_Team = Chess::Color::White;
 	};
 
 	class ChessBoard : public juce::Component, public juce::Button::Listener, public juce::ActionBroadcaster, public juce::ChangeListener
@@ -135,13 +142,13 @@ namespace GUI
 			auto genColor = [](int row, int col) {
 				if (row % 2 == 0)
 				{
-					if (col % 2 == 0) return juce::Colours::black;
-					else return juce::Colours::white;
+					if (col % 2 == 0) return juce::Colours::tan;
+					else return juce::Colours::lightgreen;
 				}
 				else
 				{
-					if (col % 2 == 0) return juce::Colours::white;
-					else return juce::Colours::black;
+					if (col % 2 == 0) return juce::Colours::lightgreen;
+					else return juce::Colours::tan;
 				}
 			};
 
@@ -213,33 +220,54 @@ namespace GUI
 
 		void buttonClicked(juce::Button* button) override
 		{
-			for (Piece& piece : m_AllPieces)
+			if (m_bIsMoveable)
 			{
-				if (button == &piece)
+				for (Piece& piece : m_AllPieces)
 				{
-					m_SelectedPiece = &piece;
-					m_CurrentState = state::kPlacing;
-					return;
-				}
-
-			}
-
-			for (int row = 0; row < BoardSize; row++)
-			{
-				for (int col = 0; col < BoardSize; col++)
-				{
-					Square*& square = m_AllSquares[row][col];
-					if (button == square)
+					if (button == &piece)
 					{
-						if (m_CurrentState == state::kPlacing)
+						if (m_SelectedPiece)
 						{
-							juce::String intent = m_SelectedPiece->getSquareId() + square->getId();
-							sendActionMessage(intent);
+							if (m_SelectedPiece->isAlly(piece))
+							{
+								m_SelectedPiece = &piece;
+							}
+							else
+							{
+								juce::String intent = m_SelectedPiece->getSquareId() + piece.getSquareId();
+								sendActionMessage(intent);
+							}
+						}
+						else {
+							if (AppState::getInstance().getGame().getTurn() == piece.getTeam())
+							{
+								m_SelectedPiece = &piece;
+								onStateChange(state::kPlacing);
+							}
 						}
 						return;
 					}
+
+				}
+
+				for (int row = 0; row < BoardSize; row++)
+				{
+					for (int col = 0; col < BoardSize; col++)
+					{
+						Square*& square = m_AllSquares[row][col];
+						if (button == square)
+						{
+							if (m_CurrentState == state::kPlacing)
+							{
+								juce::String intent = m_SelectedPiece->getSquareId() + square->getId();
+								sendActionMessage(intent);
+							}
+							return;
+						}
+					}
 				}
 			}
+			
 		}
 
 		void changeListenerCallback(juce::ChangeBroadcaster* source) override
@@ -266,15 +294,16 @@ namespace GUI
 
 					}
 				}
+				onStateChange(state::kIdle);
 		}
 
-
-
+		void setMoveable(bool bIsMoveable) { m_bIsMoveable = bIsMoveable; };
 
 	private:
 
 		static constexpr int BoardSize = 8;
 		static constexpr int NumPieces = 32;
+		bool m_bIsMoveable = true;
 
 		ChessBoard::state m_CurrentState = ChessBoard::state::kIdle;
 		Piece* m_SelectedPiece = nullptr;
