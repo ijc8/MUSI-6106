@@ -19,7 +19,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent : public juce::AudioAppComponent
+class MainComponent : public juce::AudioAppComponent, public juce::ChangeListener
 {
 public:
 
@@ -40,6 +40,8 @@ public:
 
     void paint(juce::Graphics& g) override;
     void resized() override;
+
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
     //==============================================================================
@@ -63,6 +65,7 @@ private:
     juce::Slider m_VolumeSlider;
 
     juce::Label m_TitleText;
+    juce::Label m_TurnText;
     juce::TextButton m_pgnButton;
     juce::TextButton m_NextButton;
     juce::TextButton m_PrevButton;

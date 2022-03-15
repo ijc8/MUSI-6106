@@ -12,6 +12,7 @@ MainComponent::MainComponent()
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
     m_BroadcastManager.addChangeListener(&m_DebugSonifier);
     m_BroadcastManager.addChangeListener(&m_ThreatsSonifier);
+    m_BroadcastManager.addChangeListener(this);
 
     // text buttons
     addAndMakeVisible(buttonPreset1);
@@ -85,6 +86,13 @@ MainComponent::MainComponent()
     m_TitleText.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
     m_TitleText.setJustificationType(juce::Justification::centred);
 
+    addAndMakeVisible(m_TurnText);
+    m_TurnText.setText("White's turn", juce::NotificationType::dontSendNotification);
+    m_TurnText.setFont(juce::Font(15));
+    m_TurnText.setColour(juce::Label::backgroundColourId, juce::Colours::black);
+    m_TurnText.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
+    m_TurnText.setJustificationType(juce::Justification::centred);
+
     addAndMakeVisible(m_pgnButton);
     m_pgnButton.setButtonText("Load PGN");
     m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
@@ -152,6 +160,8 @@ void MainComponent::resized()
     m_VolumeSlider.setBounds(sliderArea);
 
     m_TitleText.setBounds(header);
+
+    m_TurnText.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
     m_ChessboardGUI.setBounds(area);
 
     auto rightBottomThird = rightThird.removeFromBottom(rightThird.getHeight() / 3).reduced(20);
@@ -168,6 +178,19 @@ void MainComponent::resized()
     buttonPreset4.setBounds(footer.removeFromLeft(getWidth() / 6));
     buttonPreset5.setBounds(footer.removeFromLeft(getWidth() / 6));
     buttonReset.setBounds(footer.removeFromLeft(getWidth() / 6));
+}
+
+void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
+{
+    Chess::Game& game = AppState::getInstance().getGame();
+    switch (game.getTurn())
+    {
+    case Chess::Color::White:
+        m_TurnText.setText("White's Turn", juce::dontSendNotification);
+        break;
+    default:
+        m_TurnText.setText("Black's Turn", juce::dontSendNotification);
+    }
 }
 
 void MainComponent::onSonifierChange()
