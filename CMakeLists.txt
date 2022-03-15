@@ -90,8 +90,10 @@ target_sources(MusicalChess
         src/ErrorDef.h
         src/Scheduler.h
         src/MainProcessor.h
-		src/DebugSonifier.h
-		src/DebugSonifier.cpp)
+	src/DebugSonifier.h
+	src/DebugSonifier.cpp
+	src/ThreatsSonifier.h
+	src/ThreatsSonifier.cpp)
 
 target_sources(Tests
     PRIVATE
@@ -126,9 +128,11 @@ target_sources(SoundTests
         src/ErrorDef.h
         src/Scheduler.h
         src/MainProcessor.h
-		src/DebugSonifier.h
-		src/DebugSonifier.cpp
-		src/GameState.h
+	src/DebugSonifier.h
+	src/DebugSonifier.cpp
+	src/GameState.h
+	src/ThreatsSonifier.h
+	src/ThreatsSonifier.cpp
         tests/soundTests/MainComponent.h
         tests/soundTests/MainComponent.cpp
         tests/soundTests/Main.cpp)
