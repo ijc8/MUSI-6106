@@ -97,7 +97,7 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_VolumeSlider);
     m_VolumeSlider.setRange(0, 0.25);
-    m_VolumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
+    m_VolumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     m_VolumeSlider.onValueChange = [this]() {
         m_DebugSonifier.setGain(m_VolumeSlider.getValue());
