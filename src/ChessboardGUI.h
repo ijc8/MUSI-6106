@@ -142,13 +142,13 @@ namespace GUI
 			auto genColor = [](int row, int col) {
 				if (row % 2 == 0)
 				{
-					if (col % 2 == 0) return juce::Colours::black;
-					else return juce::Colours::white;
+					if (col % 2 == 0) return juce::Colours::tan;
+					else return juce::Colours::lightgreen;
 				}
 				else
 				{
-					if (col % 2 == 0) return juce::Colours::white;
-					else return juce::Colours::black;
+					if (col % 2 == 0) return juce::Colours::lightgreen;
+					else return juce::Colours::tan;
 				}
 			};
 
