@@ -52,7 +52,7 @@ namespace Chess {
 
     struct Move {
         Move(Square src_, Square dst_, std::optional<Piece::Type> promotion_ = std::nullopt)
-            : src(src_), dst(dst_), promotion(promotion_) {}
+                : src(src_), dst(dst_), promotion(promotion_) {}
         bool operator==(const Move &other) const {
             return src == other.src && dst == other.dst && promotion == other.promotion;
         }
@@ -141,8 +141,8 @@ namespace Chess {
         bool wouldBeInCheck(Move move) const;
         bool isLegal(Move move) const;
 
-        std::unordered_map<Square, Piece> getThreats();
-        std::unordered_map<Square, Piece> getAttackers();
+        std::unordered_map<Square, std::optional<Piece>> getThreats();
+        std::unordered_map<Square, std::optional<Piece>> getAttackers();
 
         void execute(Move move);
 
@@ -159,7 +159,7 @@ namespace Chess {
         using GameState::GameState;
         void push(Move move);
         Move pop();
-    
+
     private:
         std::stack<std::tuple<Move, GameState>> history;
     };
@@ -181,19 +181,3 @@ private:
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

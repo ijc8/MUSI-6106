@@ -14,21 +14,21 @@ const std::string Board::initialBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 const std::string GameState::initialFen = Board::initialBoardFen + " w KQkq - 0 1";
 
 const std::unordered_map<char, Piece::Type> Piece::FromChar{
-    {'P', Piece::Type::Pawn},
-    {'B', Piece::Type::Bishop},
-    {'N', Piece::Type::Knight},
-    {'R', Piece::Type::Rook},
-    {'Q', Piece::Type::Queen},
-    {'K', Piece::Type::King},
+        {'P', Piece::Type::Pawn},
+        {'B', Piece::Type::Bishop},
+        {'N', Piece::Type::Knight},
+        {'R', Piece::Type::Rook},
+        {'Q', Piece::Type::Queen},
+        {'K', Piece::Type::King},
 };
 
 const std::unordered_map<Piece::Type, char> Piece::ToChar{
-    {Piece::Type::Pawn, 'P'},
-    {Piece::Type::Bishop, 'B'},
-    {Piece::Type::Knight, 'N'},
-    {Piece::Type::Rook, 'R'},
-    {Piece::Type::Queen, 'Q'},
-    {Piece::Type::King, 'K'},
+        {Piece::Type::Pawn, 'P'},
+        {Piece::Type::Bishop, 'B'},
+        {Piece::Type::Knight, 'N'},
+        {Piece::Type::Rook, 'R'},
+        {Piece::Type::Queen, 'Q'},
+        {Piece::Type::King, 'K'},
 };
 
 Board::Board(const std::string &boardFen) {
@@ -415,22 +415,23 @@ Move Game::pop() {
     setFen(state.getFen());
     return move;
 }
-std::unordered_map<Square, Piece> GameState::getThreats() {
+std::unordered_map<Square, std::optional<Piece>> GameState::getThreats() {
 
 
-    auto pieceMap = getPieceMap();
+    GameState copy(*this);
+    auto pieceMap = copy.getPieceMap();
 
-    Chess::Color color = getTurn();
-    Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
-    std::unordered_map<Square, Piece> threats;
+    Chess::Color color = copy.getTurn();
+    copy.turn = color == Color::White? Chess::Color::Black : Color::White;
+    std::unordered_map<Square, std::optional<Piece>> threats;
 
     for (const auto [square, piece] : pieceMap) {
         // Iterating over the pieces of the same color and checking for legal moves
-        if (piece.color != side) continue;
+        if (piece.color != copy.turn) continue;
 
-        for (auto move : generateMoves(square)) {
-            if (getPieceAt(move.dst).has_value()) {
-                threats[square] = piece;
+        for (auto move : copy.generateMoves(square)) {
+            if (copy.getPieceAt(move.dst).has_value()) {
+                threats[move.dst] = copy.getPieceAt(move.dst);
             }
         }
     }
@@ -438,16 +439,16 @@ std::unordered_map<Square, Piece> GameState::getThreats() {
     return threats;
 }
 
-std::unordered_map<Square, Piece> GameState::getAttackers() {
+std::unordered_map<Square, std::optional<Piece>> GameState::getAttackers() {
+
 
     Chess::Color color = getTurn();
     auto pieceMap = getPieceMap();
-    Chess::Color side = color == Color::White? Chess::Color::Black : Color::White;
-    std::unordered_map<Square, Piece> attackers;
+    std::unordered_map<Square, std::optional<Piece>> attackers;
 
     for (const auto [square, piece] : pieceMap) {
         // Iterating over the pieces of the same color and checking for legal moves
-        if (piece.color == side) continue;
+        if (piece.color != color) continue;
 
         for (auto move : generateMoves(square)) {
             if (getPieceAt(move.dst).has_value()) {
