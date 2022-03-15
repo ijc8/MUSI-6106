@@ -85,7 +85,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     m_DebugSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-    // m_CurrentSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    // m_ThreatSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
 }
 
 void MainComponent::releaseResources()
@@ -125,11 +125,12 @@ void MainComponent::onSonifierChange()
     switch (m_SonifierSelector.getSelectedId())
     {
     case 1:
-        //m_CurrentSonifier = &m_DebugSonifier;
+        //m_ThreatSonifier.disable();
+        m_DebugSonifier.enable();
         break;
     default:
-        //m_CurrentSonifier = &m_ThreatSonifier;
-        ;
+        //m_ThreatSonifier.enable();
+        m_DebugSonifier.disable();
     }
 }
 
