@@ -61,6 +61,8 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_pgnButton);
     m_pgnButton.setButtonText("Load PGN");
+    m_pgnButton.onClick = [this]() { onPgnButtonClicked(); };
+
     addAndMakeVisible(m_PrevButton);
     addAndMakeVisible(m_StopButton);
     addAndMakeVisible(m_PlayButton);
@@ -130,4 +132,18 @@ void MainComponent::onSonifierChange()
         ;
     }
 
+}
+
+void MainComponent::onPgnButtonClicked()
+{
+    m_FileChooser = std::make_unique<juce::FileChooser>("Please select the moose you want to load...",
+        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
+            "*.pgn");
+
+    auto folderChooserFlags = juce::FileBrowserComponent::openMode;
+
+    m_FileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser& chooser)
+        {
+            m_PgnString = chooser.getResult().loadFileAsString();
+        });
 }

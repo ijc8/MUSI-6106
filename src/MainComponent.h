@@ -54,5 +54,9 @@ private:
 
     void onSonifierChange();
 
+    void onPgnButtonClicked();
+    std::unique_ptr<juce::FileChooser> m_FileChooser;
+    juce::String m_PgnString;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
