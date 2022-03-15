@@ -220,50 +220,54 @@ namespace GUI
 
 		void buttonClicked(juce::Button* button) override
 		{
-			for (Piece& piece : m_AllPieces)
+			if (m_bIsMoveable)
 			{
-				if (button == &piece)
+				for (Piece& piece : m_AllPieces)
 				{
-					if (m_SelectedPiece)
+					if (button == &piece)
 					{
-						if (m_SelectedPiece->isAlly(piece))
+						if (m_SelectedPiece)
 						{
-							m_SelectedPiece = &piece;
+							if (m_SelectedPiece->isAlly(piece))
+							{
+								m_SelectedPiece = &piece;
+							}
+							else
+							{
+								juce::String intent = m_SelectedPiece->getSquareId() + piece.getSquareId();
+								sendActionMessage(intent);
+							}
 						}
-						else 
-						{
-							juce::String intent = m_SelectedPiece->getSquareId() + piece.getSquareId();
-							sendActionMessage(intent);
-						}
-					}
-					else {
-						if (AppState::getInstance().getGame().getTurn() == piece.getTeam())
-						{
-							m_SelectedPiece = &piece;
-							onStateChange(state::kPlacing);
-						}
-					}
-					return;
-				}
-
-			}
-
-			for (int row = 0; row < BoardSize; row++)
-			{
-				for (int col = 0; col < BoardSize; col++)
-				{
-					Square*& square = m_AllSquares[row][col];
-					if (button == square)
-					{
-						if (m_CurrentState == state::kPlacing)
-						{
-							juce::String intent = m_SelectedPiece->getSquareId() + square->getId();
-							sendActionMessage(intent);
+						else {
+							if (AppState::getInstance().getGame().getTurn() == piece.getTeam())
+							{
+								m_SelectedPiece = &piece;
+								onStateChange(state::kPlacing);
+							}
 						}
 						return;
 					}
+
+				}
+
+				for (int row = 0; row < BoardSize; row++)
+				{
+					for (int col = 0; col < BoardSize; col++)
+					{
+						Square*& square = m_AllSquares[row][col];
+						if (button == square)
+						{
+							if (m_CurrentState == state::kPlacing)
+							{
+								juce::String intent = m_SelectedPiece->getSquareId() + square->getId();
+								sendActionMessage(intent);
+							}
+							return;
+						}
+					}
 				}
 			}
+			
 		}
 
 		void changeListenerCallback(juce::ChangeBroadcaster* source) override
@@ -293,13 +297,13 @@ namespace GUI
 				onStateChange(state::kIdle);
 		}
 
-
-
+		void setMoveable(bool bIsMoveable) { m_bIsMoveable = bIsMoveable; };
 
 	private:
 
 		static constexpr int BoardSize = 8;
 		static constexpr int NumPieces = 32;
+		bool m_bIsMoveable = true;
 
 		ChessBoard::state m_CurrentState = ChessBoard::state::kIdle;
 		Piece* m_SelectedPiece = nullptr;

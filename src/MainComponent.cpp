@@ -3,20 +3,8 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
-    setSize(600, 400);
-    // Some platforms require permissions to open input channels so request that here
-    if (juce::RuntimePermissions::isRequired(juce::RuntimePermissions::recordAudio)
-        && !juce::RuntimePermissions::isGranted(juce::RuntimePermissions::recordAudio))
-    {
-        juce::RuntimePermissions::request(juce::RuntimePermissions::recordAudio,
-            [&](bool granted) { setAudioChannels(granted ? 2 : 0, 2); });
-    }
-    else
-    {
-        // Specify the number of input and output channels that we want to open
-        setAudioChannels(0, 2);
-    }
-
+    setSize(1000, 600);
+    setAudioChannels(0, 2);
 
     addAndMakeVisible(m_ChessboardGUI);
     Chess::Game& game = AppState::getInstance().getGame();
@@ -46,11 +34,48 @@ MainComponent::MainComponent()
         m_BroadcastManager.sendChangeMessage();
     };
 
+    addAndMakeVisible(buttonPreset4);
+    buttonPreset4.setButtonText("8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8");
+    buttonPreset4.onClick = [this, &game]() {
+        game.setBoardFen("8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8");
+        m_BroadcastManager.sendChangeMessage();
+    };
+
+    addAndMakeVisible(buttonPreset5);
+    buttonPreset5.setButtonText("r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1");
+    buttonPreset5.onClick = [this, &game]() {
+        game.setBoardFen("r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1");
+        m_BroadcastManager.sendChangeMessage();
+    };
+
+    addAndMakeVisible(buttonReset);
+    buttonReset.setButtonText("Reset Game");
+    buttonReset.onClick = [this, &game]() {
+        game.setFen(AppState::getInstance().getGame().initialFen);
+        m_BroadcastManager.sendChangeMessage();
+    };
+
     addAndMakeVisible(m_SonifierSelector);
     m_SonifierSelector.onChange = [this]() { onSonifierChange(); };
     m_SonifierSelector.addItem("Debug Sonifier", 1);
     m_SonifierSelector.addItem("Threat Sonifier", 2);
     m_SonifierSelector.setSelectedId(1);
+
+    addAndMakeVisible(m_GameModeSelector);
+    m_GameModeSelector.onChange = [this]()
+    {
+        switch (m_GameModeSelector.getSelectedId())
+        {
+        case 1: onGameModeChange(GameMode::PVP); break;
+        case 2: onGameModeChange(GameMode::PVC); break;
+        default: onGameModeChange(GameMode::PGN);
+        }
+    };
+    m_GameModeSelector.addItem("PVP", 1);
+    m_GameModeSelector.addItem("PVC", 2);
+    m_GameModeSelector.addItem("PGN", 3);
+    m_GameModeSelector.setSelectedId(1);
+    onGameModeChange(GameMode::PVP);
 
     addAndMakeVisible(m_TitleText);
     m_TitleText.setText("MUSICAL CHESS", juce::NotificationType::dontSendNotification);
@@ -61,12 +86,14 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_pgnButton);
     m_pgnButton.setButtonText("Load PGN");
+    m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
     m_pgnButton.onClick = [this]() { onPgnButtonClicked(); };
 
     addAndMakeVisible(m_PrevButton);
-    addAndMakeVisible(m_StopButton);
-    addAndMakeVisible(m_PlayButton);
+    m_PrevButton.setButtonText("Previous");
+
     addAndMakeVisible(m_NextButton);
+    m_NextButton.setButtonText("Next");
 }
 
 MainComponent::~MainComponent()
@@ -112,12 +139,21 @@ void MainComponent::resized()
 
     m_TitleText.setBounds(header);
     m_ChessboardGUI.setBounds(area);
-    m_SonifierSelector.setBounds(rightThird.removeFromBottom(rightThird.getHeight()/3).reduced(20));
+
+    auto rightBottomThird = rightThird.removeFromBottom(rightThird.getHeight() / 3).reduced(20);
+    m_SonifierSelector.setBounds(rightBottomThird.removeFromLeft(rightBottomThird.getWidth() / 2));
+    m_GameModeSelector.setBounds(rightBottomThird);
     m_pgnButton.setBounds(rightThird.removeFromTop(rightThird.getHeight() / 2).reduced(20));
 
-    buttonPreset1.setBounds(footer.removeFromLeft(getWidth() / 3));
-    buttonPreset2.setBounds(footer.removeFromLeft(getWidth() / 3));
-    buttonPreset3.setBounds(footer.removeFromLeft(getWidth() / 3));
+    m_PrevButton.setBounds(rightThird.removeFromLeft(rightThird.getWidth() / 2).reduced(20));
+    m_NextButton.setBounds(rightThird.reduced(20));
+
+    buttonPreset1.setBounds(footer.removeFromLeft(getWidth() / 6));
+    buttonPreset2.setBounds(footer.removeFromLeft(getWidth() / 6));
+    buttonPreset3.setBounds(footer.removeFromLeft(getWidth() / 6));
+    buttonPreset4.setBounds(footer.removeFromLeft(getWidth() / 6));
+    buttonPreset5.setBounds(footer.removeFromLeft(getWidth() / 6));
+    buttonReset.setBounds(footer.removeFromLeft(getWidth() / 6));
 }
 
 void MainComponent::onSonifierChange()
@@ -136,7 +172,7 @@ void MainComponent::onSonifierChange()
 
 void MainComponent::onPgnButtonClicked()
 {
-    m_FileChooser = std::make_unique<juce::FileChooser>("Please select the moose you want to load...",
+    m_FileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
         juce::File::getSpecialLocation(juce::File::userHomeDirectory),
             "*.pgn");
 
@@ -147,11 +183,42 @@ void MainComponent::onPgnButtonClicked()
             juce::File file = chooser.getResult();
             if (file.exists())
             {
+                m_pgnButton.setButtonText("PGN Loaded!");
+                m_pgnButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
                 m_PgnString = chooser.getResult().loadFileAsString();
-                AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
-                m_BroadcastManager.sendChangeMessage();
+                onGameModeChange(GameMode::PGN);
+            }
+            else {
+                if (m_PgnString.isEmpty())
+                {
+                    m_pgnButton.setButtonText("Load PGN");
+                    m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
+                }
             }
         });
 
 
+}
+
+void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
+{
+    switch (nextGameMode)
+    {
+    case GameMode::PVP:
+    case GameMode::PVC:
+        m_pgnButton.setButtonText("Load PGN");
+        m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
+        m_PgnString.clear();
+        m_pgnButton.setEnabled(false);
+        m_PrevButton.setEnabled(false);
+        m_NextButton.setEnabled(false);
+        break;
+    default:
+        m_pgnButton.setEnabled(true);
+        m_PrevButton.setEnabled(true);
+        m_NextButton.setEnabled(true);
+    }
+    m_GameMode = nextGameMode;
+    AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
+    m_BroadcastManager.sendChangeMessage();
 }
