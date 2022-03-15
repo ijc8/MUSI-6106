@@ -11,7 +11,8 @@ ThreatsSonifier::ThreatsSonifier (){
 ThreatsSonifier::~ThreatsSonifier() {
 }
 
-void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, Chess::Piece const& preyPiece)
+void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece)
+
 {
     pan = preySquare.rank + 1 * 0.1f;
 
@@ -19,19 +20,19 @@ void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, Chess::Pie
     float gains[8] = {1.0f, 0.8f, 0.6f, 0.4f, 0.4f, 0.6f, 0.8f, 1.0f};
     int gainIdx = static_cast<int>(preySquare.file);
 
-    if (preyPiece.type == Chess::Piece::Type::Pawn) {
+    if (preyPiece->type == Chess::Piece::Type::Pawn) {
         oscillators.emplace_back(sine, hitchcockFrequencies[0], gains[gainIdx], 44100);
     }
 
-    else if (preyPiece.type == Chess::Piece::Type::Bishop or preyPiece.type == Chess::Piece::Type::Knight or preyPiece.type == Chess::Piece::Type::Rook){
+    else if (preyPiece->type == Chess::Piece::Type::Bishop or preyPiece->type == Chess::Piece::Type::Knight or preyPiece->type == Chess::Piece::Type::Rook){
         oscillators.emplace_back(sine, hitchcockFrequencies[1], gains[gainIdx], 44100);
     }
 
-    else if (preyPiece.type == Chess::Piece::Type::Queen){
+    else if (preyPiece->type == Chess::Piece::Type::Queen){
         oscillators.emplace_back(sine, hitchcockFrequencies[2], gains[gainIdx], 44100);
     }
 
-    else if (preyPiece.type == Chess::Piece::Type::King){
+    else if (preyPiece->type == Chess::Piece::Type::King){
         oscillators.emplace_back(sine, hitchcockFrequencies[3], gains[gainIdx], 44100);
     }
 

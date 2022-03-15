@@ -141,8 +141,8 @@ namespace Chess {
         bool wouldBeInCheck(Move move) const;
         bool isLegal(Move move) const;
 
-        std::unordered_map<Square, Piece> getThreats();
-        std::unordered_map<Square, Piece> getAttackers();
+        std::unordered_map<Square, std::optional<Piece>> getThreats();
+        std::unordered_map<Square, std::optional<Piece>> getAttackers();
 
         void execute(Move move);
 

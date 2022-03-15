@@ -8,6 +8,10 @@
 #include "MainProcessor.h"
 #include <vector>
 #include <list>
+#include <optional>
+
+
+using namespace Chess;
 
 
 class ThreatsSonifier{
@@ -27,7 +31,7 @@ public:
 
 protected:
 
-    void sonifyThreatee(Chess::Square const& preySquare, Chess::Piece const& preyPiece);
+    void sonifyThreatee(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
 
     std::list<CWavetableOscillator> oscillators;
 
