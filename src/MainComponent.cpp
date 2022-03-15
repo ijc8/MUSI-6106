@@ -131,7 +131,6 @@ void MainComponent::onSonifierChange()
         //m_CurrentSonifier = &m_ThreatSonifier;
         ;
     }
-
 }
 
 void MainComponent::onPgnButtonClicked()
@@ -144,6 +143,14 @@ void MainComponent::onPgnButtonClicked()
 
     m_FileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser& chooser)
         {
-            m_PgnString = chooser.getResult().loadFileAsString();
+            juce::File file = chooser.getResult();
+            if (file.exists())
+            {
+                m_PgnString = chooser.getResult().loadFileAsString();
+                AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
+                m_BroadcastManager.sendChangeMessage();
+            }
         });
+
+
 }
