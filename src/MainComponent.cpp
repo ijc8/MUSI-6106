@@ -186,7 +186,6 @@ void MainComponent::onPgnButtonClicked()
                 m_pgnButton.setButtonText("PGN Loaded!");
                 m_pgnButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
                 m_PgnString = chooser.getResult().loadFileAsString();
-                onGameModeChange(GameMode::PGN);
             }
             else {
                 if (m_PgnString.isEmpty())
@@ -206,17 +205,31 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
     {
     case GameMode::PVP:
     case GameMode::PVC:
+        m_ChessboardGUI.setMoveable(true);
         m_pgnButton.setButtonText("Load PGN");
         m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         m_PgnString.clear();
         m_pgnButton.setEnabled(false);
         m_PrevButton.setEnabled(false);
         m_NextButton.setEnabled(false);
+        buttonPreset1.setEnabled(true);
+        buttonPreset2.setEnabled(true);
+        buttonPreset3.setEnabled(true);
+        buttonPreset4.setEnabled(true);
+        buttonPreset5.setEnabled(true);
+        buttonReset.setEnabled(true);
         break;
     default:
+        m_ChessboardGUI.setMoveable(false);
         m_pgnButton.setEnabled(true);
         m_PrevButton.setEnabled(true);
         m_NextButton.setEnabled(true);
+        buttonPreset1.setEnabled(false);
+        buttonPreset2.setEnabled(false);
+        buttonPreset3.setEnabled(false);
+        buttonPreset4.setEnabled(false);
+        buttonPreset5.setEnabled(false);
+        buttonReset.setEnabled(false);
     }
     m_GameMode = nextGameMode;
     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
