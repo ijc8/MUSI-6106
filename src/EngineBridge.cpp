@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// TODO: Move this header to third-party folder.
+#include "subprocess.h"
+
 #include "GameState.h"
 
 // Concise way to split a string in C++ >= 11. (Based on https://stackoverflow.com/a/64886763/13204291.)
@@ -14,36 +17,22 @@ std::vector<std::string> split(const std::string &str, const std::regex &regex) 
     return std::vector<std::string>(std::sregex_token_iterator(str.begin(), str.end(), regex, -1), std::sregex_token_iterator());
 }
 
+// TODO: Consider using C++20 (we're using C++17 now) to get this for free.
+bool starts_with(const std::string &str, const std::string &prefix) {
+    return str.rfind(prefix, 0) == 0;
+}
+
 class Subprocess {
 public:
     Subprocess(const std::string &path) {
-        pid_t pid = 0;
-        int outpipe[2];
-        int inpipe[2];
-        pipe(outpipe);
-        pipe(inpipe);
-        pid = fork();
-        if (pid == 0) {
-            // We're in the child process.
-            // Close unused pipe ends.
-            close(inpipe[1]);
-            close(outpipe[0]);
-            // Redirect stdin/stdout/stderr to pipes.
-            dup2(inpipe[0], STDIN_FILENO);
-            // NOTE: Don't print any debug info after this!
-            // It will just go into the pipe and get read by the parent process.
-            dup2(outpipe[1], STDOUT_FILENO);
-            dup2(outpipe[1], STDERR_FILENO);
-            execl(path.c_str(), path.c_str(), (char*)NULL);
-            // Executed only if `execl` failed:
-            exit(1);
+        const char *command_line[] = {path.c_str(), NULL};
+        int result = subprocess_create(command_line, 0, &subprocess);
+        if (result) {
+            // An error occurred! TODO: Throw an exception.
+            assert(false);
         }
-        // We're in the parent process.
-        // Close unused pipe ends.
-        close(inpipe[0]);
-        close(outpipe[1]);
-        stdin = fdopen(inpipe[1], "w");
-        stdout = fdopen(outpipe[0], "r");
+        stdin = subprocess_stdin(&subprocess);
+        stdout = subprocess_stdout(&subprocess);
     }
 
     ~Subprocess() {
@@ -72,6 +61,7 @@ public:
     }
 
 private:
+    struct subprocess_s subprocess;
     // PID of child process
     pid_t pid;
     // Pipes to child process's stdin (which we can write to) and stdout (which we can read from)
@@ -82,14 +72,14 @@ class Stockfish {
 public:
     Stockfish(const char *path="/usr/games/stockfish")
     : process(path) {
-        assert(process.readline().starts_with("Stockfish"));
+        assert(starts_with(process.readline(), "Stockfish"));
     }
 
     Chess::Move getMove(int time=1000) {
         process.write("go movetime ");
         process.writeline(std::to_string(time));
         std::string line = process.readline();
-        while (!line.starts_with("bestmove")) {
+        while (!starts_with(line, "bestmove")) {
             line = process.readline();
         }
         auto words = split(line, std::regex(" "));
