@@ -51,6 +51,9 @@ juce_add_gui_app(MusicalChess
 juce_add_console_app(Tests
     PRODUCT_NAME "Tests")
 
+juce_add_console_app(EngineTest
+    PRODUCT_NAME "EngineTest")
+
 juce_add_console_app(TerminalChess
     PRODUCT_NAME "TerminalChess")
 
@@ -108,6 +111,10 @@ target_sources(Tests
 target_sources(TerminalChess
     PRIVATE
         tests/TerminalChess.cpp)
+
+target_sources(EngineTest
+    PRIVATE
+        src/EngineBridge.cpp)
 
 target_sources(SonifierTest
 	PRIVATE
@@ -217,6 +224,10 @@ target_link_libraries(TerminalChess
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+target_link_libraries(EngineTest
+    PRIVATE
+        Common)
 
 target_link_libraries(SonifierTest
     PRIVATE
