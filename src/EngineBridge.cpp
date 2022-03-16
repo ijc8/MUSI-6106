@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 // TODO: Move this header to third-party folder.
 #include "subprocess.h"
@@ -31,14 +30,14 @@ public:
             // An error occurred! TODO: Throw an exception.
             assert(false);
         }
-        stdin = subprocess_stdin(&subprocess);
-        stdout = subprocess_stdout(&subprocess);
+        childStdin = subprocess_stdin(&subprocess);
+        childStdout = subprocess_stdout(&subprocess);
     }
 
     ~Subprocess() {
         // NOTE: This sends EOF to child process.
-        fclose(stdin);
-        fclose(stdout);
+        fclose(childStdin);
+        fclose(childStdout);
     }
 
     std::string readline(int max=512) {
@@ -46,26 +45,26 @@ public:
         // (Dynamically growing a std::string as necessary to contain the full line.)
         // But this is probably good enough for our purposes.
         char line[max];
-        fgets(line, max, stdout);
+        fgets(line, max, childStdout);
         return line;
     }
 
     void write(const std::string &s) {
-        fputs(s.c_str(), stdin);
+        fputs(s.c_str(), childStdin);
     }
 
     void writeline(const std::string &line) {
         write(line);
-        fputc('\n', stdin);
-        fflush(stdin);
+        fputc('\n', childStdin);
+        fflush(childStdin);
     }
 
 private:
+    // Handle for child process
     struct subprocess_s subprocess;
-    // PID of child process
-    pid_t pid;
-    // Pipes to child process's stdin (which we can write to) and stdout (which we can read from)
-    FILE *stdin, *stdout;
+    // Pipes to child process's childStdin (which we can write to) and childStdout (which we can read from)
+    // (Renamed to avoid conflict with childStdin/childStdout macros on Windows.)
+    FILE *childStdin, *childStdout;
 };
 
 class Stockfish {
