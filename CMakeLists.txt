@@ -86,7 +86,8 @@ target_sources(MusicalChess
         src/Scheduler.cpp
         src/MainProcessor.cpp
 	    src/DebugSonifier.cpp
-	    src/ThreatsSonifier.cpp)
+	    src/ThreatsSonifier.cpp
+        src/EngineBridge.cpp)
 
 target_sources(Tests
     PRIVATE
@@ -104,7 +105,8 @@ target_sources(TerminalChess
 
 target_sources(EngineTest
     PRIVATE
-        src/EngineBridge.cpp)
+        src/EngineBridge.cpp
+        tests/TestEngineBridge.cpp)
 
 target_sources(SonifierTest
 	PRIVATE
