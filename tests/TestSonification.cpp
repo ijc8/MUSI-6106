@@ -44,5 +44,26 @@ TEST_CASE("Zero Board as Input", "[zeroinput]") {
 	REQUIRE(Sonifier.onMove(board3) == Error_t::kFunctionInvalidArgsError);
 	REQUIRE(Sonifier.onMove(board4) == Error_t::kFunctionInvalidArgsError);
 
+	ppfOutputBuffer1[0] = new float[16];
+	ppfOutputBuffer2[0] = new float[16];
+	for (int i = 0; i < 1024; i++)
+	{
+		ppfOutputBuffer1[0][i] = 1;
+		ppfOutputBuffer2[0][i] = 1;
+	}
+
+	Sonifier.process(ppfOutputBuffer1,1,4);
+	for (int frame = 0; frame < 4; frame++)
+	{
+		CScheduler::processFrame(ppfOutBuffer2, 1, frame);
+	}
+
+	CHECK_ARRAY_CLOSE(ppfOutputBuffer1, ppfOutputBuffer2, 1,16, 1e-4);
+
+	delete[] ppfOutputBuffer1[0];
+	delete[] ppfOutputBuffer2[0];
+	delete[] ppfOutputBuffer1;
+	delete[] ppfOutputBuffer2;
+
 
 }
