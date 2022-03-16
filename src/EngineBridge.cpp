@@ -40,10 +40,11 @@ public:
         fclose(childStdout);
     }
 
-    std::string readline(int max=512) {
+    std::string readline() {
         // NOTE: Could write a fancier version of this that repeatedly `fgets` until reaching a newline.
         // (Dynamically growing a std::string as necessary to contain the full line.)
         // But this is probably good enough for our purposes.
+        static const int max = 512;
         char line[max];
         fgets(line, max, childStdout);
         return line;
