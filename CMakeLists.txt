@@ -79,24 +79,14 @@ add_library(Common OBJECT src/GameState.cpp)
 
 target_sources(MusicalChess
     PRIVATE
-        src/BroadcastManager.h
-        src/ChessboardGUI.h
         src/ChessboardGUI.cpp
         src/Main.cpp
         src/MainComponent.cpp
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp
-        src/MainComponent.h
-        src/SoundProcessor.h
-        src/Wavetable.h
-        src/ErrorDef.h
-        src/Scheduler.h
-        src/MainProcessor.h
-	src/DebugSonifier.h
-	src/DebugSonifier.cpp
-	src/ThreatsSonifier.h
-	src/ThreatsSonifier.cpp)
+	    src/DebugSonifier.cpp
+	    src/ThreatsSonifier.cpp)
 
 target_sources(Tests
     PRIVATE

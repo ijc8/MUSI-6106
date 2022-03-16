@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+MainComponent::MainComponent() // : m_Stockfish("../stockfish/stockfish_14.1_win_x64_avx2")
 {
     setSize(1000, 600);
     setAudioChannels(0, 2);
