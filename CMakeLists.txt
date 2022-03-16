@@ -90,8 +90,10 @@ target_sources(MusicalChess
         src/ErrorDef.h
         src/Scheduler.h
         src/MainProcessor.h
-		src/DebugSonifier.h
-		src/DebugSonifier.cpp)
+	src/DebugSonifier.h
+	src/DebugSonifier.cpp
+	src/ThreatsSonifier.h
+	src/ThreatsSonifier.cpp)
 
 target_sources(Tests
     PRIVATE
@@ -126,9 +128,11 @@ target_sources(SoundTests
         src/ErrorDef.h
         src/Scheduler.h
         src/MainProcessor.h
-		src/DebugSonifier.h
-		src/DebugSonifier.cpp
-		src/GameState.h
+	src/DebugSonifier.h
+	src/DebugSonifier.cpp
+	src/GameState.h
+	src/ThreatsSonifier.h
+	src/ThreatsSonifier.cpp
         tests/soundTests/MainComponent.h
         tests/soundTests/MainComponent.cpp
         tests/soundTests/Main.cpp)
@@ -148,6 +152,12 @@ target_compile_definitions(MusicalChess
 	JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_PRODUCT_NAME>"
 	JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_VERSION>")
 
+target_compile_definitions(Tests
+    PRIVATE
+        # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
+        JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
+        JUCE_USE_CURL=0)    # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
+
 target_compile_definitions(SonifierTest
 		PRIVATE
 		# JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
@@ -155,7 +165,6 @@ target_compile_definitions(SonifierTest
 		JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
 		JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_PRODUCT_NAME>"
 		JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_VERSION>")
-
 
 target_compile_definitions(SoundTests
     PRIVATE
@@ -204,13 +213,10 @@ target_link_libraries(Tests
 target_link_libraries(TerminalChess
     PRIVATE
         Common
-        juce::juce_gui_extra
-        juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
-
 
 target_link_libraries(SonifierTest
     PRIVATE

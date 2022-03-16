@@ -53,7 +53,7 @@ Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float 
 	return Error_t::kNoError;
 }
 
-void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
+void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
 	if (m_adsr.isActive())
 	{
@@ -63,7 +63,7 @@ void CScheduler::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFra
 
 		// Place child instrument values into a temporary, single-frame buffer
 		for (CInstrument* inst : m_SetInsts)
-			inst->process(m_ppfTempBuffer, iNumChannels, 0);
+			inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
 		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
 		float fAdsrValue = m_adsr.getNextSample();
@@ -132,9 +132,9 @@ float CScheduler::getLengthInSec() const
 	return sampToSec(m_iScheduleLength, m_fSampleRateInHz);
 }
 
-void CLooper::process(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
+void CLooper::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
-	CScheduler::process(ppfOutBuffer, iNumChannels, iCurrentFrame);
+	CScheduler::processFrame(ppfOutBuffer, iNumChannels, iCurrentFrame);
 
 	// Wraps around internal clock to allow for looping
 	m_iSampleCounter %= m_iScheduleLength;

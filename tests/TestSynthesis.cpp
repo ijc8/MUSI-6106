@@ -30,7 +30,7 @@ void genOsc(CWavetableOscillator* pOsc, float** ppfBuffer, float fFreq, float fG
 	pOsc->noteOn();
 	for (int frame = 0; frame < iNumFrames; frame++)
 	{
-		pOsc->process(ppfBuffer, iNumChannels, frame);
+		pOsc->processFrame(ppfBuffer, iNumChannels, frame);
 	}
 	pOsc->reset();
 }
@@ -296,8 +296,8 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 			if (frame == iNoteOff)
 				pOsc->noteOff();
 
-			pOsc->process(ppfGroundBuffer, iNumChannels, frame);
-			pSchedule->process(ppfSchedulerBuffer, iNumChannels, frame);
+			pOsc->processFrame(ppfGroundBuffer, iNumChannels, frame);
+			pSchedule->processFrame(ppfSchedulerBuffer, iNumChannels, frame);
 		}
 
 		CHECK_ARRAY_CLOSE(ppfGroundBuffer, ppfSchedulerBuffer, iNumChannels, iLength, 1E-3);
@@ -332,8 +332,8 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 			if (iIndexForGround == iNoteOn) pOsc->noteOn();
 			if (iIndexForGround == iNoteOff) pOsc->noteOff();
 			
-			pOsc->process(ppfGroundBuffer, iNumChannels, frame);
-			pLooper->process(ppfSchedulerBuffer, iNumChannels, frame);
+			pOsc->processFrame(ppfGroundBuffer, iNumChannels, frame);
+			pLooper->processFrame(ppfSchedulerBuffer, iNumChannels, frame);
 
 		}
 
