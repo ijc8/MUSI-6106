@@ -7,7 +7,7 @@ void CMainProcessor::addInstRef(CInstrument& rInstToAdd)
 
 void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
 {
-	m_SetInsts.erase(&rInstToRemove);
+	m_InstRefRemover.push_back(&rInstToRemove);
 }
 
 bool CMainProcessor::contains(CInstrument& rInstToCheck)
@@ -37,5 +37,10 @@ void CMainProcessor::checkTriggers()
 	m_MapNoteOn.erase(m_iSampleCounter);
 	m_MapNoteOff.erase(m_iSampleCounter);
 	m_MapRemover.erase(m_iSampleCounter);
+	for (CInstrument* inst : m_InstRefRemover)
+	{
+		m_SetInsts.erase(inst);
+	}
+	m_InstRefRemover.clear();
 }
 

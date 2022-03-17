@@ -20,6 +20,8 @@ public:
 	// Will handle deletion
 	virtual Error_t pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f);
 
+	virtual void noteOn() override;
+
 	// Returns schedule length in samples
 	int64_t getLengthInSamp() const;
 	float getLengthInSec() const;

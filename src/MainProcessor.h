@@ -33,6 +33,8 @@ protected:
 	// This overrides from CScheduler, removing the key/value pair after being triggered
 	virtual void checkTriggers() override;
 
+	std::vector<CInstrument*> m_InstRefRemover;
+
 };
 
 #endif 

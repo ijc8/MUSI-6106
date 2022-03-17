@@ -53,10 +53,17 @@ Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float 
 	return Error_t::kNoError;
 }
 
+void CScheduler::noteOn()
+{
+	m_iSampleCounter = 0;
+	for (CInstrument* inst : m_SetInsts)
+		inst->resetADSR();
+	CInstrument::noteOn();
+}
+
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
-	if (m_adsr.isActive())
-	{
+
 		// Parses each map and sees if any event triggers exist for current sample counter
 		// Carries out necessary actions if so
 		checkTriggers();
@@ -81,13 +88,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 		}
 
 		m_iSampleCounter++;
-	} 
-	else
-	{
-		m_iSampleCounter = 0;
-		for (CInstrument* inst : m_SetInsts)
-			inst->resetADSR();
-	}
+
 
 }
 

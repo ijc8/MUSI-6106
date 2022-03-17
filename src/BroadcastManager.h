@@ -41,7 +41,7 @@ public:
 
 private:
 
-    bool m_bStockfishOn;
+    bool m_bStockfishOn = false;
     Stockfish m_Stockfish;
     Chess::Game& m_Game = AppState::getInstance().getGame();
 
