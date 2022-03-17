@@ -14,7 +14,6 @@ public:
 	// noteOn() and noteOff() calls will be up to you
 	void addInstRef(CInstrument& rInstToAdd);
 	void removeInstRef(CInstrument& rInstToRemove);
-	bool contains(CInstrument& rInstToCheck);
 
 	// Use for dynamically-allocated instruments
 	// Will handle deletion
@@ -32,8 +31,6 @@ protected:
 	// Helper function to check maps for events like noteOn(), noteOff(), etc
 	// This overrides from CScheduler, removing the key/value pair after being triggered
 	virtual void checkTriggers() override;
-
-	std::vector<CInstrument*> m_InstRefRemover;
 
 };
 

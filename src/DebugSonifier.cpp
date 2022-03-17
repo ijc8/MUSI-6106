@@ -70,11 +70,7 @@ Error_t DebugSonifier::onMove(Chess::Board &board) {
         }
         else {
             m_mainProcessor.removeInstRef(*it);
-            if (!m_mainProcessor.contains(*it))
-                it = oscillators.erase(it);
-            else
-                it++;
-
+            it = oscillators.erase(it);
         }
     }
     for( const auto [square, piece] : board.getPieceMap() ) {
