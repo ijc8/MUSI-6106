@@ -4,10 +4,19 @@
 #include "GameState.h"
 #include "DebugSonifier.h"
 #include "ChessboardGUI.h"
+#include "EngineBridge.h"
 
 class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadcaster
 {
+
 public:
+
+    BroadcastManager() : m_Stockfish("../stockfish/stockfish_14.1_win_x64_avx2.exe") {};
+
+    void toggleStockfish(bool shouldTurnOn)
+    {
+        m_bStockfishOn = shouldTurnOn;
+    }
 
     void actionListenerCallback(const juce::String& message)
     {
@@ -17,6 +26,14 @@ public:
             juce::Logger::outputDebugString("Legal Move");
             m_Game.push(move);
             sendChangeMessage();
+
+            if (m_bStockfishOn)
+            {
+                m_Stockfish.setState(m_Game);
+                m_Game.push(m_Stockfish.getMove());
+                sendChangeMessage();
+            }
+
         }
         else
             juce::Logger::outputDebugString("Illegal Move");
@@ -24,6 +41,8 @@ public:
 
 private:
 
+    bool m_bStockfishOn;
+    Stockfish m_Stockfish;
     Chess::Game& m_Game = AppState::getInstance().getGame();
 
 };

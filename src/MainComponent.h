@@ -7,7 +7,6 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 #include <juce_audio_utils/juce_audio_utils.h>
 
-#include "EngineBridge.h"
 #include "ChessboardGUI.h"
 #include "DebugSonifier.h"
 #include "ThreatsSonifier.h"
@@ -52,7 +51,6 @@ private:
     DebugSonifier m_DebugSonifier;
     ThreatsSonifier m_ThreatsSonifier;
     GUI::ChessBoard m_ChessboardGUI;
-    // Stockfish m_Stockfish;
 
 
     juce::TextButton buttonPreset1;

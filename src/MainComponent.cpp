@@ -3,7 +3,8 @@
 //==============================================================================
 MainComponent::MainComponent() // : m_Stockfish("../stockfish/stockfish_14.1_win_x64_avx2")
 {
-    setSize(1000, 600);
+    setSize(1000, 800);
+
     setAudioChannels(0, 2);
 
     addAndMakeVisible(m_ChessboardGUI);
@@ -37,16 +38,16 @@ MainComponent::MainComponent() // : m_Stockfish("../stockfish/stockfish_14.1_win
     };
 
     addAndMakeVisible(buttonPreset4);
-    buttonPreset4.setButtonText("8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8");
+    buttonPreset4.setButtonText("rnbqkb1r/p1pp2pp/3n4/8/P3N3/8/1P1pppPP/R1BQKBNR");
     buttonPreset4.onClick = [this, &game]() {
-        game.setBoardFen("8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8");
+        game.setBoardFen("rnbqkb1r/p1pp2pp/3n4/8/P3N3/8/1P1pppPP/R1BQKBNR");
         m_BroadcastManager.sendChangeMessage();
     };
 
     addAndMakeVisible(buttonPreset5);
-    buttonPreset5.setButtonText("r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1");
+    buttonPreset5.setButtonText("3r1rk1/ppp1qpp1/3p1n1p/2b1p3/2BnP3/2NP1N2/PPP1QPPP/R1B2RK1");
     buttonPreset5.onClick = [this, &game]() {
-        game.setBoardFen("r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1");
+        game.setBoardFen("3r1rk1/ppp1qpp1/3p1n1p/2b1p3/2BnP3/2NP1N2/PPP1QPPP/R1B2RK1");
         m_BroadcastManager.sendChangeMessage();
     };
 
@@ -244,8 +245,24 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
 {
     switch (nextGameMode)
     {
-    case GameMode::PVP:
     case GameMode::PVC:
+        m_BroadcastManager.toggleStockfish(true);
+        m_ChessboardGUI.setMoveable(true);
+        m_pgnButton.setButtonText("Load PGN");
+        m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
+        m_PgnString.clear();
+        m_pgnButton.setEnabled(false);
+        m_PrevButton.setEnabled(false);
+        m_NextButton.setEnabled(false);
+        buttonPreset1.setEnabled(true);
+        buttonPreset2.setEnabled(true);
+        buttonPreset3.setEnabled(true);
+        buttonPreset4.setEnabled(true);
+        buttonPreset5.setEnabled(true);
+        buttonReset.setEnabled(true);
+        break;
+    case GameMode::PVP:
+        m_BroadcastManager.toggleStockfish(false);
         m_ChessboardGUI.setMoveable(true);
         m_pgnButton.setButtonText("Load PGN");
         m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
@@ -261,6 +278,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonReset.setEnabled(true);
         break;
     default:
+        m_BroadcastManager.toggleStockfish(false);
         m_ChessboardGUI.setMoveable(false);
         m_pgnButton.setEnabled(true);
         buttonPreset1.setEnabled(false);
