@@ -10,6 +10,12 @@ void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
 	m_SetInsts.erase(&rInstToRemove);
 }
 
+bool CMainProcessor::contains(CInstrument& rInstToCheck)
+{
+	auto it = m_SetInsts.find(&rInstToCheck);
+	return (it != m_SetInsts.end());
+}
+
 Error_t CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
 	return CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(m_iSampleCounter, m_fSampleRateInHz), fDurationInSec);

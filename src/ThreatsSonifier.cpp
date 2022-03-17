@@ -75,7 +75,11 @@ Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
         }
         else {
             m_mainProcessor.removeInstRef(*it);
-            it = oscillators.erase(it);
+            if (!m_mainProcessor.contains(*it))
+                it = oscillators.erase(it);
+            else
+                it++;
+
         }
     }
     for (const auto [preySquare, preyPiece] : gameState.getThreats() ) {
