@@ -22,6 +22,7 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 	{	
 		CScheduler::processFrame(ppfOutBuffer, iNumChannels, frame);
 	}
+
 }
 
 

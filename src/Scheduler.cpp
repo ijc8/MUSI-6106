@@ -69,6 +69,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 		checkTriggers();
 
 		// Place child instrument values into a temporary, single-frame buffer
+		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
 		for (CInstrument* inst : m_SetInsts)
 			inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
