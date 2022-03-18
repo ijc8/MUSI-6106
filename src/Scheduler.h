@@ -57,6 +57,8 @@ protected:
 	// Will return the set of instruments pertaining to the trigger if so
 	// Will return an empty set if not
 	virtual void checkTriggers();
+	
+	juce::CriticalSection m_Lock;
 };
 
 class CLooper : public CScheduler

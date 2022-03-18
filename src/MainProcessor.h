@@ -31,7 +31,6 @@ protected:
 	// Helper function to check maps for events like noteOn(), noteOff(), etc
 	// This overrides from CScheduler, removing the key/value pair after being triggered
 	virtual void checkTriggers() override;
-
 };
 
 #endif 
