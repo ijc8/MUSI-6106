@@ -37,14 +37,16 @@ Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float 
 	if (iNoteOff < iNoteOn)
 		return Error_t::kFunctionInvalidArgsError;
 
+	
+	// Places event and instrument pointer into appropriate container
 	{
-		// Places event and instrument pointer into appropriate container
 		const juce::ScopedLock lock(m_Lock);
 		m_MapNoteOn[iNoteOn].insert(pInstToPush);
 		m_MapNoteOff[iNoteOff].insert(pInstToPush);
 		m_MapRemover[iTotalLengthInSamp].insert(pInstToPush);
 		m_GarbageCollector.insert(pInstToPush);
 	}
+	
 	
 	// Adjusts length of the entire container
 	if (iTotalLengthInSamp > m_iScheduleLength)
@@ -66,17 +68,19 @@ void CScheduler::noteOn()
 
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
+	{
+		juce::ScopedLock lock(m_Lock);
 		// Parses each map and sees if any event triggers exist for current sample counter
 		// Carries out necessary actions if so
 		checkTriggers();
 
 		// Place child instrument values into a temporary, single-frame buffer
 		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
-		{
-			const juce::ScopedLock lock(m_Lock);
 			for (CInstrument* inst : m_SetInsts)
 				inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
-		}
+
+		m_iSampleCounter++;
+	}
 
 
 		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
@@ -94,8 +98,6 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 			m_ppfTempBuffer[channel][0] = 0;
 		}
 
-		m_iSampleCounter++;
-
 
 }
 
@@ -104,7 +106,6 @@ void CScheduler::checkTriggers()
 	auto noteOnTrigger = m_MapNoteOn.find(m_iSampleCounter);
 	if (noteOnTrigger != m_MapNoteOn.end())
 	{
-		const juce::ScopedLock lock(m_Lock);
 		for (CInstrument* inst : noteOnTrigger->second)
 		{
 			inst->noteOn();
@@ -124,7 +125,6 @@ void CScheduler::checkTriggers()
 	auto removeTrigger = m_MapRemover.find(m_iSampleCounter);
 	if (removeTrigger != m_MapRemover.end())
 	{
-		const juce::ScopedLock lock(m_Lock);
 		for (CInstrument* inst : removeTrigger->second)
 		{
 			m_SetInsts.erase(inst);

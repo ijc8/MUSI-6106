@@ -32,8 +32,6 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 void CMainProcessor::checkTriggers()
 {
 	CScheduler::checkTriggers();
-
-	const juce::ScopedLock lock(m_Lock);
 	m_MapNoteOn.erase(m_iSampleCounter);
 	m_MapNoteOff.erase(m_iSampleCounter);
 	m_MapRemover.erase(m_iSampleCounter);
