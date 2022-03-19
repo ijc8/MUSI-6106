@@ -1,6 +1,7 @@
 #if !defined(__Scheduler_hdr__)
 #define __Scheduler_hdr__
 #include "SoundProcessor.h"
+#include "Ramp.h"
 
 #include <map>
 #include <unordered_set>
@@ -59,6 +60,7 @@ protected:
 	virtual void checkTriggers();
 	
 	juce::CriticalSection m_Lock;
+	Ramp m_Ramp;
 };
 
 class CLooper : public CScheduler

@@ -9,6 +9,9 @@ CScheduler::CScheduler(float sampleRate) :
 	m_ppfTempBuffer = new float*[m_iMaxChannels];
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
 		m_ppfTempBuffer[channel] = new float[1] {0};
+
+	m_Ramp.setSampleRate(sampleRate);
+	m_Ramp.setValue(1);
 }
 
 CScheduler::~CScheduler()
@@ -74,6 +77,8 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 		// Carries out necessary actions if so
 		checkTriggers();
 
+		m_Ramp.rampTo((m_SetInsts.size() != 0) ? (1.0f / m_SetInsts.size()) : 1.0f, 0.8);
+
 		// Place child instrument values into a temporary, single-frame buffer
 		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
 			for (CInstrument* inst : m_SetInsts)
@@ -84,7 +89,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 
 
 		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
-		float fAdsrValue = m_adsr.getNextSample();
+		float fAdsrValue = m_adsr.getNextSample() * m_Ramp.process();
 		for (int channel = 0; channel < iNumChannels; channel++)
 		{
 			float fPanGain{ 0 };
