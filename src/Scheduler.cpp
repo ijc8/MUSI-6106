@@ -40,16 +40,11 @@ Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float 
 	if (iNoteOff < iNoteOn)
 		return Error_t::kFunctionInvalidArgsError;
 
-	
-	// Places event and instrument pointer into appropriate container
-	{
-		const juce::ScopedLock lock(m_Lock);
-		m_MapNoteOn[iNoteOn].insert(pInstToPush);
-		m_MapNoteOff[iNoteOff].insert(pInstToPush);
-		m_MapRemover[iTotalLengthInSamp].insert(pInstToPush);
-		m_GarbageCollector.insert(pInstToPush);
-	}
-	
+	TriggerInfo triggerInfo = TriggerInfo(iNoteOn, iNoteOff, iTotalLengthInSamp);
+	auto instToPush = std::make_pair(pInstToPush, std::make_optional(triggerInfo));
+
+	m_InsertQueue.push(instToPush);
+	m_GarbageCollector.insert(pInstToPush);
 	
 	// Adjusts length of the entire container
 	if (iTotalLengthInSamp > m_iScheduleLength)
@@ -71,8 +66,12 @@ void CScheduler::noteOn()
 
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
+
 	{
 		juce::ScopedLock lock(m_Lock);
+
+		checkInsertQueue();
+
 		// Parses each map and sees if any event triggers exist for current sample counter
 		// Carries out necessary actions if so
 		checkTriggers();
@@ -103,7 +102,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 			m_ppfTempBuffer[channel][0] = 0;
 		}
 
-
+		
 }
 
 void CScheduler::checkTriggers()
@@ -133,6 +132,27 @@ void CScheduler::checkTriggers()
 		for (CInstrument* inst : removeTrigger->second)
 		{
 			m_SetInsts.erase(inst);
+		}
+	}
+}
+
+void CScheduler::checkInsertQueue()
+{
+	// Places event and instrument pointer into appropriate container
+	std::pair<CInstrument*, std::optional<TriggerInfo>> instToAdd;
+	while (m_InsertQueue.pop(instToAdd))
+	{
+		CInstrument* pInstToAdd = instToAdd.first;
+		auto triggerInfo = instToAdd.second;
+		if (triggerInfo.has_value())
+		{
+			m_MapNoteOn[triggerInfo.value().noteOn].insert(pInstToAdd);
+			m_MapNoteOff[triggerInfo.value().noteOff].insert(pInstToAdd);
+			m_MapRemover[triggerInfo.value().remove].insert(pInstToAdd);
+		}
+		else
+		{
+			m_SetInsts.insert(pInstToAdd);
 		}
 	}
 }

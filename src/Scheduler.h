@@ -2,13 +2,24 @@
 #define __Scheduler_hdr__
 #include "SoundProcessor.h"
 #include "Ramp.h"
+#include "AtomicRingBuffer.h"
 
 #include <map>
 #include <unordered_set>
+#include <optional>
 
 
 using std::map;
 using std::unordered_set;
+
+struct TriggerInfo
+{
+	TriggerInfo(int64_t noteOn, int64_t noteOff, int64_t remove) :
+		noteOn(noteOn), noteOff(noteOff), remove(remove) {};
+	int64_t noteOn = 0;
+	int64_t noteOff = 0;
+	int64_t remove = 0;
+};
 
 // Class that contains a set of instruments scheduled for particular times and durations
 class CScheduler : public CInstrument
@@ -58,9 +69,11 @@ protected:
 	// Will return the set of instruments pertaining to the trigger if so
 	// Will return an empty set if not
 	virtual void checkTriggers();
+	virtual void checkInsertQueue();
 	
 	juce::CriticalSection m_Lock;
 	Ramp m_Ramp;
+	AtomicRingBuffer<std::pair<CInstrument*, std::optional<TriggerInfo>>> m_InsertQueue{ 32 };
 };
 
 class CLooper : public CScheduler
