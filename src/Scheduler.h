@@ -68,7 +68,6 @@ protected:
 	virtual void checkTriggers();
 	virtual void checkQueues();
 	
-	juce::CriticalSection m_Lock;
 	Ramp m_Ramp;
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 32 };
 };

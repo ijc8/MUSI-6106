@@ -1,14 +1,10 @@
 #include "MainProcessor.h"
 
-Error_t CMainProcessor::addInstRef(CInstrument& rInstToAdd)
+Error_t CMainProcessor::addInst(CInstrument& rInstToAdd)
 {
 	return addInst(std::shared_ptr<CInstrument>(&rInstToAdd));
 }
 
-Error_t CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
-{
-	return removeInst(std::shared_ptr<CInstrument>(&rInstToRemove));
-}
 
 Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 {
@@ -18,8 +14,12 @@ Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd = std::pair(pInstToAdd, std::nullopt);
 	if (!m_InsertQueue.push(instToAdd))
 		return Error_t::kUnknownError;
-
 	return Error_t::kNoError;
+}
+
+Error_t CMainProcessor::removeInst(CInstrument& rInstToRemove)
+{
+	return removeInst(std::shared_ptr<CInstrument>(&rInstToRemove));
 }
 
 Error_t CMainProcessor::removeInst(std::shared_ptr<CInstrument> pInstToRemove)
