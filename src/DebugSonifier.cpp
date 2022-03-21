@@ -19,12 +19,12 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     int gainIdx = static_cast<int>(square.rank);
     int panIdx = rand() % 8;
 
-    CInstrument* inst = new CWavetableOscillator(sine, frequencies[freqIdx], gains[gainIdx], 44100);
+    auto inst = std::make_shared<CWavetableOscillator>(sine, frequencies[freqIdx], gains[gainIdx], 44100);
     inst->noteOn();
     inst->setADSRParameters(2, 0, 1, 2);
     inst->setPan(pans[panIdx]);
     m_mainProcessor.addInst(inst);
-    oscillatorPtrs.push_front(inst);
+    oscillatorPtrs.push_back(inst);
 }
 
 void DebugSonifier::process(float **ppfOutBuffer, int iNumChannels, int iNumFrames) {

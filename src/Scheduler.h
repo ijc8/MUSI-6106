@@ -30,7 +30,7 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	// Will handle deletion
-	Error_t scheduleInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec);
+	Error_t scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 
 	virtual void noteOn() override;
 
@@ -45,10 +45,7 @@ protected:
 
 	// Set that contains instruments to be currently processed
 	// Instruments will move in and out of this continuously
-	unordered_set<CInstrument*> m_SetInsts;
-
-	// All instrument pointers are placed and SHOULD STAY here to be deleted by the destructor
-	unordered_set<CInstrument*> m_GarbageCollector;
+	unordered_set<std::shared_ptr<CInstrument>> m_SetInsts;
 
 	// This can be viewed as the schedule's internal clock
 	int64_t m_iSampleCounter = 0;
@@ -61,9 +58,9 @@ protected:
 	// These maps are used to trigger events on instruments at the correct sample
 	// Key: Current Frame
 	// Value: Set of Instruments with an event at that key
-	map<int64_t, unordered_set<CInstrument*>> m_MapNoteOn;
-	map<int64_t, unordered_set<CInstrument*>> m_MapNoteOff;
-	map<int64_t, unordered_set<CInstrument*>> m_MapRemover;
+	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOn;
+	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOff;
+	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapRemover;
 
 	// Helper function to check if there is a trigger at a specified sample
 	// Will return the set of instruments pertaining to the trigger if so
@@ -73,7 +70,7 @@ protected:
 	
 	juce::CriticalSection m_Lock;
 	Ramp m_Ramp;
-	AtomicRingBuffer<std::pair<CInstrument*, std::optional<TriggerInfo>>> m_InsertQueue{ 32 };
+	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 32 };
 };
 
 class CLooper : public CScheduler

@@ -38,7 +38,7 @@ protected:
 
     void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
 
-    std::list<CInstrument*> oscillatorPtrs;
+    std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
 
     CSineWavetable sine;
 

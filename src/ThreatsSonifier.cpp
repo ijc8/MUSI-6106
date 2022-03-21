@@ -20,29 +20,28 @@ void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, const std:
     float gains[8] = {1.0f, 0.8f, 0.6f, 0.4f, 0.4f, 0.6f, 0.8f, 1.0f};
     int gainIdx = static_cast<int>(preySquare.file);
 
-    CInstrument* inst = 0;
+    std::shared_ptr<CInstrument> inst;
     if (preyPiece->type == Chess::Piece::Type::Pawn) {
-        inst = new CWavetableOscillator(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Bishop || preyPiece->type == Chess::Piece::Type::Knight || preyPiece->type == Chess::Piece::Type::Rook){
-        inst = new CWavetableOscillator(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Queen){
-        inst = new CWavetableOscillator(saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::King){
-        inst = new CWavetableOscillator(saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
     }
 
     inst->noteOn();
     inst->setADSRParameters(2,0,1,2);
     inst->setPan(pan);
     m_mainProcessor.addInst(inst);
-    oscillatorPtrs.push_front(inst);
-
+    oscillatorPtrs.push_back(inst);
 
 }
 

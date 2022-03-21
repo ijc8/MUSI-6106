@@ -14,8 +14,8 @@ public:
 	// noteOn() and noteOff() calls will be up to you
 	Error_t addInstRef(CInstrument& rInstToAdd);
 	Error_t removeInstRef(CInstrument& rInstToRemove);
-	Error_t addInst(CInstrument*& pInstToAdd);
-	Error_t removeInst(CInstrument*& pInstToRemove);
+	Error_t addInst(std::shared_ptr<CInstrument> pInstToAdd);
+	Error_t removeInst(std::shared_ptr<CInstrument> pInstToRemove);
 
 	// Pass the entire buffer into this process function
 	// It will internally do frame-by-frame processing
@@ -31,7 +31,7 @@ protected:
 	virtual void checkTriggers() override;
 	virtual void checkQueues() override;
 
-	AtomicRingBuffer<CInstrument*> m_RemoveQueue{ 32 };
+	AtomicRingBuffer<std::shared_ptr<CInstrument>> m_RemoveQueue{ 32 };
 };
 
 #endif 

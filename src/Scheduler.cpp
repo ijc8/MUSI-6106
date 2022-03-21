@@ -19,14 +19,9 @@ CScheduler::~CScheduler()
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
 		delete[] m_ppfTempBuffer[channel];
 	delete[] m_ppfTempBuffer;
-
-	for (CInstrument* inst : m_GarbageCollector)
-	{
-		delete inst;
-	}
 }
 
-Error_t CScheduler::scheduleInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
+Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
 	if (pInstToPush == nullptr || fOnsetInSec < 0 || fDurationInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
@@ -44,7 +39,6 @@ Error_t CScheduler::scheduleInst(CInstrument* pInstToPush, float fOnsetInSec, fl
 	auto instToPush = std::make_pair(pInstToPush, std::make_optional(triggerInfo));
 
 	m_InsertQueue.push(instToPush);
-	m_GarbageCollector.insert(pInstToPush);
 	
 	// Adjusts length of the entire container
 	if (iTotalLengthInSamp > m_iScheduleLength)
@@ -59,7 +53,7 @@ Error_t CScheduler::scheduleInst(CInstrument* pInstToPush, float fOnsetInSec, fl
 void CScheduler::noteOn()
 {
 	m_iSampleCounter = 0;
-	for (CInstrument* inst : m_SetInsts)
+	for (std::shared_ptr<CInstrument> inst : m_SetInsts)
 		inst->resetADSR();
 	CInstrument::noteOn();
 }
@@ -77,7 +71,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 
 		// Place child instrument values into a temporary, single-frame buffer
 		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
-			for (CInstrument* inst : m_SetInsts)
+			for (std::shared_ptr<CInstrument> inst : m_SetInsts)
 				inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
 		m_iSampleCounter++;
@@ -106,7 +100,7 @@ void CScheduler::checkTriggers()
 	auto noteOnTrigger = m_MapNoteOn.find(m_iSampleCounter);
 	if (noteOnTrigger != m_MapNoteOn.end())
 	{
-		for (CInstrument* inst : noteOnTrigger->second)
+		for (std::shared_ptr<CInstrument> inst : noteOnTrigger->second)
 		{
 			inst->noteOn();
 			m_SetInsts.insert(inst);
@@ -116,7 +110,7 @@ void CScheduler::checkTriggers()
 	auto noteOffTrigger = m_MapNoteOff.find(m_iSampleCounter);
 	if (noteOffTrigger != m_MapNoteOff.end())
 	{
-		for (CInstrument* inst : noteOffTrigger->second)
+		for (std::shared_ptr<CInstrument> inst : noteOffTrigger->second)
 		{
 			inst->noteOff();
 		}
@@ -125,7 +119,7 @@ void CScheduler::checkTriggers()
 	auto removeTrigger = m_MapRemover.find(m_iSampleCounter);
 	if (removeTrigger != m_MapRemover.end())
 	{
-		for (CInstrument* inst : removeTrigger->second)
+		for (std::shared_ptr<CInstrument> inst : removeTrigger->second)
 		{
 			m_SetInsts.erase(inst);
 		}
@@ -135,10 +129,10 @@ void CScheduler::checkTriggers()
 void CScheduler::checkQueues()
 {
 	// Places event and instrument pointer into appropriate container
-	std::pair<CInstrument*, std::optional<TriggerInfo>> instToAdd;
+	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
 	while (m_InsertQueue.pop(instToAdd))
 	{
-		CInstrument* pInstToAdd = instToAdd.first;
+		std::shared_ptr<CInstrument> pInstToAdd = instToAdd.first;
 		auto triggerInfo = instToAdd.second;
 		if (triggerInfo.has_value())
 		{
