@@ -33,6 +33,7 @@ public:
 	Error_t scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 
 	virtual void noteOn() override;
+	virtual void noteOff() override;
 
 	// Returns schedule length in samples
 	int getLengthInSamp() const;
@@ -70,6 +71,8 @@ protected:
 	
 	Ramp m_Ramp;
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
+	std::atomic<bool> m_bNoteOnPressed = false;
+	std::atomic<bool> m_bNoteOffPressed = false;
 };
 
 class CLooper : public CScheduler

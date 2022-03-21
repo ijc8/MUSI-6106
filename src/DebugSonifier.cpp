@@ -9,6 +9,7 @@ DebugSonifier::DebugSonifier (){
 }
 
 DebugSonifier::~DebugSonifier() {
+
 }
 
 void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece) {
@@ -37,14 +38,15 @@ void DebugSonifier::prepareToPlay(int iExpectedBlockSize, double fsampleRate){
 
     m_fSampleRate = static_cast<float>(fsampleRate);
     m_mainProcessor.setSampleRate(static_cast<float>(fsampleRate));
-    m_mainProcessor.setGain(0.25);
+    m_mainProcessor.setGain(1.0);
     m_mainProcessor.setADSRParameters(4,0,1,2);
     m_fExpectedBlockSize = iExpectedBlockSize;
 
 };
 
 
-void DebugSonifier::releaseResources(){
+void DebugSonifier::releaseResources()
+{
 
 };
 

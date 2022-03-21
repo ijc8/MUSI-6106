@@ -12,19 +12,15 @@ public:
 
 	// Use for chess pieces or other class member instruments
 	// noteOn() and noteOff() calls will be up to you
-	Error_t addInst(CInstrument& rInstToAdd);
 	Error_t addInst(std::shared_ptr<CInstrument> pInstToAdd);
-	Error_t removeInst(CInstrument& rInstToRemove);
 	Error_t removeInst(std::shared_ptr<CInstrument> pInstToRemove);
-
-	void noteOn() override;
 
 	// Pass the entire buffer into this process function
 	// It will internally do frame-by-frame processing
 	void process(float** ppfOutBuffer, int iNumChannels, int iNumFrames);
 
-	float getInternalClockInSeconds() { return static_cast<float>(m_iSampleCounter / m_fSampleRateInHz); };
-	int64_t getInternalClockInSamples() { return m_iSampleCounter; };
+	float getInternalClockInSeconds() { return static_cast<float>(m_iSampleCounter.load() / m_fSampleRateInHz); };
+	int64_t getInternalClockInSamples() { return m_iSampleCounter.load(); };
 
 protected:
 

@@ -52,8 +52,12 @@ Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float
 
 void CScheduler::noteOn()
 {
-	m_iSampleCounter.store(0);
-	CInstrument::noteOn();
+	m_bNoteOnPressed.store(true);
+}
+
+void CScheduler::noteOff()
+{
+	m_bNoteOffPressed.store(true);
 }
 
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
@@ -126,6 +130,22 @@ void CScheduler::checkTriggers()
 
 void CScheduler::checkQueues()
 {
+
+	if (m_bNoteOnPressed.load())
+	{
+		for (std::shared_ptr<CInstrument> inst : m_SetInsts)
+			inst->resetADSR();
+		m_bNoteOnPressed.store(false);
+		m_iSampleCounter.store(0);
+		CInstrument::noteOn();
+	}
+
+	if (m_bNoteOffPressed.load())
+	{
+		CInstrument::noteOff();
+		m_bNoteOffPressed.store(false);
+	}
+
 	// Places event and instrument pointer into appropriate container
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
 	while (m_InsertQueue.pop(instToAdd))

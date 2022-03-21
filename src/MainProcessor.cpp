@@ -1,11 +1,5 @@
 #include "MainProcessor.h"
 
-Error_t CMainProcessor::addInst(CInstrument& rInstToAdd)
-{
-	return addInst(std::shared_ptr<CInstrument>(&rInstToAdd));
-}
-
-
 Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 {
 	if (!pInstToAdd)
@@ -17,11 +11,6 @@ Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 	return Error_t::kNoError;
 }
 
-Error_t CMainProcessor::removeInst(CInstrument& rInstToRemove)
-{
-	return removeInst(std::shared_ptr<CInstrument>(&rInstToRemove));
-}
-
 Error_t CMainProcessor::removeInst(std::shared_ptr<CInstrument> pInstToRemove)
 {
 	if (!pInstToRemove)
@@ -30,11 +19,6 @@ Error_t CMainProcessor::removeInst(std::shared_ptr<CInstrument> pInstToRemove)
 	if (!m_RemoveQueue.push(pInstToRemove))
 		return Error_t::kUnknownError;
 	return Error_t::kNoError;
-}
-
-void CMainProcessor::noteOn()
-{
-	CInstrument::noteOn();
 }
 
 void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFrames)
@@ -57,6 +41,18 @@ void CMainProcessor::checkTriggers()
 
 void CMainProcessor::checkQueues()
 {
+	if (m_bNoteOnPressed.load())
+	{
+		CInstrument::noteOn();
+		m_bNoteOnPressed.store(false);
+	}
+
+	if (m_bNoteOffPressed.load())
+	{
+		CInstrument::noteOff();
+		m_bNoteOffPressed.store(false);
+	}
+
 	// Places event and instrument pointer into appropriate container
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
 	while (m_InsertQueue.pop(instToAdd))
