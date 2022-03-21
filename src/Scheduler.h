@@ -30,7 +30,7 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	// Will handle deletion
-	virtual Error_t pushInst(CInstrument* pInstToPush, float fOnsetInSec = 0.0f, float fDurationInSec = 1.0f);
+	Error_t scheduleInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec);
 
 	virtual void noteOn() override;
 
@@ -69,7 +69,7 @@ protected:
 	// Will return the set of instruments pertaining to the trigger if so
 	// Will return an empty set if not
 	virtual void checkTriggers();
-	virtual void checkInsertQueue();
+	virtual void checkQueues();
 	
 	juce::CriticalSection m_Lock;
 	Ramp m_Ramp;

@@ -43,7 +43,7 @@ protected:
 
     void sonifyThreatee(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
 
-    std::list<CWavetableOscillator> oscillators;
+    std::list<CInstrument*> oscillatorPtrs;
 
     CSineWavetable sine;
 

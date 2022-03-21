@@ -26,7 +26,7 @@ CScheduler::~CScheduler()
 	}
 }
 
-Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
+Error_t CScheduler::scheduleInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
 	if (pInstToPush == nullptr || fOnsetInSec < 0 || fDurationInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
@@ -67,10 +67,7 @@ void CScheduler::noteOn()
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
 
-	{
-		juce::ScopedLock lock(m_Lock);
-
-		checkInsertQueue();
+		checkQueues();
 
 		// Parses each map and sees if any event triggers exist for current sample counter
 		// Carries out necessary actions if so
@@ -84,7 +81,6 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 				inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
 		m_iSampleCounter++;
-	}
 
 
 		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
@@ -136,7 +132,7 @@ void CScheduler::checkTriggers()
 	}
 }
 
-void CScheduler::checkInsertQueue()
+void CScheduler::checkQueues()
 {
 	// Places event and instrument pointer into appropriate container
 	std::pair<CInstrument*, std::optional<TriggerInfo>> instToAdd;

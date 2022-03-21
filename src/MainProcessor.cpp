@@ -1,17 +1,41 @@
 #include "MainProcessor.h"
 
-void CMainProcessor::addInstRef(CInstrument& rInstToAdd)
+Error_t CMainProcessor::addInstRef(CInstrument& rInstToAdd)
 {
 	auto instToAdd = std::make_pair(&rInstToAdd, std::nullopt);
-	m_InsertQueue.push(instToAdd);
+	if (!m_InsertQueue.push(instToAdd))
+		return Error_t::kUnknownError;
+	return Error_t::kNoError;
 }
 
-void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
+Error_t CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
 {
-	const juce::ScopedLock lock(m_Lock);
-	m_SetInsts.erase(&rInstToRemove);
+	if (!m_RemoveQueue.push(&rInstToRemove))
+		return Error_t::kUnknownError;
+	return Error_t::kNoError;
 }
 
+Error_t CMainProcessor::removeInst(CInstrument*& pInstToRemove)
+{
+	if (!pInstToRemove)
+		return Error_t::kMemError;
+
+	if (!m_RemoveQueue.push(pInstToRemove))
+		return Error_t::kUnknownError;
+	return Error_t::kNoError;
+}
+
+Error_t CMainProcessor::addInst(CInstrument*& pInstToAdd)
+{
+	if (!pInstToAdd)
+		return Error_t::kMemError;
+
+	if (!m_InsertQueue.push(std::pair(pInstToAdd, std::nullopt)))
+		return Error_t::kUnknownError;
+
+	m_GarbageCollector.insert(pInstToAdd);
+	return Error_t::kNoError;
+}
 
 void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFrames)
 {
@@ -31,7 +55,7 @@ void CMainProcessor::checkTriggers()
 	m_MapRemover.erase(m_iSampleCounter);
 }
 
-void CMainProcessor::checkInsertQueue()
+void CMainProcessor::checkQueues()
 {
 	// Places event and instrument pointer into appropriate container
 	std::pair<CInstrument*, std::optional<TriggerInfo>> instToAdd;
@@ -50,5 +74,12 @@ void CMainProcessor::checkInsertQueue()
 			m_SetInsts.insert(pInstToAdd);
 		}
 	}
+
+	CInstrument* instToRemove = 0;
+	while (m_RemoveQueue.pop(instToRemove))
+	{
+		m_SetInsts.erase(instToRemove);
+	}
 }
+
 

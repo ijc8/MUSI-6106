@@ -251,26 +251,26 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 
 	SECTION("Handes Out of Bounds Parameters")
 	{
-		REQUIRE(pSchedule->pushInst(new CWavetableOscillator(sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
-		REQUIRE(pSchedule->pushInst(new CWavetableOscillator(sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
-		REQUIRE(pSchedule->pushInst(new CWavetableOscillator(sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(new CWavetableOscillator(sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(new CWavetableOscillator(sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(new CWavetableOscillator(sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
 		
 		CWavetableOscillator* pOscNULL = nullptr;
-		REQUIRE(pSchedule->pushInst(pOscNULL, 0, 1) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(pOscNULL, 0, 1) == Error_t::kFunctionInvalidArgsError);
 	}
 
 	SECTION("Returns Correct Length")
 	{
-		pSchedule->pushInst(new CWavetableOscillator(sine), 0, 2);
+		pSchedule->scheduleInst(new CWavetableOscillator(sine), 0, 2);
 		REQUIRE(pSchedule->getLengthInSec() == 2);
 		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
-		pSchedule->pushInst(new CWavetableOscillator(sine), 1, 1);
+		pSchedule->scheduleInst(new CWavetableOscillator(sine), 1, 1);
 		REQUIRE(pSchedule->getLengthInSec() == 2);
 		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
-		pSchedule->pushInst(new CWavetableOscillator(sine), 2, 4);
+		pSchedule->scheduleInst(new CWavetableOscillator(sine), 2, 4);
 		REQUIRE(pSchedule->getLengthInSec() == 6);
 		REQUIRE(pSchedule->getLengthInSamp() == 6 * fSampleRate);
-		pSchedule->pushInst(new CWavetableOscillator(sine), 2.25, 4.5);
+		pSchedule->scheduleInst(new CWavetableOscillator(sine), 2.25, 4.5);
 		REQUIRE(pSchedule->getLengthInSec() == 6.75);
 		REQUIRE(pSchedule->getLengthInSamp() == 6.75 * fSampleRate);
 	}
@@ -283,7 +283,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		assert((fDurationInSec + fOnsetInSec) * fSampleRate < iLength);
 
 		pSchedule->setADSRParameters(0, 0, 1, 0);
-		pSchedule->pushInst(new CWavetableOscillator(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
+		pSchedule->scheduleInst(new CWavetableOscillator(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
 
 		int iNoteOn = fOnsetInSec * fSampleRate;
 		int iNoteOff = (fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate + iNoteOn;
@@ -316,7 +316,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		CWavetableOscillator* tempOsc = new CWavetableOscillator(sine, fFreq, fGain, fSampleRate);
 		pLooper->setADSRParameters(0, 0, 1, 0);
 
-		pLooper->pushInst(tempOsc, fOnsetInSec, fDurationInSec);
+		pLooper->scheduleInst(tempOsc, fOnsetInSec, fDurationInSec);
 		REQUIRE(pLooper->getLengthInSamp() == iLoopLengthInSamp);
 		REQUIRE(pLooper->getLengthInSec() == 0.5f);
 
@@ -378,7 +378,7 @@ TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 	CInstrument* inst = new CWavetableOscillator(sine, fFreq, fGain, fSampleRate);
 	inst->setADSRParameters(0, 0, 1, 0);
 	mainProcessor.setADSRParameters(0, 0, 1, 0);
-	std::thread thread1(&CMainProcessor::pushInst, &mainProcessor, inst, 0, 1);
+	std::thread thread1(&CMainProcessor::scheduleInst, &mainProcessor, inst, 0, 1);
 	std::thread thread2(&CMainProcessor::process, &mainProcessor, ppfOutBuffer, iNumChannels, iNumFrames);
 	thread1.join();
 	thread2.join();

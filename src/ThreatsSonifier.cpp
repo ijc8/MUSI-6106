@@ -20,26 +20,28 @@ void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, const std:
     float gains[8] = {1.0f, 0.8f, 0.6f, 0.4f, 0.4f, 0.6f, 0.8f, 1.0f};
     int gainIdx = static_cast<int>(preySquare.file);
 
+    CInstrument* inst = 0;
     if (preyPiece->type == Chess::Piece::Type::Pawn) {
-        oscillators.emplace_back(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
+        inst = new CWavetableOscillator(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Bishop || preyPiece->type == Chess::Piece::Type::Knight || preyPiece->type == Chess::Piece::Type::Rook){
-        oscillators.emplace_back(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
+        inst = new CWavetableOscillator(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Queen){
-        oscillators.emplace_back(saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
+        inst = new CWavetableOscillator(saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::King){
-        oscillators.emplace_back(saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
+        inst = new CWavetableOscillator(saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
     }
 
-    oscillators.back().noteOn();
-    oscillators.back().setADSRParameters(2,0,1,2);
-    oscillators.back().setPan(pan);
-    m_mainProcessor.addInstRef(oscillators.back());
+    inst->noteOn();
+    inst->setADSRParameters(2,0,1,2);
+    inst->setPan(pan);
+    m_mainProcessor.addInst(inst);
+    oscillatorPtrs.push_front(inst);
 
 
 }
@@ -67,15 +69,15 @@ void ThreatsSonifier::releaseResources(){
 
 
 Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
-    auto it = oscillators.begin();
-    while (it != oscillators.end()){
-        if (it->isActive()){
-            it->noteOff();
+    auto it = oscillatorPtrs.begin();
+    while (it != oscillatorPtrs.end()){
+        if ((*it)->isActive()){
+            (*it)->noteOff();
             it++;
         }
         else {
-            m_mainProcessor.removeInstRef(*it);
-            it = oscillators.erase(it);
+            m_mainProcessor.removeInst(*it);
+            it = oscillatorPtrs.erase(it);
         }
     }
     for (const auto [preySquare, preyPiece] : gameState.getThreats() ) {
