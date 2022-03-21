@@ -24,8 +24,8 @@ public:
 	
 protected:
 
-	int64_t secToSamp(float sec, float sampleRate) const;
-	float sampToSec(int64_t sample, float sampleRate) const;
+	int secToSamp(float sec, float sampleRate) const;
+	float sampToSec(int sample, float sampleRate) const;
 	float m_fSampleRateInHz = 48000.0f;
 
 };

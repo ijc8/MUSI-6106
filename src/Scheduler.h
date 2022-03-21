@@ -14,11 +14,11 @@ using std::unordered_set;
 
 struct TriggerInfo
 {
-	TriggerInfo(int64_t noteOn, int64_t noteOff, int64_t remove) :
+	TriggerInfo(int noteOn, int noteOff, int remove) :
 		noteOn(noteOn), noteOff(noteOff), remove(remove) {};
-	int64_t noteOn = 0;
-	int64_t noteOff = 0;
-	int64_t remove = 0;
+	int noteOn = 0;
+	int noteOff = 0;
+	int remove = 0;
 };
 
 // Class that contains a set of instruments scheduled for particular times and durations
@@ -35,7 +35,7 @@ public:
 	virtual void noteOn() override;
 
 	// Returns schedule length in samples
-	int64_t getLengthInSamp() const;
+	int getLengthInSamp() const;
 	float getLengthInSec() const;
 
 	// Frame-by-Frame processing function
@@ -49,7 +49,7 @@ protected:
 
 	// This can be viewed as the schedule's internal clock
 	int64_t m_iSampleCounter = 0;
-	int64_t m_iScheduleLength = 0;
+	int m_iScheduleLength = 0;
 
 	// Extra buffer space for applying adsr and gain
 	const int m_iMaxChannels = 20;

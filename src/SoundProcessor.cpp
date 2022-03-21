@@ -20,14 +20,14 @@ float CSoundProcessor::getSampleRate()
 	return m_fSampleRateInHz;
 }
 
-int64_t CSoundProcessor::secToSamp(float sec, float sampleRate) const
+int CSoundProcessor::secToSamp(float sec, float sampleRate) const
 {
-	return static_cast<int64_t>(sec * sampleRate);
+	return static_cast<int>(sec * sampleRate);
 }
 
-float CSoundProcessor::sampToSec(int64_t sample, float sampleRate) const
+float CSoundProcessor::sampToSec(int sample, float sampleRate) const
 {
-	return static_cast<float>(sample / sampleRate);
+	return static_cast<float>(sample) / sampleRate;
 }
 
 //=======================================================================

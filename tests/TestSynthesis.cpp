@@ -285,8 +285,8 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		pSchedule->setADSRParameters(0, 0, 1, 0);
 		pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
 
-		int iNoteOn = fOnsetInSec * fSampleRate;
-		int iNoteOff = (fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate + iNoteOn;
+		int iNoteOn = static_cast<int>(fOnsetInSec * fSampleRate);
+		int iNoteOff = static_cast<int>((fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate) + iNoteOn;
 
 		pSchedule->noteOn();
 		for (int frame = 0; frame < iLength; frame++)
@@ -310,8 +310,8 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		int iLoopLengthInSamp = static_cast<int>((fOnsetInSec + fDurationInSec) * fSampleRate);
 		assert(iLoopLengthInSamp < iLength);
 
-		int iNoteOn = fOnsetInSec * fSampleRate;
-		int iNoteOff = (fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate + iNoteOn;
+		int iNoteOn = static_cast<int>(fOnsetInSec * fSampleRate);
+		int iNoteOff = static_cast<int>((fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate) + iNoteOn;
 
 		auto tempOsc = std::make_shared<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
 		pLooper->setADSRParameters(0, 0, 1, 0);

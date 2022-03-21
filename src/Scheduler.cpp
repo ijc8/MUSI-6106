@@ -27,11 +27,11 @@ Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float
 		return Error_t::kFunctionInvalidArgsError;
 
 	/// Computes location and event information
-	int64_t iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
-	int64_t iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
-	int64_t iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
-	int64_t iTotalLengthInSamp = iNoteOn + iDurationInSamp;
-	int64_t iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
+	int iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
+	int iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
+	int iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
+	int iTotalLengthInSamp = iNoteOn + iDurationInSamp;
+	int iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
 	if (iNoteOff < iNoteOn)
 		return Error_t::kFunctionInvalidArgsError;
 
@@ -67,7 +67,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 		// Carries out necessary actions if so
 		checkTriggers();
 
-		m_Ramp.rampTo((m_SetInsts.size() != 0) ? (1.0f / m_SetInsts.size()) : 1.0f, 0.8);
+		m_Ramp.rampTo((m_SetInsts.size() != 0) ? (1.0f / m_SetInsts.size()) : 1.0f, 0.8f);
 
 		// Place child instrument values into a temporary, single-frame buffer
 		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
@@ -136,9 +136,9 @@ void CScheduler::checkQueues()
 		auto triggerInfo = instToAdd.second;
 		if (triggerInfo.has_value())
 		{
-			m_MapNoteOn[triggerInfo.value().noteOn].insert(pInstToAdd);
-			m_MapNoteOff[triggerInfo.value().noteOff].insert(pInstToAdd);
-			m_MapRemover[triggerInfo.value().remove].insert(pInstToAdd);
+			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn)].insert(pInstToAdd);
+			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff)].insert(pInstToAdd);
+			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove)].insert(pInstToAdd);
 		}
 		else
 		{
@@ -147,7 +147,7 @@ void CScheduler::checkQueues()
 	}
 }
 
-int64_t CScheduler::getLengthInSamp() const
+int CScheduler::getLengthInSamp() const
 {
 	return m_iScheduleLength;
 }

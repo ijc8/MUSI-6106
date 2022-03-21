@@ -60,9 +60,9 @@ void CMainProcessor::checkQueues()
 		auto triggerInfo = instToAdd.second;
 		if (triggerInfo.has_value())
 		{
-			m_MapNoteOn[triggerInfo.value().noteOn + m_iSampleCounter].insert(pInstToAdd);
-			m_MapNoteOff[triggerInfo.value().noteOff + m_iSampleCounter].insert(pInstToAdd);
-			m_MapRemover[triggerInfo.value().remove + m_iSampleCounter].insert(pInstToAdd);
+			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn) + m_iSampleCounter].insert(pInstToAdd);
+			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff) + m_iSampleCounter].insert(pInstToAdd);
+			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove) + m_iSampleCounter].insert(pInstToAdd);
 		}
 		else
 		{
