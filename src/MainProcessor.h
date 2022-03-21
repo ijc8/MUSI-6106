@@ -7,8 +7,8 @@
 class CMainProcessor : public CScheduler
 {
 public:
-	CMainProcessor() { noteOn(); };
-	~CMainProcessor() {};
+	CMainProcessor() {};
+	virtual ~CMainProcessor() {};
 
 	// Use for chess pieces or other class member instruments
 	// noteOn() and noteOff() calls will be up to you
@@ -16,6 +16,8 @@ public:
 	Error_t addInst(std::shared_ptr<CInstrument> pInstToAdd);
 	Error_t removeInst(CInstrument& rInstToRemove);
 	Error_t removeInst(std::shared_ptr<CInstrument> pInstToRemove);
+
+	void noteOn() override;
 
 	// Pass the entire buffer into this process function
 	// It will internally do frame-by-frame processing
@@ -31,7 +33,7 @@ protected:
 	virtual void checkTriggers() override;
 	virtual void checkQueues() override;
 
-	AtomicRingBuffer<std::shared_ptr<CInstrument>> m_RemoveQueue{ 32 };
+	AtomicRingBuffer<std::shared_ptr<CInstrument>> m_RemoveQueue{ 1000 };
 };
 
 #endif 

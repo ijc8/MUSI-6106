@@ -20,8 +20,8 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     int panIdx = rand() % 8;
 
     auto inst = std::make_shared<CWavetableOscillator>(sine, frequencies[freqIdx], gains[gainIdx], 44100);
-    inst->noteOn();
     inst->setADSRParameters(2, 0, 1, 2);
+    inst->noteOn();
     inst->setPan(pans[panIdx]);
     m_mainProcessor.addInst(inst);
     oscillatorPtrs.push_back(inst);

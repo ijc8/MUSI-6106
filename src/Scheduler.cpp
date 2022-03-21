@@ -43,7 +43,7 @@ Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float
 	// Adjusts length of the entire container
 	if (iTotalLengthInSamp > m_iScheduleLength)
 	{
-		m_iScheduleLength = iTotalLengthInSamp;
+		m_iScheduleLength.store(iTotalLengthInSamp);
 	}
 
 
@@ -52,9 +52,7 @@ Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float
 
 void CScheduler::noteOn()
 {
-	m_iSampleCounter = 0;
-	for (std::shared_ptr<CInstrument> inst : m_SetInsts)
-		inst->resetADSR();
+	m_iSampleCounter.store(0);
 	CInstrument::noteOn();
 }
 
@@ -149,12 +147,12 @@ void CScheduler::checkQueues()
 
 int CScheduler::getLengthInSamp() const
 {
-	return m_iScheduleLength;
+	return m_iScheduleLength.load();
 }
 
 float CScheduler::getLengthInSec() const
 {
-	return sampToSec(m_iScheduleLength, m_fSampleRateInHz);
+	return sampToSec(m_iScheduleLength.load(), m_fSampleRateInHz);
 }
 
 void CLooper::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
@@ -162,7 +160,7 @@ void CLooper::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentF
 	CScheduler::processFrame(ppfOutBuffer, iNumChannels, iCurrentFrame);
 
 	// Wraps around internal clock to allow for looping
-	m_iSampleCounter %= m_iScheduleLength;
+	m_iSampleCounter.store(m_iSampleCounter.load() % m_iScheduleLength.load());
 }
 
 Error_t CLooper::setLoopLength(float fNewLoopLengthInSec)
@@ -170,6 +168,6 @@ Error_t CLooper::setLoopLength(float fNewLoopLengthInSec)
 	if (fNewLoopLengthInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
 
-	m_iScheduleLength = secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz);
+	m_iScheduleLength.store(secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz));
 	return Error_t::kNoError;
 }

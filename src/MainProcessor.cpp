@@ -32,6 +32,11 @@ Error_t CMainProcessor::removeInst(std::shared_ptr<CInstrument> pInstToRemove)
 	return Error_t::kNoError;
 }
 
+void CMainProcessor::noteOn()
+{
+	CInstrument::noteOn();
+}
+
 void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFrames)
 {
 	for (int frame = 0; frame < iNumFrames; frame++)
@@ -45,9 +50,9 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 void CMainProcessor::checkTriggers()
 {
 	CScheduler::checkTriggers();
-	m_MapNoteOn.erase(m_iSampleCounter);
-	m_MapNoteOff.erase(m_iSampleCounter);
-	m_MapRemover.erase(m_iSampleCounter);
+	m_MapNoteOn.erase(m_iSampleCounter.load());
+	m_MapNoteOff.erase(m_iSampleCounter.load());
+	m_MapRemover.erase(m_iSampleCounter.load());
 }
 
 void CMainProcessor::checkQueues()
@@ -60,9 +65,9 @@ void CMainProcessor::checkQueues()
 		auto triggerInfo = instToAdd.second;
 		if (triggerInfo.has_value())
 		{
-			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn) + m_iSampleCounter].insert(pInstToAdd);
-			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff) + m_iSampleCounter].insert(pInstToAdd);
-			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove) + m_iSampleCounter].insert(pInstToAdd);
+			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn) + m_iSampleCounter.load()].insert(pInstToAdd);
+			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff) + m_iSampleCounter.load()].insert(pInstToAdd);
+			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove) + m_iSampleCounter.load()].insert(pInstToAdd);
 		}
 		else
 		{

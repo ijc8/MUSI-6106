@@ -48,8 +48,8 @@ protected:
 	unordered_set<std::shared_ptr<CInstrument>> m_SetInsts;
 
 	// This can be viewed as the schedule's internal clock
-	int64_t m_iSampleCounter = 0;
-	int m_iScheduleLength = 0;
+	std::atomic<int64_t> m_iSampleCounter = 0;
+	std::atomic<int> m_iScheduleLength = 0;
 
 	// Extra buffer space for applying adsr and gain
 	const int m_iMaxChannels = 20;
@@ -69,14 +69,14 @@ protected:
 	virtual void checkQueues();
 	
 	Ramp m_Ramp;
-	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 32 };
+	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
 };
 
 class CLooper : public CScheduler
 {
 public:
 	CLooper(float sampleRate = 48000) : CScheduler(sampleRate) {};
-	~CLooper() = default;
+	virtual ~CLooper() = default;
 
 	Error_t setLoopLength(float fNewLoopLengthInSec);
 

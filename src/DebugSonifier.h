@@ -29,7 +29,7 @@ public:
              onMove(AppState::getInstance().getGame());
 		}
 
-        void enable() { m_mainProcessor.noteOn(); onMove(AppState::getInstance().getGame()); };
+        void enable() {  m_mainProcessor.noteOn(); };
         void disable() { m_mainProcessor.noteOff(); };
 
         void setGain(float fNewGain) { m_mainProcessor.setGain(fNewGain); };
