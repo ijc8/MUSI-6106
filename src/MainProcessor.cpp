@@ -31,6 +31,11 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 }
 
 
+void CMainProcessor::checkFlags()
+{
+	CInstrument::checkFlags();
+}
+
 void CMainProcessor::checkTriggers()
 {
 	CScheduler::checkTriggers();
@@ -41,18 +46,6 @@ void CMainProcessor::checkTriggers()
 
 void CMainProcessor::checkQueues()
 {
-	if (m_bNoteOnPressed.load())
-	{
-		CInstrument::noteOn();
-		m_bNoteOnPressed.store(false);
-	}
-
-	if (m_bNoteOffPressed.load())
-	{
-		CInstrument::noteOff();
-		m_bNoteOffPressed.store(false);
-	}
-
 	// Places event and instrument pointer into appropriate container
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
 	while (m_InsertQueue.pop(instToAdd))

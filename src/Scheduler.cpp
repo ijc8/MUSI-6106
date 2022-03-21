@@ -50,51 +50,62 @@ Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float
 	return Error_t::kNoError;
 }
 
-void CScheduler::noteOn()
-{
-	m_bNoteOnPressed.store(true);
-}
-
-void CScheduler::noteOff()
-{
-	m_bNoteOffPressed.store(true);
-}
-
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
+		
+	checkFlags();
 
-		checkQueues();
+	checkQueues();
+	
+	// Parses each map and sees if any event triggers exist for current sample counter		
+	// Carries out necessary actions if so
+	checkTriggers();
 
-		// Parses each map and sees if any event triggers exist for current sample counter
-		// Carries out necessary actions if so
-		checkTriggers();
+	m_Ramp.rampTo((m_SetInsts.size() != 0) ? (1.0f / m_SetInsts.size()) : 1.0f, 0.8f);
 
-		m_Ramp.rampTo((m_SetInsts.size() != 0) ? (1.0f / m_SetInsts.size()) : 1.0f, 0.8f);
+	// Place child instrument values into a temporary, single-frame buffer
+	// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
+	for (std::shared_ptr<CInstrument> inst : m_SetInsts)				
+		inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
-		// Place child instrument values into a temporary, single-frame buffer
-		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
-			for (std::shared_ptr<CInstrument> inst : m_SetInsts)
-				inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
-
-		m_iSampleCounter++;
+	m_iSampleCounter++;
 
 
 		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
-		float fAdsrValue = m_adsr.getNextSample() * m_Ramp.process();
-		for (int channel = 0; channel < iNumChannels; channel++)
+	float fAdsrValue = m_adsr.getNextSample() * m_Ramp.process();
+	for (int channel = 0; channel < iNumChannels; channel++)
+	{
+		float fPanGain{ 0 };
+		if (channel == 0) 
 		{
-			float fPanGain{ 0 };
-			if (channel == 0) {
-				fPanGain = (1.0f - m_fPan);
-			}
-			if (channel == 1) {
-				fPanGain = m_fPan;
-			}
-			ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * (iNumChannels * fPanGain) * m_ppfTempBuffer[channel][0];
-			m_ppfTempBuffer[channel][0] = 0;
+			fPanGain = (1.0f - m_fPan);
 		}
+		if (channel == 1)
+		{
+			fPanGain = m_fPan;
+		}
+		ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * (iNumChannels * fPanGain) * m_ppfTempBuffer[channel][0];
+		m_ppfTempBuffer[channel][0] = 0;
+	}
 
 		
+}
+
+void CScheduler::checkFlags()
+{
+
+	if (m_bNoteOnPressed.exchange(false))
+	{
+		for (std::shared_ptr<CInstrument> inst : m_SetInsts)
+			inst->resetADSR();
+		m_iSampleCounter.store(0);
+		m_adsr.noteOn();
+	}
+
+	if (m_bNoteOffPressed.exchange(false))
+	{
+		m_adsr.noteOff();
+	}
 }
 
 void CScheduler::checkTriggers()
@@ -130,21 +141,6 @@ void CScheduler::checkTriggers()
 
 void CScheduler::checkQueues()
 {
-
-	if (m_bNoteOnPressed.load())
-	{
-		for (std::shared_ptr<CInstrument> inst : m_SetInsts)
-			inst->resetADSR();
-		m_bNoteOnPressed.store(false);
-		m_iSampleCounter.store(0);
-		CInstrument::noteOn();
-	}
-
-	if (m_bNoteOffPressed.load())
-	{
-		CInstrument::noteOff();
-		m_bNoteOffPressed.store(false);
-	}
 
 	// Places event and instrument pointer into appropriate container
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;

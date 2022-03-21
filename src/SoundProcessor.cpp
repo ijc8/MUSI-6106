@@ -114,12 +114,12 @@ bool CInstrument::isActive() const
 
 void CInstrument::noteOn()
 {
-	m_adsr.noteOn();
+	m_bNoteOnPressed.store(true);
 }
 
 void CInstrument::noteOff()
 {
-	m_adsr.noteOff();
+	m_bNoteOffPressed.store(true);
 }
 
 Error_t CInstrument::setSampleRate(float fNewSampleRate)
@@ -131,6 +131,14 @@ Error_t CInstrument::setSampleRate(float fNewSampleRate)
 		return Error_t::kNoError;
 	}
 	return Error_t::kFunctionInvalidArgsError;
+}
+void CInstrument::checkFlags()
+{
+	if (m_bNoteOnPressed.exchange(false))
+		m_adsr.noteOn();
+
+	if (m_bNoteOffPressed.exchange(false))
+		m_adsr.noteOff();
 }
 //=======================================================================
 
@@ -181,6 +189,8 @@ void CWavetableOscillator::reset()
 
 void CWavetableOscillator::processFrame(float** ppfOutBuffer, int iNumChannels, int currentFrame)
 {
+	checkFlags();
+
 	unsigned index0 = (unsigned)m_fCurrentIndex;
 	unsigned index1 = index0 + 1;
 	if (index1 >= (unsigned)m_iTableSize)

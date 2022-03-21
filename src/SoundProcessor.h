@@ -77,6 +77,10 @@ protected:
     float m_fPan = 0.5f;
     juce::ADSR m_adsr;
 	juce::ADSR::Parameters m_adsrParameters;
+	std::atomic<bool> m_bNoteOnPressed = false;
+	std::atomic<bool> m_bNoteOffPressed = false;
+
+	virtual void checkFlags();
 
 private:
 

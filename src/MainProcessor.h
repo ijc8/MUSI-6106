@@ -26,8 +26,9 @@ protected:
 
 	// Helper function to check maps for events like noteOn(), noteOff(), etc
 	// This overrides from CScheduler, removing the key/value pair after being triggered
-	virtual void checkTriggers() override;
-	virtual void checkQueues() override;
+	void checkFlags() override;
+	void checkTriggers() override;
+	void checkQueues() override;
 
 	AtomicRingBuffer<std::shared_ptr<CInstrument>> m_RemoveQueue{ 1000 };
 };
