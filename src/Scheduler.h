@@ -30,7 +30,7 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	// Will handle deletion
-	Error_t scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
+	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 
 	// Returns schedule length in samples
 	int getLengthInSamp() const;

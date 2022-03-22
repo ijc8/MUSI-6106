@@ -21,7 +21,7 @@ CScheduler::~CScheduler()
 	delete[] m_ppfTempBuffer;
 }
 
-Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec)
+Error_t CScheduler::scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
 	if (pInstToPush == nullptr || fOnsetInSec < 0 || fDurationInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
@@ -36,7 +36,7 @@ Error_t CScheduler::scheduleInst(std::shared_ptr<CInstrument> pInstToPush, float
 		return Error_t::kFunctionInvalidArgsError;
 
 	TriggerInfo triggerInfo = TriggerInfo(iNoteOn, iNoteOff, iTotalLengthInSamp);
-	auto instToPush = std::make_pair(pInstToPush, std::make_optional(triggerInfo));
+	auto instToPush = std::make_pair(std::shared_ptr(std::move(pInstToPush)), std::make_optional(triggerInfo));
 
 	m_InsertQueue.push(instToPush);
 	
@@ -94,17 +94,19 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 void CScheduler::checkFlags()
 {
 
-	if (m_bNoteOnPressed.exchange(false))
+	if (m_bNoteOnPressed.load())
 	{
 		for (std::shared_ptr<CInstrument> inst : m_SetInsts)
 			inst->resetADSR();
 		m_iSampleCounter.store(0);
+		m_bNoteOnPressed.store(false);
 		m_adsr.noteOn();
 	}
 
-	if (m_bNoteOffPressed.exchange(false))
+	if (m_bNoteOffPressed.load())
 	{
 		m_adsr.noteOff();
+		m_bNoteOffPressed.store(false);
 	}
 }
 

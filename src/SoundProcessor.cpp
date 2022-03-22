@@ -134,11 +134,18 @@ Error_t CInstrument::setSampleRate(float fNewSampleRate)
 }
 void CInstrument::checkFlags()
 {
-	if (m_bNoteOnPressed.exchange(false))
+	if (m_bNoteOnPressed.load())
+	{
 		m_adsr.noteOn();
+		m_bNoteOnPressed.store(false);
+	}
 
-	if (m_bNoteOffPressed.exchange(false))
+	if (m_bNoteOffPressed.load())
+	{
 		m_adsr.noteOff();
+		m_bNoteOffPressed.store(false);
+	}
+
 }
 //=======================================================================
 

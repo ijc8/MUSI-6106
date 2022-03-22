@@ -251,26 +251,26 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 
 	SECTION("Handes Out of Bounds Parameters")
 	{
-		REQUIRE(pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
-		REQUIRE(pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
-		REQUIRE(pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
 		
-		std::shared_ptr<CInstrument> pOscNULL;
-		REQUIRE(pSchedule->scheduleInst(pOscNULL, 0, 1) == Error_t::kFunctionInvalidArgsError);
+		std::unique_ptr<CInstrument> pOscNULL;
+		REQUIRE(pSchedule->scheduleInst(std::move(pOscNULL), 0, 1) == Error_t::kFunctionInvalidArgsError);
 	}
 
 	SECTION("Returns Correct Length")
 	{
-		pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), 0, 2);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 0, 2);
 		REQUIRE(pSchedule->getLengthInSec() == 2);
 		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
-		pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), 1, 1);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 1, 1);
 		REQUIRE(pSchedule->getLengthInSec() == 2);
 		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
-		pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), 2, 4);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 2, 4);
 		REQUIRE(pSchedule->getLengthInSec() == 6);
 		REQUIRE(pSchedule->getLengthInSamp() == 6 * fSampleRate);
-		pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine), 2.25, 4.5);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 2.25, 4.5);
 		REQUIRE(pSchedule->getLengthInSec() == 6.75);
 		REQUIRE(pSchedule->getLengthInSamp() == 6.75 * fSampleRate);
 	}
@@ -283,7 +283,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		assert((fDurationInSec + fOnsetInSec) * fSampleRate < iLength);
 
 		pSchedule->setADSRParameters(0, 0, 1, 0);
-		pSchedule->scheduleInst(std::make_shared<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
 
 		int iNoteOn = static_cast<int>(fOnsetInSec * fSampleRate);
 		int iNoteOff = static_cast<int>((fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate) + iNoteOn;
@@ -313,10 +313,10 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		int iNoteOn = static_cast<int>(fOnsetInSec * fSampleRate);
 		int iNoteOff = static_cast<int>((fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate) + iNoteOn;
 
-		auto tempOsc = std::make_shared<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
+		auto tempOsc = std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
 		pLooper->setADSRParameters(0, 0, 1, 0);
 
-		pLooper->scheduleInst(tempOsc, fOnsetInSec, fDurationInSec);
+		pLooper->scheduleInst(std::move(tempOsc), fOnsetInSec, fDurationInSec);
 		REQUIRE(pLooper->getLengthInSamp() == iLoopLengthInSamp);
 		REQUIRE(pLooper->getLengthInSec() == 0.5f);
 
@@ -371,10 +371,10 @@ TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 
 	genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
 
-	auto inst = std::make_shared<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
+	auto inst = std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
 	inst->setADSRParameters(0, 0, 1, 0);
 	mainProcessor.setADSRParameters(0, 0, 1, 0);
-	std::thread thread1(&CMainProcessor::scheduleInst, &mainProcessor, inst, 0, 1);
+	std::thread thread1(&CMainProcessor::scheduleInst, &mainProcessor, std::move(inst), 0, 1);
 	std::thread thread2(&CMainProcessor::process, &mainProcessor, ppfOutBuffer, iNumChannels, iNumFrames);
 	thread1.join();
 	thread2.join();
