@@ -10,8 +10,6 @@ CScheduler::CScheduler(float sampleRate) :
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
 		m_ppfTempBuffer[channel] = new float[1] {0};
 
-	m_Ramp.setSampleRate(sampleRate);
-	m_Ramp.setValue(1);
 }
 
 CScheduler::~CScheduler()
@@ -52,16 +50,15 @@ Error_t CScheduler::scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float
 
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
-		
+	// Checks for state changes i.e. noteOn() and/or noteOff() calls
 	checkFlags();
 
+	// Checks insert and remove queues
 	checkQueues();
 	
 	// Parses each map and sees if any event triggers exist for current sample counter		
 	// Carries out necessary actions if so
 	checkTriggers();
-
-	m_Ramp.rampTo((m_SetInsts.size() != 0) ? (1.0f / m_SetInsts.size()) : 1.0f, 0.8f);
 
 	// Place child instrument values into a temporary, single-frame buffer
 	// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
@@ -71,8 +68,8 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 	m_iSampleCounter++;
 
 
-		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
-	float fAdsrValue = m_adsr.getNextSample() * m_Ramp.process();
+	// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
+	float fAdsrValue = m_adsr.getNextSample();
 	for (int channel = 0; channel < iNumChannels; channel++)
 	{
 		float fPanGain{ 0 };
@@ -105,8 +102,8 @@ void CScheduler::checkFlags()
 
 	if (m_bNoteOffPressed.load())
 	{
-		m_adsr.noteOff();
 		m_bNoteOffPressed.store(false);
+		m_adsr.noteOff();
 	}
 }
 
@@ -150,16 +147,9 @@ void CScheduler::checkQueues()
 	{
 		std::shared_ptr<CInstrument> pInstToAdd = instToAdd.first;
 		auto triggerInfo = instToAdd.second;
-		if (triggerInfo.has_value())
-		{
-			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn)].insert(pInstToAdd);
-			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff)].insert(pInstToAdd);
-			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove)].insert(pInstToAdd);
-		}
-		else
-		{
-			m_SetInsts.insert(pInstToAdd);
-		}
+		m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn)].insert(pInstToAdd);
+		m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff)].insert(pInstToAdd);
+		m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove)].insert(pInstToAdd);
 	}
 }
 

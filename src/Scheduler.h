@@ -1,7 +1,6 @@
 #if !defined(__Scheduler_hdr__)
 #define __Scheduler_hdr__
 #include "SoundProcessor.h"
-#include "Ramp.h"
 #include "AtomicRingBuffer.h"
 
 #include <map>
@@ -67,7 +66,6 @@ protected:
 	virtual void checkTriggers();
 	virtual void checkQueues();
 	
-	Ramp m_Ramp;
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
 };
 

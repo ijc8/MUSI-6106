@@ -6,8 +6,10 @@ Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 		return Error_t::kMemError;
 
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd = std::pair(pInstToAdd, std::nullopt);
+
 	if (!m_InsertQueue.push(instToAdd))
 		return Error_t::kUnknownError;
+
 	return Error_t::kNoError;
 }
 
@@ -18,6 +20,7 @@ Error_t CMainProcessor::removeInst(std::shared_ptr<CInstrument> pInstToRemove)
 
 	if (!m_RemoveQueue.push(pInstToRemove))
 		return Error_t::kUnknownError;
+
 	return Error_t::kNoError;
 }
 

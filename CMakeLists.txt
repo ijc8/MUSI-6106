@@ -79,7 +79,6 @@ add_library(Common OBJECT src/GameState.cpp)
 
 target_sources(MusicalChess
     PRIVATE
-        src/Ramp.h
         src/AtomicRingBuffer.h
         src/ChessboardGUI.cpp
         src/Main.cpp
