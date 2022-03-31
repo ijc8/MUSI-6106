@@ -349,6 +349,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 	delete[] ppfSchedulerBuffer;
 }
 
+// This test is just used as a lightweight and convenient way to track multi-threading -- no actual testing/comparisons are being made
 TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 {
 	CMainProcessor mainProcessor;
@@ -378,8 +379,6 @@ TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 	std::thread thread2(&CMainProcessor::process, &mainProcessor, ppfOutBuffer, iNumChannels, iNumFrames);
 	thread1.join();
 	thread2.join();
-
-	//CHECK_ARRAY_CLOSE(ppfOutBuffer, ppfGroundBuffer, iNumChannels, iNumFrames, 1E-3);
 
 	for (int channel = 0; channel < iNumChannels; channel++)
 	{
