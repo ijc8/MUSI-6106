@@ -28,7 +28,6 @@ public:
 	virtual ~CScheduler();
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
-	// Will handle deletion
 	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 
 	// Returns schedule length in samples
@@ -59,12 +58,15 @@ protected:
 	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOff;
 	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapRemover;
 
-	// Helper function to check if there is a trigger at a specified sample
-	// Will return the set of instruments pertaining to the trigger if so
-	// Will return an empty set if not
+	// Checks for internal state changes i.e. noteOn() and/or noteOff() calls
 	virtual void checkFlags() override;
-	virtual void checkTriggers();
+
+	// Checks insert and remove queues
 	virtual void checkQueues();
+
+	// Parses each map and sees if any event triggers exist for child instrument at the current sample counter		
+	// Carries out necessary actions if so
+	virtual void checkTriggers();
 	
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
 };

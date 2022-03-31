@@ -10,7 +10,7 @@ public:
 	CMainProcessor() {};
 	virtual ~CMainProcessor() {};
 
-	// Use for chess pieces or other class member instruments
+	// Use when YOU want to externally control and modify the instrument being added
 	// noteOn() and noteOff() calls will be up to you
 	Error_t addInst(std::shared_ptr<CInstrument> pInstToAdd);
 	Error_t removeInst(std::shared_ptr<CInstrument> pInstToRemove);
@@ -24,8 +24,6 @@ public:
 
 protected:
 
-	// Helper function to check maps for events like noteOn(), noteOff(), etc
-	// This overrides from CScheduler, removing the key/value pair after being triggered
 	void checkFlags() override;
 	void checkTriggers() override;
 	void checkQueues() override;

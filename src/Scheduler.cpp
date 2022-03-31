@@ -50,18 +50,11 @@ Error_t CScheduler::scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float
 
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
-	// Checks for state changes i.e. noteOn() and/or noteOff() calls
 	checkFlags();
-
-	// Checks insert and remove queues
 	checkQueues();
-	
-	// Parses each map and sees if any event triggers exist for current sample counter		
-	// Carries out necessary actions if so
 	checkTriggers();
 
 	// Place child instrument values into a temporary, single-frame buffer
-	// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
 	for (std::shared_ptr<CInstrument> inst : m_SetInsts)				
 		inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 

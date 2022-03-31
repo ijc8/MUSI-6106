@@ -5,6 +5,7 @@ Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 	if (!pInstToAdd)
 		return Error_t::kMemError;
 
+	// Creates an instrument paired with NO trigger information
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd = std::pair(pInstToAdd, std::nullopt);
 
 	if (!m_InsertQueue.push(instToAdd))
@@ -42,6 +43,8 @@ void CMainProcessor::checkFlags()
 void CMainProcessor::checkTriggers()
 {
 	CScheduler::checkTriggers();
+
+	// Erases data entries that will never again be accessed
 	m_MapNoteOn.erase(m_iSampleCounter.load());
 	m_MapNoteOff.erase(m_iSampleCounter.load());
 	m_MapRemover.erase(m_iSampleCounter.load());
@@ -57,6 +60,7 @@ void CMainProcessor::checkQueues()
 		auto triggerInfo = instToAdd.second;
 		if (triggerInfo.has_value())
 		{
+			// Here m_iSampleCounter is added to trigger values so that they are relative to the CURRENT POSITION IN TIME
 			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn) + m_iSampleCounter.load()].insert(pInstToAdd);
 			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff) + m_iSampleCounter.load()].insert(pInstToAdd);
 			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove) + m_iSampleCounter.load()].insert(pInstToAdd);
