@@ -86,6 +86,7 @@ namespace GUI
 	public:
 		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
 		{
+			//setToggleable(true);
 			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
 			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::yellow);
 			setSize(80, 80);
@@ -134,7 +135,17 @@ namespace GUI
 
 		enum class state {
 			kIdle,
-			kPlacing
+			kPlacing,
+
+			kNumStates
+		};
+
+		enum class mode {
+			kPVP,
+			kPVC,
+			kPGN,
+
+			kNumModes
 		};
 
 		ChessBoard()
@@ -220,7 +231,7 @@ namespace GUI
 
 		void buttonClicked(juce::Button* button) override
 		{
-			if (m_bIsMoveable)
+			if (m_CurrentMode != ChessBoard::mode::kPGN)
 			{
 				for (Piece& piece : m_AllPieces)
 				{
@@ -228,9 +239,15 @@ namespace GUI
 					{
 						if (m_SelectedPiece)
 						{
-							if (m_SelectedPiece->isAlly(piece))
+							if (m_SelectedPiece == &piece)
 							{
+								onStateChange(state::kIdle);
+							}
+							else if (m_SelectedPiece->isAlly(piece))
+							{
+								m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
 								m_SelectedPiece = &piece;
+								piece.setToggleState(true, juce::dontSendNotification);
 							}
 							else
 							{
@@ -239,11 +256,25 @@ namespace GUI
 							}
 						}
 						else {
-							if (AppState::getInstance().getGame().getTurn() == piece.getTeam())
+							if (m_CurrentMode == ChessBoard::mode::kPVP)
 							{
-								m_SelectedPiece = &piece;
-								onStateChange(state::kPlacing);
+								if (AppState::getInstance().getGame().getTurn() == piece.getTeam())
+								{
+									m_SelectedPiece = &piece;
+									m_SelectedPiece->setToggleState(true, juce::dontSendNotification);
+									onStateChange(state::kPlacing);
+								}
 							}
+							else 
+							{
+								if (AppState::getInstance().getGame().getTurn() == Chess::Color::White && piece.getTeam() == Chess::Color::White)
+								{
+									m_SelectedPiece = &piece;
+									m_SelectedPiece->setToggleState(true, juce::dontSendNotification);
+									onStateChange(state::kPlacing);
+								}
+							}
+
 						}
 						return;
 					}
@@ -297,20 +328,33 @@ namespace GUI
 				onStateChange(state::kIdle);
 		}
 
-		void setMoveable(bool bIsMoveable) { m_bIsMoveable = bIsMoveable; };
+		void onModeChange(ChessBoard::mode newMode)
+		{
+			switch (newMode)
+			{
+			case ChessBoard::mode::kPVP:
+				break;
+			case ChessBoard::mode::kPVC:
+				break;
+			default:
+				;
+			}
+			m_CurrentMode = newMode;
+		}
 
 	private:
 
 		static constexpr int BoardSize = 8;
 		static constexpr int NumPieces = 32;
-		bool m_bIsMoveable = true;
 
+		ChessBoard::mode m_CurrentMode = ChessBoard::mode::kPVP;
 		ChessBoard::state m_CurrentState = ChessBoard::state::kIdle;
 		Piece* m_SelectedPiece = nullptr;
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
 
 		//Change this to point where your images relative to your working directory
-		const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getParentDirectory().getChildFile("MUSI-6106/chessImages");
+		//const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getParentDirectory().getChildFile("MUSI-6106/chessImages");
+		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
 
 		Piece m_AllPieces[32]{
 			Piece { pathToImages.getChildFile("W_Rook.png"), 'R', "a1"},
@@ -371,6 +415,7 @@ namespace GUI
 			switch (newState)
 			{
 			case ChessBoard::state::kIdle:
+				if (m_SelectedPiece) m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
 				m_SelectedPiece = nullptr;
 				break;
 			case ChessBoard::state::kPlacing:
