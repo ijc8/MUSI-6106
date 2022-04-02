@@ -8,10 +8,8 @@ namespace GUI
 	class Square : public juce::Button
 	{
 	public:
-		Square(int row, int column, juce::Colour color) : juce::Button("square"), m_SquareColor(color), m_Row(row), m_Col(column)
+		Square(int row, int column, juce::Colour color) : juce::Button("square"), m_SquareColor(color), m_Row(row), m_Col(column), m_ShouldHighlight(false)
 		{
-			setToggleable(true);
-			setClickingTogglesState(true);
 			m_Rank = toRank(row);
 			m_File = toFile(column);
 			setId(m_Rank, m_File);
@@ -22,10 +20,13 @@ namespace GUI
 
 		void paintButton(juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
 		{
-			if (shouldDrawButtonAsHighlighted)
-				g.fillAll(juce::Colours::yellow);
-			else if (shouldDrawButtonAsDown)
-				g.fillAll(juce::Colours::blue);
+			if (m_ShouldHighlight)
+			{
+				if (shouldDrawButtonAsHighlighted)
+					g.fillAll(juce::Colours::red);
+				else
+					g.fillAll(juce::Colours::yellow);
+			}
 			else
 				g.fillAll(m_SquareColor);
 		}
@@ -38,6 +39,8 @@ namespace GUI
 		uint8_t getRank() const { return m_Rank; };
 		uint8_t getFile() const { return m_File; };
 		juce::String getId() const { return m_Id; };
+
+		void setHighlight(bool shouldHighlight) { m_ShouldHighlight = shouldHighlight; repaint(); };
 
 	private:
 
@@ -82,6 +85,7 @@ namespace GUI
 		uint8_t m_File;
 		juce::String m_Id;
 		juce::Colour m_SquareColor;
+		bool m_ShouldHighlight;
 
 	};
 
@@ -249,6 +253,7 @@ namespace GUI
 							}
 							else if (m_SelectedPiece->isAlly(piece))
 							{
+								onStateChange(state::kSwitching);
 								m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
 								selectPiece(piece);
 							}
@@ -424,7 +429,7 @@ namespace GUI
 			for (const Chess::Move& move : moves)
 			{
 				Square* square = findSquare(move.dst.toString());
-				square->setToggleState(true, juce::sendNotification);
+				square->setHighlight(true);
 			}
 		}
 
@@ -435,7 +440,7 @@ namespace GUI
 				for (int col = 0; col < BoardSize; col++)
 				{
 					Square*& square = m_AllSquares[row][col];
-					square->setToggleState(false, juce::sendNotification);
+					square->setHighlight(false);
 				}
 			}
 		}
