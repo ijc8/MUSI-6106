@@ -8,7 +8,7 @@ namespace GUI
 	class Square : public juce::Button
 	{
 	public:
-		Square(int row, int column, juce::Colour color) : juce::Button("square"), m_SquareColor(color), m_Row(row), m_Col(column), m_ShouldHighlight(false)
+		Square(int row, int column, juce::Colour color) : juce::Button("square"), m_SquareColor(color), m_Row(row), m_Col(column), m_IsCandidate(false)
 		{
 			m_Rank = toRank(row);
 			m_File = toFile(column);
@@ -20,7 +20,7 @@ namespace GUI
 
 		void paintButton(juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
 		{
-			if (m_ShouldHighlight)
+			if (m_IsCandidate)
 			{
 				if (shouldDrawButtonAsHighlighted)
 					g.fillAll(juce::Colours::red);
@@ -40,7 +40,7 @@ namespace GUI
 		uint8_t getFile() const { return m_File; };
 		juce::String getId() const { return m_Id; };
 
-		void setHighlight(bool shouldHighlight) { m_ShouldHighlight = shouldHighlight; repaint(); };
+		void isCandidate(bool isCandidate) { m_IsCandidate = isCandidate; repaint(); };
 
 	private:
 
@@ -85,7 +85,7 @@ namespace GUI
 		uint8_t m_File;
 		juce::String m_Id;
 		juce::Colour m_SquareColor;
-		bool m_ShouldHighlight;
+		bool m_IsCandidate;
 
 	};
 
@@ -429,7 +429,7 @@ namespace GUI
 			for (const Chess::Move& move : moves)
 			{
 				Square* square = findSquare(move.dst.toString());
-				square->setHighlight(true);
+				square->isCandidate(true);
 			}
 		}
 
@@ -440,7 +440,7 @@ namespace GUI
 				for (int col = 0; col < BoardSize; col++)
 				{
 					Square*& square = m_AllSquares[row][col];
-					square->setHighlight(false);
+					square->isCandidate(false);
 				}
 			}
 		}

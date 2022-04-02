@@ -59,6 +59,8 @@ private:
     juce::TextButton buttonPreset4;
     juce::TextButton buttonPreset5;
     juce::TextButton buttonReset;
+    juce::TextButton buttonUndo;
+    juce::TextButton buttonRedo;
     juce::ComboBox m_SonifierSelector;
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
