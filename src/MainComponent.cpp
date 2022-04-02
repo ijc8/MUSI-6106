@@ -58,6 +58,18 @@ MainComponent::MainComponent()
         m_BroadcastManager.sendChangeMessage();
     };
 
+    addAndMakeVisible(buttonUndo);
+    buttonUndo.setButtonText("Undo");
+    buttonUndo.onClick = [this, &game]() {
+        game.pop();
+        if (m_GameMode == GameMode::PVC)
+            game.pop();
+        m_BroadcastManager.sendChangeMessage();
+    };
+
+    addAndMakeVisible(buttonRedo);
+    buttonRedo.setButtonText("Redo");
+
     addAndMakeVisible(m_SonifierSelector);
     m_SonifierSelector.onChange = [this]() { onSonifierChange(); };
     m_SonifierSelector.addItem("Debug Sonifier", 1);
@@ -163,6 +175,10 @@ void MainComponent::resized()
     m_TitleText.setBounds(header);
 
     m_TurnText.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
+    
+    auto areaAboveChessboard = area.removeFromTop(area.getHeight() / 12);
+    buttonUndo.setBounds(areaAboveChessboard.removeFromLeft(areaAboveChessboard.getWidth() / 2));
+    buttonRedo.setBounds(areaAboveChessboard);
     m_ChessboardGUI.setBounds(area);
 
     auto rightBottomThird = rightThird.removeFromBottom(rightThird.getHeight() / 3).reduced(20);
@@ -260,6 +276,8 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonPreset4.setEnabled(true);
         buttonPreset5.setEnabled(true);
         buttonReset.setEnabled(true);
+        buttonUndo.setEnabled(true);
+        buttonRedo.setEnabled(true);
         break;
     case GameMode::PVP:
         m_BroadcastManager.toggleStockfish(false);
@@ -276,6 +294,8 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonPreset4.setEnabled(true);
         buttonPreset5.setEnabled(true);
         buttonReset.setEnabled(true);
+        buttonUndo.setEnabled(true);
+        buttonRedo.setEnabled(true);
         break;
     default:
         m_BroadcastManager.toggleStockfish(false);
@@ -287,6 +307,8 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonPreset4.setEnabled(false);
         buttonPreset5.setEnabled(false);
         buttonReset.setEnabled(false);
+        buttonUndo.setEnabled(false);
+        buttonRedo.setEnabled(false);
     }
     m_GameMode = nextGameMode;
     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
