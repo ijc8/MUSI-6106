@@ -29,8 +29,7 @@ public:
 
             if (m_bStockfishOn)
             {
-                m_Stockfish.setState(m_Game);
-                m_Game.push(m_Stockfish.getMove());
+                m_Game.push(m_Stockfish.analyze(m_Game).bestMove);
                 sendChangeMessage();
             }
 

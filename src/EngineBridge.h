@@ -39,8 +39,6 @@ struct Analysis {
 class Stockfish {
 public:
     Stockfish(const std::string &path);
-    Chess::Move getMove(int time=1000);
-    void setState(const Chess::GameState &state);
     Analysis analyze(const Chess::GameState &state, int time=1000);
 
 private:
