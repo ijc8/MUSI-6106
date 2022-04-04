@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// TODO: Move this header to third-party folder.
 #include "subprocess.h"
 
 #include "GameState.h"
