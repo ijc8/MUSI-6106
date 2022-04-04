@@ -1,7 +1,6 @@
 #include "catch.hpp"
 
 #include <iostream>
-#include <catch.hpp>
 
 #include "DebugSonifier.h"
 

@@ -52,11 +52,10 @@ int main(int argc, const char **argv) {
         }
         printBoard();
         std::cout << "Engine is deciding on a move..." << std::endl;
-        engine.setState(game);
-        Move engineMove = engine.getMove();
-        std::cout << "< " << engineMove.toString() << std::endl;
-        assert(game.isLegal(engineMove));
-        game.push(engineMove);
+        Analysis analysis = engine.analyze(game);
+        std::cout << "< " << analysis.bestMove.toString() << " - evaluation (centipawns): " << analysis.score << std::endl;
+        assert(game.isLegal(analysis.bestMove));
+        game.push(analysis.bestMove);
     }
 
     return 0;
