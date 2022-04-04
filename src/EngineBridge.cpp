@@ -67,3 +67,18 @@ void Stockfish::setState(const Chess::GameState &state) {
     process.write("position fen ");
     process.writeline(state.getFen());
 }
+
+Analysis Stockfish::analyze(const Chess::GameState &state, int time) {
+    setState(state);
+    process.write("go movetime ");
+    process.writeline(std::to_string(time));
+    std::string prevLine = process.readline();
+    std::string line = process.readline();
+    while (!starts_with(line, "bestmove")) {
+        prevLine = line;
+        line = process.readline();
+    }
+    auto prevWords = split(prevLine, std::regex(" "));
+    auto words = split(line, std::regex(" "));
+    return { Chess::Move(words[1]), std::stod(prevWords[9]) };
+}
