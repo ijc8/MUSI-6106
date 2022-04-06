@@ -61,14 +61,18 @@ MainComponent::MainComponent()
     addAndMakeVisible(buttonUndo);
     buttonUndo.setButtonText("Undo");
     buttonUndo.onClick = [this, &game]() {
-        game.pop();
+        m_BroadcastManager.undo();
         if (m_GameMode == GameMode::PVC)
-            game.pop();
-        m_BroadcastManager.sendChangeMessage();
+            m_BroadcastManager.undo();
     };
 
     addAndMakeVisible(buttonRedo);
     buttonRedo.setButtonText("Redo");
+    buttonRedo.onClick = [this, &game]() {
+        m_BroadcastManager.redo();
+        if (m_GameMode == GameMode::PVC)
+            m_BroadcastManager.redo();
+    };
 
     addAndMakeVisible(m_SonifierSelector);
     m_SonifierSelector.onChange = [this]() { onSonifierChange(); };
@@ -311,6 +315,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonRedo.setEnabled(false);
     }
     m_GameMode = nextGameMode;
+    m_BroadcastManager.emptyUndoHistory();
     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
     m_BroadcastManager.sendChangeMessage();
 }
