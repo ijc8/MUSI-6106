@@ -76,7 +76,7 @@ std::unordered_map<std::string, std::string> PGNParser::extractTags() {
     return tags;
 }
 
-std::vector<std::string> PGNParser::getMoves() {
+std::vector<std::string> PGNParser::getMovesAlgebraic() {
 
     std::locale loc;
     std::vector<std::string> moves;
@@ -95,7 +95,7 @@ std::vector<std::string> PGNParser::getMoves() {
         if (line[0] == TAGSTART || line.length() == 0)
             continue;
 
-        // Check whether line stars with number or not.
+        // Check whether line stars with number or not and set start-end idx
         if (!std::isdigit(line[0], loc)) {
             startIdx = 0;
             endIdx = line.find(std::to_string(moveNumber + 1) + ".");
@@ -115,7 +115,6 @@ std::vector<std::string> PGNParser::getMoves() {
 
         // When the line starts with a number
         while (endIdx != -1) {
-
             endIdx = line.find(std::to_string(moveNumber + 1) + ".");
             if (endIdx == -1) {
                 if(startIdx == -1) {
@@ -135,6 +134,13 @@ std::vector<std::string> PGNParser::getMoves() {
     }
 
     return moves;
+}
+
+std::vector<Chess::Move> PGNParser::getMoves(std::vector<std::string> moves) {
+
+
+
+    return std::vector<Chess::Move>();
 }
 
 

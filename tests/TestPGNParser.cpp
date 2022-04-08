@@ -16,10 +16,19 @@ TEST_CASE("Reading PGN tags", "[PGN]") {
 }
 
 
-TEST_CASE("Reading PGN moves", "[PGN]") {
+TEST_CASE("Reading PGN moves (algebraic)", "[PGN]") {
 
     std::vector<std::string> moves;
     PGNParser pgn;
-    moves = pgn.getMoves();
+    moves = pgn.getMovesAlgebraic();
+
+}
+
+TEST_CASE("Reading PGN moves (on the board)", "[PGN]") {
+
+    std::vector<std::string> moves;
+    PGNParser pgn;
+    moves = pgn.getMovesAlgebraic();
+    
 
 }

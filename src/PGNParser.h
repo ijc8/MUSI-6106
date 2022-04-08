@@ -34,8 +34,9 @@ public:
     PGNParser();
     void setupFileFromPath(std::string path);
     std::unordered_map<std::string, std::string> extractTags();
-    std::vector<std::string> getMoves();
+    std::vector<std::string> getMovesAlgebraic();
     std::unordered_map<int,std::string> getComments();
+    std::vector<Chess::Move> getMoves(std::vector<std::string> moves);
 
 
 
