@@ -320,6 +320,48 @@ std::optional<std::optional<Color>> GameState::getOutcome() const {
     // TODO:
     // If we're in check, see if there's a way to get out. (If not, our opponent wins.)
     // If we're not in check, see if there's any move that doesn't put us in check. (If not, it's stalemate.)
+
+
+    // Check for checkmate if king is in check
+    if (this->isCheck(this->getTurn()))
+    {
+        int legalMoveFlag = 0;
+        for (const auto [square, piece] : pieceMap) {
+            // Iterating over the pieces of the same color and checking for legal moves
+            if (piece.color != this->turn) continue;
+
+            for (auto move : this->generateMoves(square)) {
+                if(isLegal(move))
+                    legalMoveFlag++;
+                }
+            if(legalMoveFlag == 0)
+            {
+                return this->turn == Color::White? Chess::Color::Black : Color::White;
+            }
+        }
+    }
+
+//    Check for stalemate
+    else
+    {
+        int legalMoveFlag = 0;
+        for (const auto [square, piece] : pieceMap) {
+            // Iterating over the pieces of the same color and checking for legal moves
+            if (piece.color != this->turn) continue;
+
+            for (auto move : this->generateMoves(square)) {
+                if(wouldBeInCheck(move))
+                    continue;
+                else
+                    legalMoveFlag++;
+            }
+            if(legalMoveFlag == 0)
+            {
+                return std::nullopt_t<std::nullopt>;
+            }
+        }
+    }
+
     return std::nullopt;
 }
 
