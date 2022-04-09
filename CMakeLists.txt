@@ -49,7 +49,8 @@ juce_add_gui_app(MusicalChess
     PRODUCT_NAME "MusicalChess")     # The name of the final executable, which can differ from the target name
 
 juce_add_console_app(Tests
-    PRODUCT_NAME "Tests")
+    PRODUCT_NAME "Tests"
+    NEEDS_CURL TRUE)
 
 juce_add_console_app(EngineTest
     PRODUCT_NAME "EngineTest")
@@ -97,6 +98,7 @@ target_sources(Tests
         src/Scheduler.cpp
         tests/TestGameState.cpp
         tests/TestSynthesis.cpp
+        tests/Request.cpp
         tests/main.cpp)
 
 target_sources(TerminalChess
@@ -155,7 +157,7 @@ target_compile_definitions(Tests
     PRIVATE
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
-        JUCE_USE_CURL=0)    # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
+        JUCE_USE_CURL=1)    # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
 
 target_compile_definitions(SonifierTest
 		PRIVATE
