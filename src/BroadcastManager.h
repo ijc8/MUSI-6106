@@ -43,8 +43,11 @@ public:
 
     void undo()
     {
-        mUndoHistory.push(m_Game.pop());
-        sendChangeMessage();
+        if (!m_Game.hasNoHistory())
+        {
+            mUndoHistory.push(m_Game.pop());
+            sendChangeMessage();
+        }
     }
 
     void redo()
