@@ -59,6 +59,8 @@ private:
     juce::TextButton buttonPreset4;
     juce::TextButton buttonPreset5;
     juce::TextButton buttonReset;
+    juce::TextButton buttonUndo;
+    juce::TextButton buttonRedo;
     juce::ComboBox m_SonifierSelector;
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
@@ -76,6 +78,8 @@ private:
     juce::String m_PgnString;
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
+
+    std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
