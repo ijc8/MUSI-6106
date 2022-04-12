@@ -65,15 +65,20 @@ void StorySonifier::actionListenerCallback(const juce::String& message)
 {
 	if (message.contains("Select"))
 	{
-		if (mSelectedPiece)
-			mSelectedPiece->noteOff();
-
 		std::string pieceString = message.substring(7, 8).toStdString();
 		auto it = toPieceMelodyIdx.find(pieceString);
 		if (it != toPieceMelodyIdx.end())
 		{
 			mPieceMelodies[it->second]->noteOn();
-			mSelectedPiece = mPieceMelodies[it->second].get();
+		}
+	}
+	else if (message.contains("Deselect"))
+	{
+		std::string pieceString = message.substring(9, 10).toStdString();
+		auto it = toPieceMelodyIdx.find(pieceString);
+		if (it != toPieceMelodyIdx.end())
+		{
+			mPieceMelodies[it->second]->noteOff();
 		}
 	}
 }

@@ -20,7 +20,7 @@ public:
 
     void actionListenerCallback(const juce::String& message)
     {
-        if (message.contains("Select"))
+        if (message.contains("Select") || message.contains("Deselect"))
         {
             sendActionMessage(message);
         }

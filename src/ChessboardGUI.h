@@ -399,6 +399,8 @@ namespace GUI
 
 		void selectPiece(Piece& piece)
 		{
+			if (m_SelectedPiece)
+				sendActionMessage("Deselect " + m_SelectedPiece->getId());
 			m_SelectedPiece = &piece;
 			piece.setToggleState(true, juce::dontSendNotification);
 			highlightPossibleMoves(piece);
@@ -451,7 +453,11 @@ namespace GUI
 			switch (newState)
 			{
 			case ChessBoard::state::kIdle:
-				if (m_SelectedPiece) m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
+				if (m_SelectedPiece)
+				{
+					m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
+					sendActionMessage("Deselect " + m_SelectedPiece->getId());
+				}
 				m_SelectedPiece = nullptr;
 				resetPossibleMoves();
 				break;

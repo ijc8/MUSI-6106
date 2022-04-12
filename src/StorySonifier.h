@@ -40,21 +40,20 @@ private:
 		kNumPieceMelodies
 	};
 
-	CInstrument* mSelectedPiece = 0;
-	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies]
-	{
-		std::make_shared<CWavetableOscillator>(mSine, 440, 1), // White King
-		std::make_shared<CWavetableOscillator>(mSine, 220, 1), // White Queen
-		std::make_shared<CWavetableOscillator>(mSaw, 440, 1),  // Black King
-		std::make_shared<CWavetableOscillator>(mSaw, 220, 1)   // Black Queen
-	};
-
 	std::map<std::string, PieceMelody> toPieceMelodyIdx
 	{
 		{"K", kKingWhite},
 		{"Q", kQueenWhite},
 		{"k", kKingBlack},
 		{"q", kQueenBlack}
+	};
+
+	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies]
+	{
+		std::make_shared<CWavetableOscillator>(mSine, 440, 1), // White King
+		std::make_shared<CWavetableOscillator>(mSine, 220, 1), // White Queen
+		std::make_shared<CWavetableOscillator>(mSaw, 440, 1),  // Black King
+		std::make_shared<CWavetableOscillator>(mSaw, 220, 1)   // Black Queen
 	};
 
 	float mSampleRate = 1.0f;
