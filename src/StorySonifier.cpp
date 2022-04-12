@@ -2,7 +2,7 @@
 
 StorySonifier::StorySonifier()
 {
-	King = std::make_shared<CWavetableOscillator>(mSine, 440, 1.0f);
+
 }
 
 StorySonifier::~StorySonifier()
@@ -14,16 +14,20 @@ void StorySonifier::process(float** ppfOutputBuffer, int iNumChannels, int iNumF
 	mMainProcessor.process(ppfOutputBuffer, iNumChannels, iNumFrames);
 }
 
-void StorySonifier::prepareToPlay(int iExpectedBlockSize, int iSamplesRate)
+void StorySonifier::prepareToPlay(int iExpectedBlockSize, int iSampleRate)
 {
-	mSampleRate = iSamplesRate;
+	mSampleRate = iSampleRate;
 	mBlockSize = iExpectedBlockSize;
 
 	mMainProcessor.setSampleRate(mSampleRate);
 	mMainProcessor.setGain(1);
 
-	King->setSampleRate(mSampleRate);
-	mMainProcessor.addInst(King);
+	for (int i = 0; i < kNumPieceMelodies; i++)
+	{
+		mPieceMelodies[i]->setSampleRate(iSampleRate);
+		mMainProcessor.addInst(mPieceMelodies[i]);
+	}
+
 }
 
 void StorySonifier::releaseResources()
@@ -61,6 +65,15 @@ void StorySonifier::actionListenerCallback(const juce::String& message)
 {
 	if (message.contains("Select"))
 	{
-		King->noteOn();
+		if (mSelectedPiece)
+			mSelectedPiece->noteOff();
+
+		std::string pieceString = message.substring(7, 8).toStdString();
+		auto it = toPieceMelodyIdx.find(pieceString);
+		if (it != toPieceMelodyIdx.end())
+		{
+			mPieceMelodies[it->second]->noteOn();
+			mSelectedPiece = mPieceMelodies[it->second].get();
+		}
 	}
 }

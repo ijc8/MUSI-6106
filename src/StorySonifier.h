@@ -31,7 +31,31 @@ private:
 	CSawWavetable mSaw;
 	CSqrWavetable mSquare;
 
-	std::shared_ptr<CInstrument> King;
+	enum PieceMelody {
+		kKingWhite,
+		kQueenWhite,
+		kKingBlack,
+		kQueenBlack,
+		
+		kNumPieceMelodies
+	};
+
+	CInstrument* mSelectedPiece = 0;
+	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies]
+	{
+		std::make_shared<CWavetableOscillator>(mSine, 440, 1), // White King
+		std::make_shared<CWavetableOscillator>(mSine, 220, 1), // White Queen
+		std::make_shared<CWavetableOscillator>(mSaw, 440, 1),  // Black King
+		std::make_shared<CWavetableOscillator>(mSaw, 220, 1)   // Black Queen
+	};
+
+	std::map<std::string, PieceMelody> toPieceMelodyIdx
+	{
+		{"K", kKingWhite},
+		{"Q", kQueenWhite},
+		{"k", kKingBlack},
+		{"q", kQueenBlack}
+	};
 
 	float mSampleRate = 1.0f;
 	float mBlockSize = 0.0f;
