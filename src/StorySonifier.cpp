@@ -80,11 +80,11 @@ void StorySonifier::actionListenerCallback(const juce::String& message)
 	}
 	else if (message.contains("Warn"))
 	{
-		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSquare, 555, 1.0, mSampleRate), 0, 4);
+		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSquare, 555, 0.25, mSampleRate), 0, 1);
 	}
 	else if (message.contains("Encourage"))
 	{
-		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 555, 1.0, mSampleRate), 0, 4);
+		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 555, 0.25, mSampleRate), 0, 1);
 	}
 }
 
@@ -95,17 +95,17 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mPieceMelodies[kQueenWhite] = std::make_shared<CWavetableOscillator>(mSine, 220, 1, fSampleRate);
 	mPieceMelodies[kQueenBlack] = std::make_shared<CWavetableOscillator>(mSaw, 220, 1, fSampleRate);
 
-	auto KnightWhiteLoop = std::make_shared<CLooper>(fSampleRate);
+	auto KnightWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
 	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 450, 1.0f, fSampleRate), 0, 1);
 	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 670, 1.0f, fSampleRate), 1, 1);
 	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
 
-	auto KnightBlackLoop = std::make_shared<CLooper>(fSampleRate);
+	auto KnightBlackLoop = std::make_shared<CScheduler>(fSampleRate);
 	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 670, 1.0f, fSampleRate), 0, 1);
 	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 450, 1.0f, fSampleRate), 1, 1);
 	mPieceMelodies[kKnightBlack] = KnightBlackLoop;
 
-	auto BishopWhiteLoop = std::make_shared<CLooper>(fSampleRate);
+	auto BishopWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
 	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 293, 1.0, fSampleRate), 0, 0.25);
 	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 329, 1.0, fSampleRate), 0.25, 0.25);
 	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 349, 1.0, fSampleRate), 0.5, 0.25);
@@ -115,7 +115,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 293, 1.0, fSampleRate), 1.50, 0.5);
 	mPieceMelodies[kBishopWhite] = BishopWhiteLoop;
 
-	auto BishopBlackLoop = std::make_shared<CLooper>(fSampleRate);
+	auto BishopBlackLoop = std::make_shared<CScheduler>(fSampleRate);
 	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 293, 1.0, fSampleRate), 0, 0.25);
 	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 329, 1.0, fSampleRate), 0.25, 0.25);
 	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 349, 1.0, fSampleRate), 0.5, 0.25);

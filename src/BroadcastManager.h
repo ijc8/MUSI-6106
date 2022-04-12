@@ -28,9 +28,9 @@ public:
         {
             Chess::Move move = Chess::Move(Chess::Square(message.substring(8, 10).toStdString()), Chess::Square(message.substring(10, 12).toStdString()));
             if (true)
-                sendActionMessage("Warn");
-            else
                 sendActionMessage("Encourage");
+            else
+                sendActionMessage("Warn");
         }
         else 
         {
