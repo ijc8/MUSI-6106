@@ -94,7 +94,6 @@ MainComponent::MainComponent()
     m_GameModeSelector.addItem("PVC", 2);
     m_GameModeSelector.addItem("PGN", 3);
     m_GameModeSelector.setSelectedId(1);
-    onGameModeChange(GameMode::PVP);
 
     addAndMakeVisible(m_TitleText);
     m_TitleText.setText("MUSICAL CHESS", juce::NotificationType::dontSendNotification);

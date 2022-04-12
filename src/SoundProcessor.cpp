@@ -20,14 +20,14 @@ float CSoundProcessor::getSampleRate()
 	return m_fSampleRateInHz;
 }
 
-int64_t CSoundProcessor::secToSamp(float sec, float sampleRate) const
+int CSoundProcessor::secToSamp(float sec, float sampleRate) const
 {
-	return static_cast<int64_t>(sec * sampleRate);
+	return static_cast<int>(sec * sampleRate);
 }
 
-float CSoundProcessor::sampToSec(int64_t sample, float sampleRate) const
+float CSoundProcessor::sampToSec(int sample, float sampleRate) const
 {
-	return static_cast<float>(sample / sampleRate);
+	return static_cast<float>(sample) / sampleRate;
 }
 
 //=======================================================================
@@ -114,12 +114,12 @@ bool CInstrument::isActive() const
 
 void CInstrument::noteOn()
 {
-	m_adsr.noteOn();
+	m_bNoteOnPressed.store(true);
 }
 
 void CInstrument::noteOff()
 {
-	m_adsr.noteOff();
+	m_bNoteOffPressed.store(true);
 }
 
 Error_t CInstrument::setSampleRate(float fNewSampleRate)
@@ -131,6 +131,21 @@ Error_t CInstrument::setSampleRate(float fNewSampleRate)
 		return Error_t::kNoError;
 	}
 	return Error_t::kFunctionInvalidArgsError;
+}
+void CInstrument::checkFlags()
+{
+	if (m_bNoteOnPressed.load())
+	{
+		m_adsr.noteOn();
+		m_bNoteOnPressed.store(false);
+	}
+
+	if (m_bNoteOffPressed.load())
+	{
+		m_adsr.noteOff();
+		m_bNoteOffPressed.store(false);
+	}
+
 }
 //=======================================================================
 
@@ -181,6 +196,8 @@ void CWavetableOscillator::reset()
 
 void CWavetableOscillator::processFrame(float** ppfOutBuffer, int iNumChannels, int currentFrame)
 {
+	checkFlags();
+
 	unsigned index0 = (unsigned)m_fCurrentIndex;
 	unsigned index1 = index0 + 1;
 	if (index1 >= (unsigned)m_iTableSize)

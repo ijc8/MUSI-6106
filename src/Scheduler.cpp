@@ -9,6 +9,7 @@ CScheduler::CScheduler(float sampleRate) :
 	m_ppfTempBuffer = new float*[m_iMaxChannels];
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
 		m_ppfTempBuffer[channel] = new float[1] {0};
+
 }
 
 CScheduler::~CScheduler()
@@ -16,81 +17,87 @@ CScheduler::~CScheduler()
 	for (int channel = 0; channel < m_iMaxChannels; channel++)
 		delete[] m_ppfTempBuffer[channel];
 	delete[] m_ppfTempBuffer;
-
-	for (CInstrument* inst : m_GarbageCollector)
-	{
-		delete inst;
-	}
 }
 
-Error_t CScheduler::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
+Error_t CScheduler::scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec)
 {
 	if (pInstToPush == nullptr || fOnsetInSec < 0 || fDurationInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
 
 	/// Computes location and event information
-	int64_t iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
-	int64_t iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
-	int64_t iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
-	int64_t iTotalLengthInSamp = iNoteOn + iDurationInSamp;
-	int64_t iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
+	int iReleaseInSamp = secToSamp(pInstToPush->getADSRParameters().release, m_fSampleRateInHz);
+	int iDurationInSamp = secToSamp(fDurationInSec, m_fSampleRateInHz);
+	int iNoteOn = secToSamp(fOnsetInSec, m_fSampleRateInHz);
+	int iTotalLengthInSamp = iNoteOn + iDurationInSamp;
+	int iNoteOff = iTotalLengthInSamp - iReleaseInSamp;
 	if (iNoteOff < iNoteOn)
 		return Error_t::kFunctionInvalidArgsError;
 
-	// Places event and instrument pointer into appropriate container
-	m_MapNoteOn[iNoteOn].insert(pInstToPush);
-	m_MapNoteOff[iNoteOff].insert(pInstToPush);
-	m_MapRemover[iTotalLengthInSamp].insert(pInstToPush);
-	m_GarbageCollector.insert(pInstToPush);
+	TriggerInfo triggerInfo = TriggerInfo(iNoteOn, iNoteOff, iTotalLengthInSamp);
+	auto instToPush = std::make_pair(std::shared_ptr(std::move(pInstToPush)), std::make_optional(triggerInfo));
 
+	m_InsertQueue.push(instToPush);
+	
 	// Adjusts length of the entire container
 	if (iTotalLengthInSamp > m_iScheduleLength)
 	{
-		m_iScheduleLength = iTotalLengthInSamp;
+		m_iScheduleLength.store(iTotalLengthInSamp);
 	}
 
 
 	return Error_t::kNoError;
 }
 
-void CScheduler::noteOn()
-{
-	m_iSampleCounter = 0;
-	for (CInstrument* inst : m_SetInsts)
-		inst->resetADSR();
-	CInstrument::noteOn();
-}
-
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
+	checkFlags();
+	checkQueues();
+	checkTriggers();
 
-		// Parses each map and sees if any event triggers exist for current sample counter
-		// Carries out necessary actions if so
-		checkTriggers();
+	// Place child instrument values into a temporary, single-frame buffer
+	for (std::shared_ptr<CInstrument> inst : m_SetInsts)				
+		inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
-		// Place child instrument values into a temporary, single-frame buffer
-		// If you get a read access error here, one of the objects in m_SetInsts probably went out of scope and deallocated itself
-		for (CInstrument* inst : m_SetInsts)
-			inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
+	m_iSampleCounter++;
 
-		// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
-		float fAdsrValue = m_adsr.getNextSample();
-		for (int channel = 0; channel < iNumChannels; channel++)
+
+	// Apply the schedule adsr and gain to this temporary buffer, THEN place into main output buffer
+	float fAdsrValue = m_adsr.getNextSample();
+	for (int channel = 0; channel < iNumChannels; channel++)
+	{
+		float fPanGain{ 0 };
+		if (channel == 0) 
 		{
-			float fPanGain{ 0 };
-			if (channel == 0) {
-				fPanGain = (1.0f - m_fPan);
-			}
-			if (channel == 1) {
-				fPanGain = m_fPan;
-			}
-			ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * (iNumChannels * fPanGain) * m_ppfTempBuffer[channel][0];
-			m_ppfTempBuffer[channel][0] = 0;
+			fPanGain = (1.0f - m_fPan);
 		}
+		if (channel == 1)
+		{
+			fPanGain = m_fPan;
+		}
+		ppfOutBuffer[channel][iCurrentFrame] += m_fGain * fAdsrValue * (iNumChannels * fPanGain) * m_ppfTempBuffer[channel][0];
+		m_ppfTempBuffer[channel][0] = 0;
+	}
 
-		m_iSampleCounter++;
+		
+}
 
+void CScheduler::checkFlags()
+{
 
+	if (m_bNoteOnPressed.load())
+	{
+		for (std::shared_ptr<CInstrument> inst : m_SetInsts)
+			inst->resetADSR();
+		m_iSampleCounter.store(0);
+		m_bNoteOnPressed.store(false);
+		m_adsr.noteOn();
+	}
+
+	if (m_bNoteOffPressed.load())
+	{
+		m_bNoteOffPressed.store(false);
+		m_adsr.noteOff();
+	}
 }
 
 void CScheduler::checkTriggers()
@@ -98,7 +105,7 @@ void CScheduler::checkTriggers()
 	auto noteOnTrigger = m_MapNoteOn.find(m_iSampleCounter);
 	if (noteOnTrigger != m_MapNoteOn.end())
 	{
-		for (CInstrument* inst : noteOnTrigger->second)
+		for (std::shared_ptr<CInstrument> inst : noteOnTrigger->second)
 		{
 			inst->noteOn();
 			m_SetInsts.insert(inst);
@@ -108,7 +115,7 @@ void CScheduler::checkTriggers()
 	auto noteOffTrigger = m_MapNoteOff.find(m_iSampleCounter);
 	if (noteOffTrigger != m_MapNoteOff.end())
 	{
-		for (CInstrument* inst : noteOffTrigger->second)
+		for (std::shared_ptr<CInstrument> inst : noteOffTrigger->second)
 		{
 			inst->noteOff();
 		}
@@ -117,21 +124,36 @@ void CScheduler::checkTriggers()
 	auto removeTrigger = m_MapRemover.find(m_iSampleCounter);
 	if (removeTrigger != m_MapRemover.end())
 	{
-		for (CInstrument* inst : removeTrigger->second)
+		for (std::shared_ptr<CInstrument> inst : removeTrigger->second)
 		{
 			m_SetInsts.erase(inst);
 		}
 	}
 }
 
-int64_t CScheduler::getLengthInSamp() const
+void CScheduler::checkQueues()
 {
-	return m_iScheduleLength;
+
+	// Places event and instrument pointer into appropriate container
+	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
+	while (m_InsertQueue.pop(instToAdd))
+	{
+		std::shared_ptr<CInstrument> pInstToAdd = instToAdd.first;
+		auto triggerInfo = instToAdd.second;
+		m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn)].insert(pInstToAdd);
+		m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff)].insert(pInstToAdd);
+		m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove)].insert(pInstToAdd);
+	}
+}
+
+int CScheduler::getLengthInSamp() const
+{
+	return m_iScheduleLength.load();
 }
 
 float CScheduler::getLengthInSec() const
 {
-	return sampToSec(m_iScheduleLength, m_fSampleRateInHz);
+	return sampToSec(m_iScheduleLength.load(), m_fSampleRateInHz);
 }
 
 void CLooper::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
@@ -139,7 +161,7 @@ void CLooper::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentF
 	CScheduler::processFrame(ppfOutBuffer, iNumChannels, iCurrentFrame);
 
 	// Wraps around internal clock to allow for looping
-	m_iSampleCounter %= m_iScheduleLength;
+	m_iSampleCounter.store(m_iSampleCounter.load() % m_iScheduleLength.load());
 }
 
 Error_t CLooper::setLoopLength(float fNewLoopLengthInSec)
@@ -147,6 +169,6 @@ Error_t CLooper::setLoopLength(float fNewLoopLengthInSec)
 	if (fNewLoopLengthInSec <= 0)
 		return Error_t::kFunctionInvalidArgsError;
 
-	m_iScheduleLength = secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz);
+	m_iScheduleLength.store(secToSamp(fNewLoopLengthInSec, m_fSampleRateInHz));
 	return Error_t::kNoError;
 }

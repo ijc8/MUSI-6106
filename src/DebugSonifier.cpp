@@ -9,6 +9,7 @@ DebugSonifier::DebugSonifier (){
 }
 
 DebugSonifier::~DebugSonifier() {
+
 }
 
 void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece) {
@@ -19,24 +20,12 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     int gainIdx = static_cast<int>(square.rank);
     int panIdx = rand() % 8;
 
-    if (piece.color == Chess::Color::Black && piece.type == Chess::Piece::Type::Pawn){
-        oscillators.emplace_back(sine, frequencies[freqIdx], gains[gainIdx],44100);
-    }
-    else if (piece.color == Chess::Color::Black && piece.type != Chess::Piece::Type::Pawn){
-        oscillators.emplace_back(sine, frequencies[freqIdx], gains[gainIdx],44100);
-    }
-    else if (piece.color == Chess::Color::White && piece.type == Chess::Piece::Type::Pawn){
-        oscillators.emplace_back(sine, frequencies[freqIdx], gains[gainIdx],44100);
-    }
-    else if (piece.color == Chess::Color::White && piece.type != Chess::Piece::Type::Pawn) {
-        oscillators.emplace_back(sine, frequencies[freqIdx], gains[gainIdx], 44100);
-    } else {
-        assert(false);
-    }
-    oscillators.back().noteOn();
-    oscillators.back().setADSRParameters(2,0,1,2);
-    oscillators.back().setPan(pans[panIdx]);
-    m_mainProcessor.addInstRef(oscillators.back());
+    auto inst = std::make_shared<CWavetableOscillator>(sine, frequencies[freqIdx], gains[gainIdx], 44100);
+    inst->setADSRParameters(2, 0, 1, 2);
+    inst->noteOn();
+    inst->setPan(pans[panIdx]);
+    m_mainProcessor.addInst(inst);
+    oscillatorPtrs.push_back(inst);
 }
 
 void DebugSonifier::process(float **ppfOutBuffer, int iNumChannels, int iNumFrames) {
@@ -56,21 +45,22 @@ void DebugSonifier::prepareToPlay(int iExpectedBlockSize, double fsampleRate){
 };
 
 
-void DebugSonifier::releaseResources(){
+void DebugSonifier::releaseResources()
+{
 
 };
 
 
 Error_t DebugSonifier::onMove(Chess::Board &board) {
-    auto it = oscillators.begin();
-    while (it != oscillators.end()){
-        if (it->isActive()){
-            it->noteOff();
+    auto it = oscillatorPtrs.begin();
+    while (it != oscillatorPtrs.end()){
+        if ((*it)->isActive()) {
+            (*it)->noteOff();
             it++;
         }
         else {
-            m_mainProcessor.removeInstRef(*it);
-            it = oscillators.erase(it);
+            m_mainProcessor.removeInst(*it);
+            it = oscillatorPtrs.erase(it);
         }
     }
     for( const auto [square, piece] : board.getPieceMap() ) {

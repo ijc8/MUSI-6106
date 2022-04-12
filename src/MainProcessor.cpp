@@ -1,20 +1,29 @@
 #include "MainProcessor.h"
 
-void CMainProcessor::addInstRef(CInstrument& rInstToAdd)
+Error_t CMainProcessor::addInst(std::shared_ptr<CInstrument> pInstToAdd)
 {
-	m_SetInsts.insert(&rInstToAdd);
+	if (!pInstToAdd)
+		return Error_t::kMemError;
+
+	// Creates an instrument paired with NO trigger information
+	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd = std::pair(pInstToAdd, std::nullopt);
+
+	if (!m_InsertQueue.push(instToAdd))
+		return Error_t::kUnknownError;
+
+	return Error_t::kNoError;
 }
 
-void CMainProcessor::removeInstRef(CInstrument& rInstToRemove)
+Error_t CMainProcessor::removeInst(std::shared_ptr<CInstrument> pInstToRemove)
 {
-	m_SetInsts.erase(&rInstToRemove);
-}
+	if (!pInstToRemove)
+		return Error_t::kMemError;
 
-Error_t CMainProcessor::pushInst(CInstrument* pInstToPush, float fOnsetInSec, float fDurationInSec)
-{
-	return CScheduler::pushInst(pInstToPush, fOnsetInSec + sampToSec(m_iSampleCounter, m_fSampleRateInHz), fDurationInSec);
-}
+	if (!m_RemoveQueue.push(pInstToRemove))
+		return Error_t::kUnknownError;
 
+	return Error_t::kNoError;
+}
 
 void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFrames)
 {
@@ -26,11 +35,48 @@ void CMainProcessor::process(float** ppfOutBuffer, int iNumChannels, int iNumFra
 }
 
 
+void CMainProcessor::checkFlags()
+{
+	CInstrument::checkFlags();
+}
+
 void CMainProcessor::checkTriggers()
 {
 	CScheduler::checkTriggers();
-	m_MapNoteOn.erase(m_iSampleCounter);
-	m_MapNoteOff.erase(m_iSampleCounter);
-	m_MapRemover.erase(m_iSampleCounter);
+
+	// Erases data entries that will never again be accessed
+	m_MapNoteOn.erase(m_iSampleCounter.load());
+	m_MapNoteOff.erase(m_iSampleCounter.load());
+	m_MapRemover.erase(m_iSampleCounter.load());
 }
+
+void CMainProcessor::checkQueues()
+{
+	// Places event and instrument pointer into appropriate container
+	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
+	while (m_InsertQueue.pop(instToAdd))
+	{
+		std::shared_ptr<CInstrument> pInstToAdd = instToAdd.first;
+		auto triggerInfo = instToAdd.second;
+		if (triggerInfo.has_value())
+		{
+			// Here m_iSampleCounter is added to trigger values so that they are relative to the CURRENT POSITION IN TIME
+			m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn) + m_iSampleCounter.load()].insert(pInstToAdd);
+			m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff) + m_iSampleCounter.load()].insert(pInstToAdd);
+			m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove) + m_iSampleCounter.load()].insert(pInstToAdd);
+		}
+		else
+		{
+			m_SetInsts.insert(pInstToAdd);
+		}
+	}
+
+	std::shared_ptr<CInstrument> instToRemove = 0;
+	while (m_RemoveQueue.pop(instToRemove))
+	{
+		// TODO: Implement method to ensure shared_ptrs DO NOT deallocate on audio thread
+		m_SetInsts.erase(instToRemove);
+	}
+}
+
 

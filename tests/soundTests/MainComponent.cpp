@@ -21,17 +21,19 @@ MainComponent::MainComponent()
     }
     // text buttons
     addAndMakeVisible(Board1);
-    Board1.setButtonText("8/8/8/4p1K1/2k1P3/8/8/8");
+    Board1.setButtonText("Melody");
     Board1.onClick = [this](){
-        m_Board.setBoardFen("8/8/8/4p1K1/2k1P3/8/8/8");
-        m_DebugSonifier.onMove(m_Board);
+        //m_DebugSonifier.playMelody();
     };
 
     addAndMakeVisible(Board2);
-    Board2.setButtonText("4k2r/6r1/8/8/8/8/3R4/R3K3");
+    Board2.setButtonText("Osc");
+    Board2.setClickingTogglesState(true);
     Board2.onClick = [this](){
-        m_Board.setBoardFen("4k2r/6r1/8/8/8/8/3R4/R3K3");
-        m_DebugSonifier.onMove(m_Board);
+        //if (Board2.getToggleState())
+        //    m_DebugSonifier.playNote();
+        //else
+        //    m_DebugSonifier.stopNote();
     };
 
     addAndMakeVisible(Board3);
@@ -40,6 +42,8 @@ MainComponent::MainComponent()
         m_Board.setBoardFen("8/8/8/8/8/8/8/8");
         m_DebugSonifier.onMove(m_Board);
     };
+
+    m_DebugSonifier.enable();
 }
 
 MainComponent::~MainComponent()
@@ -52,7 +56,6 @@ MainComponent::~MainComponent()
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     m_DebugSonifier.prepareToPlay(samplesPerBlockExpected,sampleRate);
-    m_DebugSonifier.onMove(m_Board);
 }
 
 
