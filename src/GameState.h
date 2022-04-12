@@ -162,6 +162,7 @@ namespace Chess {
     class Game: public GameState {
     public:
         using GameState::GameState;
+        bool hasNoHistory() const;
         void push(Move move);
         Move pop();
 

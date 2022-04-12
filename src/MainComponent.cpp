@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() // : m_Stockfish("../stockfish/stockfish_14.1_win_x64_avx2")
+MainComponent::MainComponent()
 {
     setSize(1000, 800);
 
@@ -56,6 +56,22 @@ MainComponent::MainComponent() // : m_Stockfish("../stockfish/stockfish_14.1_win
     buttonReset.onClick = [this, &game]() {
         game.setFen(AppState::getInstance().getGame().initialFen);
         m_BroadcastManager.sendChangeMessage();
+    };
+
+    addAndMakeVisible(buttonUndo);
+    buttonUndo.setButtonText("Undo");
+    buttonUndo.onClick = [this, &game]() {
+        m_BroadcastManager.undo();
+        if (m_GameMode == GameMode::PVC)
+            m_BroadcastManager.undo();
+    };
+
+    addAndMakeVisible(buttonRedo);
+    buttonRedo.setButtonText("Redo");
+    buttonRedo.onClick = [this, &game]() {
+        m_BroadcastManager.redo();
+        if (m_GameMode == GameMode::PVC)
+            m_BroadcastManager.redo();
     };
 
     addAndMakeVisible(m_SonifierSelector);
@@ -162,6 +178,10 @@ void MainComponent::resized()
     m_TitleText.setBounds(header);
 
     m_TurnText.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
+    
+    auto areaAboveChessboard = area.removeFromTop(area.getHeight() / 12);
+    buttonUndo.setBounds(areaAboveChessboard.removeFromLeft(areaAboveChessboard.getWidth() / 2));
+    buttonRedo.setBounds(areaAboveChessboard);
     m_ChessboardGUI.setBounds(area);
 
     auto rightBottomThird = rightThird.removeFromBottom(rightThird.getHeight() / 3).reduced(20);
@@ -246,7 +266,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
     {
     case GameMode::PVC:
         m_BroadcastManager.toggleStockfish(true);
-        m_ChessboardGUI.setMoveable(true);
+        m_ChessboardGUI.onModeChange(GUI::ChessBoard::mode::kPVC);
         m_pgnButton.setButtonText("Load PGN");
         m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         m_PgnString.clear();
@@ -259,10 +279,12 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonPreset4.setEnabled(true);
         buttonPreset5.setEnabled(true);
         buttonReset.setEnabled(true);
+        buttonUndo.setEnabled(true);
+        buttonRedo.setEnabled(true);
         break;
     case GameMode::PVP:
         m_BroadcastManager.toggleStockfish(false);
-        m_ChessboardGUI.setMoveable(true);
+        m_ChessboardGUI.onModeChange(GUI::ChessBoard::mode::kPVP);
         m_pgnButton.setButtonText("Load PGN");
         m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         m_PgnString.clear();
@@ -275,10 +297,12 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonPreset4.setEnabled(true);
         buttonPreset5.setEnabled(true);
         buttonReset.setEnabled(true);
+        buttonUndo.setEnabled(true);
+        buttonRedo.setEnabled(true);
         break;
     default:
         m_BroadcastManager.toggleStockfish(false);
-        m_ChessboardGUI.setMoveable(false);
+        m_ChessboardGUI.onModeChange(GUI::ChessBoard::mode::kPGN);
         m_pgnButton.setEnabled(true);
         buttonPreset1.setEnabled(false);
         buttonPreset2.setEnabled(false);
@@ -286,8 +310,11 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         buttonPreset4.setEnabled(false);
         buttonPreset5.setEnabled(false);
         buttonReset.setEnabled(false);
+        buttonUndo.setEnabled(false);
+        buttonRedo.setEnabled(false);
     }
     m_GameMode = nextGameMode;
+    m_BroadcastManager.emptyUndoHistory();
     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
     m_BroadcastManager.sendChangeMessage();
 }

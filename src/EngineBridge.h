@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// TODO: Move this header to third-party folder.
 #include "subprocess.h"
 
 #include "GameState.h"
@@ -30,11 +29,16 @@ private:
     FILE *childStdin, *childStdout;
 };
 
+
+struct Analysis {
+    Chess::Move bestMove;
+    double score;
+};
+
 class Stockfish {
 public:
     Stockfish(const std::string &path);
-    Chess::Move getMove(int time=1000);
-    void setState(const Chess::GameState &state);
+    Analysis analyze(const Chess::GameState &state, int time=1000);
 
 private:
     Subprocess process;
