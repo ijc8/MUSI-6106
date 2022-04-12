@@ -31,7 +31,9 @@ private:
 	CSawWavetable mSaw;
 	CSqrWavetable mSquare;
 
-	float mSampleRate;
-	float mBlockSize;
+	std::shared_ptr<CInstrument> King;
+
+	float mSampleRate = 1.0f;
+	float mBlockSize = 0.0f;
 
 };

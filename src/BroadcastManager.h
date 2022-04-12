@@ -6,7 +6,7 @@
 #include "ChessboardGUI.h"
 #include "EngineBridge.h"
 
-class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadcaster
+class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadcaster, public juce::ActionBroadcaster
 {
 
 public:
@@ -20,24 +20,32 @@ public:
 
     void actionListenerCallback(const juce::String& message)
     {
-        Chess::Move move = Chess::Move(Chess::Square(message.substring(0, 2).toStdString()), Chess::Square(message.substring(2, 4).toStdString()));
-        if (m_Game.isLegal(move))
+        if (message.contains("Select"))
         {
-            emptyUndoHistory();
-
-            juce::Logger::outputDebugString("Legal Move");
-            m_Game.push(move);
-            sendSynchronousChangeMessage();
-
-            if (m_bStockfishOn)
-            {
-                m_Game.push(m_Stockfish.analyze(m_Game).bestMove);
-                sendChangeMessage();
-            }
-
+            sendActionMessage(message);
         }
-        else
-            juce::Logger::outputDebugString("Illegal Move");
+        else 
+        {
+            Chess::Move move = Chess::Move(Chess::Square(message.substring(0, 2).toStdString()), Chess::Square(message.substring(2, 4).toStdString()));
+            if (m_Game.isLegal(move))
+            {
+                emptyUndoHistory();
+
+                juce::Logger::outputDebugString("Legal Move");
+                m_Game.push(move);
+                sendSynchronousChangeMessage();
+
+                if (m_bStockfishOn)
+                {
+                    m_Game.push(m_Stockfish.analyze(m_Game).bestMove);
+                    sendChangeMessage();
+                }
+
+            }
+            else
+                juce::Logger::outputDebugString("Illegal Move");
+        }
+
     }
 
     void undo()

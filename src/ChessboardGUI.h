@@ -402,6 +402,7 @@ namespace GUI
 			m_SelectedPiece = &piece;
 			piece.setToggleState(true, juce::dontSendNotification);
 			highlightPossibleMoves(piece);
+			sendActionMessage("Select " + m_SelectedPiece->getId());
 		}
 
 		Square* findSquare(const juce::String squareId) const
