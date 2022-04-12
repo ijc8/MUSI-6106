@@ -400,7 +400,10 @@ namespace GUI
 		void selectPiece(Piece& piece)
 		{
 			if (m_SelectedPiece)
-				sendActionMessage("Deselect " + m_SelectedPiece->getId());
+			{
+				if (m_SelectedPiece->getId() != piece.getId())
+					sendActionMessage("Deselect " + m_SelectedPiece->getId());
+			}
 			m_SelectedPiece = &piece;
 			piece.setToggleState(true, juce::dontSendNotification);
 			highlightPossibleMoves(piece);

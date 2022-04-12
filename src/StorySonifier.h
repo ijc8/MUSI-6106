@@ -33,9 +33,18 @@ private:
 
 	enum PieceMelody {
 		kKingWhite,
-		kQueenWhite,
 		kKingBlack,
+		kQueenWhite,
 		kQueenBlack,
+		kKnightWhite,
+		kKnightBlack,
+		kBishopWhite,
+		kBishopBlack,
+		//kRookWhite,
+		//kRookBlack,
+		//kPawnWhite,
+		//kPawnBlack,
+
 		
 		kNumPieceMelodies
 	};
@@ -43,18 +52,20 @@ private:
 	std::map<std::string, PieceMelody> toPieceMelodyIdx
 	{
 		{"K", kKingWhite},
-		{"Q", kQueenWhite},
 		{"k", kKingBlack},
-		{"q", kQueenBlack}
+		{"Q", kQueenWhite},
+		{"q", kQueenBlack},
+		{"N", kKnightWhite},
+		{"n", kKnightBlack},
+		{"B", kBishopWhite},
+		{"b", kBishopBlack}
+		//{"R", kRookWhite},
+		//{"r", kRookBlack},
+		//{"P", kPawnWhite},
+		//{"p", kPawnBlack}
 	};
 
-	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies]
-	{
-		std::make_shared<CWavetableOscillator>(mSine, 440, 1), // White King
-		std::make_shared<CWavetableOscillator>(mSine, 220, 1), // White Queen
-		std::make_shared<CWavetableOscillator>(mSaw, 440, 1),  // Black King
-		std::make_shared<CWavetableOscillator>(mSaw, 220, 1)   // Black Queen
-	};
+	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies] {};
 
 	float mSampleRate = 1.0f;
 	float mBlockSize = 0.0f;
