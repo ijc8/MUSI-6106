@@ -4,6 +4,9 @@
 #include <atomic>
 #include <cassert>
 
+/* Based on implementation in the following link...
+* https://www.codeproject.com/articles/43510/lock-free-single-producer-single-consumer-circular?msclkid=27686248a7bd11ecaf0637a5da36740f#heading_using_the_code
+*/
 
 template <typename T>
 class AtomicRingBuffer
@@ -31,6 +34,7 @@ public:
             mWritePointer.store(nextWritePointer);
             return true;
         }
+        assert(false); // Triggers if items fails to be pushed
         return false;
     }
     

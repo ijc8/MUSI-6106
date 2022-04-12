@@ -74,6 +74,7 @@ void CMainProcessor::checkQueues()
 	std::shared_ptr<CInstrument> instToRemove = 0;
 	while (m_RemoveQueue.pop(instToRemove))
 	{
+		// TODO: Implement method to ensure shared_ptrs DO NOT deallocate on audio thread
 		m_SetInsts.erase(instToRemove);
 	}
 }
