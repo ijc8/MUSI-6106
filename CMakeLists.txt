@@ -19,7 +19,7 @@ project(MUSICAL_CHESS VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(catch2)
+include_directories(thirdparty thirdparty/catch2)
 
 # If you've installed JUCE somehow (via a package manager, or directly using the CMake install
 # target), you'll need to tell this project that it depends on the installed copy of JUCE. If you've

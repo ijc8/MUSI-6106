@@ -52,18 +52,23 @@ Stockfish::Stockfish(const std::string &path) : process(path) {
     assert(starts_with(process.readline(), "Stockfish"));
 }
 
-Chess::Move Stockfish::getMove(int time) {
-    process.write("go movetime ");
-    process.writeline(std::to_string(time));
-    std::string line = process.readline();
-    while (!starts_with(line, "bestmove")) {
-        line = process.readline();
-    }
-    auto words = split(line, std::regex(" "));
-    return Chess::Move(words[1]);
-}
-
-void Stockfish::setState(const Chess::GameState &state) {
+Analysis Stockfish::analyze(const Chess::GameState &state, int time) {
+    // Set up the position.
     process.write("position fen ");
     process.writeline(state.getFen());
+    // Start computing.
+    process.write("go movetime ");
+    process.writeline(std::to_string(time));
+    // Read output: we're looking for `bestmove ...`,
+    // preceded by a final `info ...` line with the score.
+    std::string infoLine = process.readline();
+    std::string moveLine = process.readline();
+    while (!starts_with(moveLine, "bestmove")) {
+        infoLine = moveLine;
+        moveLine = process.readline();
+    }
+    // Extract relevant info: best move, overall evaluation score.
+    auto infoWords = split(infoLine, std::regex(" "));
+    auto moveWords = split(moveLine, std::regex(" "));
+    return { Chess::Move(moveWords[1]), std::stod(infoWords[9]) };
 }

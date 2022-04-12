@@ -1,3 +1,4 @@
+#include "GameState.h"
 #include <array>
 #include <cassert>
 #include <cctype>
@@ -399,6 +400,11 @@ void GameState::execute(Move move) {
     }
 
     // TODO: Update move clocks.
+}
+
+bool Chess::Game::hasNoHistory() const
+{
+    return history.empty();
 }
 
 void Game::push(Move move) {
