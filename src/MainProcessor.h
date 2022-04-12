@@ -4,11 +4,11 @@
 #include "Scheduler.h"
 
 // To be used as a singleton
-class CMainProcessor : public CScheduler
+class CMainProcessor : public CScheduler, juce::Timer
 {
 public:
-	CMainProcessor() {};
-	virtual ~CMainProcessor() {};
+	CMainProcessor() { startTimer(500); };
+	virtual ~CMainProcessor() { stopTimer(); };
 
 	// Use when YOU want to externally control and modify the instrument being added
 	// noteOn() and noteOff() calls will be up to you
@@ -28,7 +28,12 @@ protected:
 	void checkTriggers() override;
 	void checkQueues() override;
 
+	// Will trash unused instruments every 500ms
+	// Ensures shared_ptrs will not deallocate on audio thread
+	void timerCallback() override;
+
 	AtomicRingBuffer<std::shared_ptr<CInstrument>> m_RemoveQueue{ 1000 };
+	AtomicRingBuffer<std::shared_ptr<CInstrument>> m_GarbageQueue{ 1000 };
 };
 
 #endif 

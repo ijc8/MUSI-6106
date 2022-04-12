@@ -55,7 +55,7 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 	checkTriggers();
 
 	// Place child instrument values into a temporary, single-frame buffer
-	for (std::shared_ptr<CInstrument> inst : m_SetInsts)				
+	for (std::shared_ptr<CInstrument> inst : m_ActiveInsts)				
 		inst->processFrame(m_ppfTempBuffer, iNumChannels, 0);
 
 	m_iSampleCounter++;
@@ -81,12 +81,27 @@ void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurre
 		
 }
 
+Error_t CScheduler::setSampleRate(float fSampleRate)
+{
+	for (auto& inst : m_AllInsts)
+	{
+		inst->setSampleRate(fSampleRate);
+	}
+
+	updateSampleRate(m_MapNoteOn, fSampleRate);
+	updateSampleRate(m_MapNoteOff, fSampleRate);
+	updateSampleRate(m_MapRemover, fSampleRate);
+	m_iScheduleLength = updateSampleRate(m_iScheduleLength, fSampleRate);
+	m_fSampleRateInHz = fSampleRate;
+	return Error_t::kNoError;
+}
+
 void CScheduler::checkFlags()
 {
 
 	if (m_bNoteOnPressed.load())
 	{
-		for (std::shared_ptr<CInstrument> inst : m_SetInsts)
+		for (std::shared_ptr<CInstrument> inst : m_ActiveInsts)
 			inst->resetADSR();
 		m_iSampleCounter.store(0);
 		m_bNoteOnPressed.store(false);
@@ -108,7 +123,7 @@ void CScheduler::checkTriggers()
 		for (std::shared_ptr<CInstrument> inst : noteOnTrigger->second)
 		{
 			inst->noteOn();
-			m_SetInsts.insert(inst);
+			m_ActiveInsts.insert(inst);
 		}
 	}
 	
@@ -126,9 +141,27 @@ void CScheduler::checkTriggers()
 	{
 		for (std::shared_ptr<CInstrument> inst : removeTrigger->second)
 		{
-			m_SetInsts.erase(inst);
+			m_ActiveInsts.erase(inst);
 		}
 	}
+}
+
+void CScheduler::updateSampleRate(map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate)
+{
+	std::unordered_map<int64_t, std::unordered_set<std::shared_ptr<CInstrument>>> tempMap;
+	for (const auto& oldSampleValue : mapToUpdate)
+	{
+		int newSampleValue = updateSampleRate(oldSampleValue.first, fNewSampleRate);
+		tempMap[newSampleValue] = oldSampleValue.second;
+	}
+	mapToUpdate.clear();
+	for (const auto& key : m_MapNoteOn)
+		m_MapNoteOn[key.first] = key.second;
+}
+
+float CScheduler::updateSampleRate(float fValue, float fNewSampleRate)
+{
+	return secToSamp(sampToSec(fValue, m_fSampleRateInHz), fNewSampleRate);
 }
 
 void CScheduler::checkQueues()
@@ -140,6 +173,7 @@ void CScheduler::checkQueues()
 	{
 		std::shared_ptr<CInstrument> pInstToAdd = instToAdd.first;
 		auto triggerInfo = instToAdd.second;
+		m_AllInsts.insert(pInstToAdd);
 		m_MapNoteOn[static_cast<int64_t>(triggerInfo.value().noteOn)].insert(pInstToAdd);
 		m_MapNoteOff[static_cast<int64_t>(triggerInfo.value().noteOff)].insert(pInstToAdd);
 		m_MapRemover[static_cast<int64_t>(triggerInfo.value().remove)].insert(pInstToAdd);

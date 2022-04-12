@@ -33,7 +33,7 @@ public:
 
                 juce::Logger::outputDebugString("Legal Move");
                 m_Game.push(move);
-                sendSynchronousChangeMessage();
+                sendChangeMessage();
 
                 if (m_bStockfishOn)
                 {

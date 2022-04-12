@@ -11,7 +11,7 @@ public:
 	~StorySonifier();
 
 	void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames);
-	void prepareToPlay(int iExpectedBlockSize, int iSamplesRate);
+	void prepareToPlay(int iExpectedBlockSize, float fSampleRate);
 	void releaseResources();
 
 	Error_t onMove(Chess::Board& board);
@@ -22,6 +22,7 @@ public:
 private:
 
 	void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
+	void initializeMemberInstruments(float fSampleRate);
 
 	void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 	void actionListenerCallback(const juce::String& message) override;
@@ -67,7 +68,9 @@ private:
 
 	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies] {};
 
-	float mSampleRate = 1.0f;
+	std::shared_ptr<CInstrument> mCheckAlarm;
+
+	float mSampleRate = 48000.0f;
 	float mBlockSize = 0.0f;
 
 };

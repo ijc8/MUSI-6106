@@ -37,11 +37,16 @@ public:
 	// Frame-by-Frame processing function
 	virtual void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
+	Error_t setSampleRate(float fSampleRate) override;
+
 protected:
 
 	// Set that contains instruments to be currently processed
 	// Instruments will move in and out of this continuously
-	unordered_set<std::shared_ptr<CInstrument>> m_SetInsts;
+	unordered_set<std::shared_ptr<CInstrument>> m_ActiveInsts;
+
+	// Set that contains all instruments that have been pushed
+	unordered_set<std::shared_ptr<CInstrument>> m_AllInsts;
 
 	// This can be viewed as the schedule's internal clock
 	std::atomic<int64_t> m_iSampleCounter = 0;
@@ -67,6 +72,9 @@ protected:
 	// Parses each map and sees if any event triggers exist for child instrument at the current sample counter		
 	// Carries out necessary actions if so
 	virtual void checkTriggers();
+
+	void updateSampleRate(map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate);
+	float updateSampleRate(float fValue, float fNewSampleRate);
 	
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
 };
