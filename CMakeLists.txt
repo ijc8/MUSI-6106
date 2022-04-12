@@ -87,7 +87,9 @@ target_sources(MusicalChess
         src/MainProcessor.cpp
 	    src/DebugSonifier.cpp
 	    src/ThreatsSonifier.cpp
-        src/EngineBridge.cpp)
+        src/EngineBridge.cpp
+        src/StorySonifier.cpp
+        src/StorySonifier.h)
 
 target_sources(Tests
     PRIVATE
