@@ -24,6 +24,14 @@ public:
         {
             sendActionMessage(message);
         }
+        else if (message.contains("Preview"))
+        {
+            Chess::Move move = Chess::Move(Chess::Square(message.substring(8, 10).toStdString()), Chess::Square(message.substring(10, 12).toStdString()));
+            if (true)
+                sendActionMessage("Warn");
+            else
+                sendActionMessage("Encourage");
+        }
         else 
         {
             Chess::Move move = Chess::Move(Chess::Square(message.substring(0, 2).toStdString()), Chess::Square(message.substring(2, 4).toStdString()));

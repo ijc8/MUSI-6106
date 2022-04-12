@@ -5,7 +5,7 @@
 
 namespace GUI
 {
-	class Square : public juce::Button
+	class Square : public juce::Button, public juce::ActionBroadcaster
 	{
 	public:
 		Square(int row, int column, juce::Colour color) : juce::Button("square"), m_SquareColor(color), m_Row(row), m_Col(column), m_IsCandidate(false)
@@ -23,7 +23,10 @@ namespace GUI
 			if (m_IsCandidate)
 			{
 				if (shouldDrawButtonAsHighlighted)
+				{
 					g.fillAll(juce::Colours::red);
+					sendActionMessage("Preview " + getId());
+				}
 				else
 					g.fillAll(juce::Colours::yellow);
 			}
@@ -136,7 +139,7 @@ namespace GUI
 		const Chess::Color m_Team = Chess::Color::White;
 	};
 
-	class ChessBoard : public juce::Component, public juce::Button::Listener, public juce::ActionBroadcaster, public juce::ChangeListener
+	class ChessBoard : public juce::Component, public juce::Button::Listener, public juce::ActionBroadcaster, public juce::ChangeListener, public juce::ActionListener
 	{
 	public:
 
@@ -178,6 +181,7 @@ namespace GUI
 					Square* square = new Square(row, col, genColor(row, col));
 					addAndMakeVisible(square);
 					square->addListener(this);
+					square->addActionListener(this);
 					m_AllSquares[row][col] = square;
 				}
 			}
@@ -199,6 +203,7 @@ namespace GUI
 				{
 					Square*& square = m_AllSquares[row][col];
 					square->removeListener(this);
+					square->removeActionListener(this);
 					delete square;
 					square = nullptr;
 				}
@@ -332,6 +337,19 @@ namespace GUI
 					}
 				}
 				onStateChange(state::kIdle);
+		}
+
+		void actionListenerCallback(const juce::String& message) override
+		{
+			if (message.contains("Preview"))
+			{
+				if (m_SelectedPiece)
+				{
+					juce::String newMessage = message.substring(0, 8) + m_SelectedPiece->getSquareId() + message.substring(8, 10);
+					sendActionMessage(newMessage);
+				}
+
+			}
 		}
 
 		void onModeChange(ChessBoard::mode newMode)

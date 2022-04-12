@@ -349,42 +349,42 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 }
 
 // This test is just used as a lightweight and convenient way to track multi-threading -- no actual testing/comparisons are being made
-TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
-{
-	CMainProcessor mainProcessor;
-
-	CSineWavetable sine;
-
-	const float fFreq = 440;
-	const float fGain = 1.0;
-	const float fPan = 0.5f;
-	const int iNumChannels = 2;
-	const int iNumFrames = 100;
-	const float fSampleRate = 44100;
-	float** ppfOutBuffer = new float* [iNumChannels];
-	float** ppfGroundBuffer = new float* [iNumChannels];
-	for (int channel = 0; channel < iNumChannels; channel++)
-	{
-		ppfOutBuffer[channel] = new float[iNumFrames] {0};
-		ppfGroundBuffer[channel] = new float[iNumFrames] {0};
-	}
-
-	genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
-
-	auto inst = std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
-	inst->setADSRParameters(0, 0, 1, 0);
-	mainProcessor.setADSRParameters(0, 0, 1, 0);
-	std::thread thread1(&CMainProcessor::scheduleInst, &mainProcessor, std::move(inst), 0, 1);
-	std::thread thread2(&CMainProcessor::process, &mainProcessor, ppfOutBuffer, iNumChannels, iNumFrames);
-	thread1.join();
-	thread2.join();
-
-	for (int channel = 0; channel < iNumChannels; channel++)
-	{
-		delete[] ppfOutBuffer[channel];
-		delete[] ppfGroundBuffer[channel];
-	}
-	delete[] ppfGroundBuffer;
-	delete[] ppfOutBuffer;
-}
+//TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
+//{
+//	CMainProcessor mainProcessor;
+//
+//	CSineWavetable sine;
+//
+//	const float fFreq = 440;
+//	const float fGain = 1.0;
+//	const float fPan = 0.5f;
+//	const int iNumChannels = 2;
+//	const int iNumFrames = 100;
+//	const float fSampleRate = 44100;
+//	float** ppfOutBuffer = new float* [iNumChannels];
+//	float** ppfGroundBuffer = new float* [iNumChannels];
+//	for (int channel = 0; channel < iNumChannels; channel++)
+//	{
+//		ppfOutBuffer[channel] = new float[iNumFrames] {0};
+//		ppfGroundBuffer[channel] = new float[iNumFrames] {0};
+//	}
+//
+//	genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
+//
+//	auto inst = std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
+//	inst->setADSRParameters(0, 0, 1, 0);
+//	mainProcessor.setADSRParameters(0, 0, 1, 0);
+//	std::thread thread1(&CMainProcessor::scheduleInst, &mainProcessor, std::move(inst), 0, 1);
+//	std::thread thread2(&CMainProcessor::process, &mainProcessor, ppfOutBuffer, iNumChannels, iNumFrames);
+//	thread1.join();
+//	thread2.join();
+//
+//	for (int channel = 0; channel < iNumChannels; channel++)
+//	{
+//		delete[] ppfOutBuffer[channel];
+//		delete[] ppfGroundBuffer[channel];
+//	}
+//	delete[] ppfGroundBuffer;
+//	delete[] ppfOutBuffer;
+//}
 

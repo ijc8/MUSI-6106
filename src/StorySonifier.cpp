@@ -78,6 +78,14 @@ void StorySonifier::actionListenerCallback(const juce::String& message)
 			mPieceMelodies[it->second]->noteOff();
 		}
 	}
+	else if (message.contains("Warn"))
+	{
+		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSquare, 555, 1.0, mSampleRate), 0, 4);
+	}
+	else if (message.contains("Encourage"))
+	{
+		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 555, 1.0, mSampleRate), 0, 4);
+	}
 }
 
 void StorySonifier::initializeMemberInstruments(float fSampleRate)
