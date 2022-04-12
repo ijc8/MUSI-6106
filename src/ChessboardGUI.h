@@ -310,7 +310,8 @@ namespace GUI
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
 
 		//Change this to point where your images relative to your working directory
-		const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getParentDirectory().getChildFile("MUSI-6106/chessImages");
+		//const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getParentDirectory().getChildFile("MUSI-6106/chessImages");
+		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
 
 		Piece m_AllPieces[32]{
 			Piece { pathToImages.getChildFile("W_Rook.png"), 'R', "a1"},

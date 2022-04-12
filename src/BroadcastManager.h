@@ -11,7 +11,7 @@ class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadca
 
 public:
 
-    BroadcastManager() : m_Stockfish("../stockfish/stockfish_14.1_win_x64_avx2.exe") {};
+    BroadcastManager() : m_Stockfish("../../stockfish/stockfish_14.1_win_x64_avx2.exe") {};
 
     void toggleStockfish(bool shouldTurnOn)
     {
