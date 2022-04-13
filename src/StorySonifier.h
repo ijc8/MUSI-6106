@@ -3,6 +3,8 @@
 #include "Wavetable.h"
 #include "MainProcessor.h"
 #include "GameState.h"
+#include "Util.h"
+
 
 class StorySonifier : public juce::ChangeListener, public juce::ActionListener
 {
@@ -70,6 +72,8 @@ private:
 	std::shared_ptr<CLooper> mBassTriad;
 	std::shared_ptr<CLooper> mAccompTriad;
 	std::shared_ptr<CInstrument> mCheckAlarm;
+
+	int mBoardChangeCounter = 0;
 
 	float mFrequencies[3][7]
 	{
