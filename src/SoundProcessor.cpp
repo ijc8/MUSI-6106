@@ -112,8 +112,9 @@ bool CInstrument::isActive() const
     return m_adsr.isActive();
 }
 
-void CInstrument::noteOn()
+void CInstrument::noteOn(bool shouldReset)
 {
+	mShouldReset = shouldReset;
 	m_bNoteOnPressed.store(true);
 }
 

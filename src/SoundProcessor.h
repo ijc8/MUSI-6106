@@ -63,7 +63,7 @@ public:
     bool isActive() const;
 
 	// Activates instrument's internal ADSR
-	virtual void noteOn();
+	virtual void noteOn(bool shouldReset = true);
 
 	// Enters release state of instrument's ADSR
 	virtual void noteOff();
@@ -79,6 +79,7 @@ protected:
 	juce::ADSR::Parameters m_adsrParameters;
 	std::atomic<bool> m_bNoteOnPressed = false;
 	std::atomic<bool> m_bNoteOffPressed = false;
+	bool mShouldReset = true;
 
 	virtual void checkFlags();
 

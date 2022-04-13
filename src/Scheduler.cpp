@@ -101,9 +101,12 @@ void CScheduler::checkFlags()
 
 	if (m_bNoteOnPressed.load())
 	{
-		for (std::shared_ptr<CInstrument> inst : m_ActiveInsts)
-			inst->resetADSR();
-		m_iSampleCounter.store(0);
+		if (mShouldReset)
+		{
+			for (std::shared_ptr<CInstrument> inst : m_ActiveInsts)
+				inst->resetADSR();
+			m_iSampleCounter.store(0);
+		}
 		m_bNoteOnPressed.store(false);
 		m_adsr.noteOn();
 	}

@@ -67,8 +67,16 @@ private:
 	};
 
 	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies] {};
-
+	std::shared_ptr<CLooper> mBassTriad;
+	std::shared_ptr<CLooper> mAccompTriad;
 	std::shared_ptr<CInstrument> mCheckAlarm;
+
+	float mFrequencies[3][7]
+	{
+		{55, 61.74, 65.41, 73.42, 82.41, 87.31, 98},
+		{110,123.48, 130.82, 146.84, 164.82, 185, 196},
+		{220, 246.96, 261.64, 293.68, 329.64, 349.24, 392}
+	};
 
 	float mSampleRate = 48000.0f;
 	float mBlockSize = 0.0f;

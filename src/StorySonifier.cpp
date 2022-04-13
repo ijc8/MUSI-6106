@@ -95,7 +95,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mPieceMelodies[kQueenWhite] = std::make_shared<CWavetableOscillator>(mSine, 220, 1, fSampleRate);
 	mPieceMelodies[kQueenBlack] = std::make_shared<CWavetableOscillator>(mSaw, 220, 1, fSampleRate);
 
-	auto KnightWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
+	auto KnightWhiteLoop = std::make_shared<CLooper>(fSampleRate);
 	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 450, 1.0f, fSampleRate), 0, 1);
 	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 670, 1.0f, fSampleRate), 1, 1);
 	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
@@ -137,4 +137,42 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	}
 
 	mCheckAlarm->setSampleRate(mSampleRate);
+
+	mBassTriad = std::make_shared<CLooper>(fSampleRate);
+	auto note1 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][0], 1, fSampleRate);
+	note1->setADSRParameters(0.25, 0.1, .8, 0.15);
+	note1->setPan(0);
+	mBassTriad->scheduleInst(std::move(note1), 0, 1);
+
+	auto note2 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][2], 1, fSampleRate);
+	note2->setADSRParameters(0.25, 0.1, .8, 0.15);
+	note2->setPan(1);
+	mBassTriad->scheduleInst(std::move(note2), 0.5, 1);
+
+	auto note3 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][4], 1, fSampleRate);
+	note3->setADSRParameters(0.25, 0.1, .8, 0.15);
+	note3->setPan(0.5);
+	mBassTriad->scheduleInst(std::move(note3), 1, 0.5);
+
+	mMainProcessor.addInst(mBassTriad);
+	mBassTriad->noteOn();
+
+	//mAccompTriad = std::make_shared<CLooper>(fSampleRate);
+	//auto note1 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][0], 1, fSampleRate);
+	//note1->setADSRParameters(0.25, 0.1, .8, 0.15);
+	//note1->setPan(0);
+	//mAccompTriad->scheduleInst(std::move(note1), 0, 1);
+
+	//auto note2 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][2], 1, fSampleRate);
+	//note2->setADSRParameters(0.25, 0.1, .8, 0.15);
+	//note2->setPan(1);
+	//mAccompTriad->scheduleInst(std::move(note2), 0.5, 1);
+
+	//auto note3 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][4], 1, fSampleRate);
+	//note3->setADSRParameters(0.25, 0.1, .8, 0.15);
+	//note3->setPan(0.5);
+	//mAccompTriad->scheduleInst(std::move(note3), 1, 0.5);
+
+	//mMainProcessor.addInst(mAccompTriad);
+	//mAccompTriad->noteOn(); // TODO: Add option to choose if noteOn resets position
 }
