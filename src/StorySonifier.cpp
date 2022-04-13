@@ -66,6 +66,10 @@ void StorySonifier::changeListenerCallback(juce::ChangeBroadcaster* source)
 		break;
 	case 7:
 		mMelody1->noteOn(false);
+		break;
+	case 8:
+		mMelody2->noteOn(false);
+		break;
 	}
 }
 
@@ -106,14 +110,14 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mPieceMelodies[kQueenWhite] = std::make_shared<CWavetableOscillator>(mSine, 220, 1, fSampleRate);
 	mPieceMelodies[kQueenBlack] = std::make_shared<CWavetableOscillator>(mSaw, 220, 1, fSampleRate);
 
-	auto KnightWhiteLoop = std::make_shared<CLooper>(fSampleRate);
-	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 450, 1.0f, fSampleRate), 0, 1);
-	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 670, 1.0f, fSampleRate), 1, 1);
+	auto KnightWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
+	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 220, 1.0f, fSampleRate), 0, 0.2);
+	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 329.63, 1.0f, fSampleRate), 0.18, 1);
 	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
 
 	auto KnightBlackLoop = std::make_shared<CScheduler>(fSampleRate);
-	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 670, 1.0f, fSampleRate), 0, 1);
-	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 450, 1.0f, fSampleRate), 1, 1);
+	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 220, 1.0f, fSampleRate), 0, 0.2);
+	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 329.63, 1.0f, fSampleRate), 0.18, 1);
 	mPieceMelodies[kKnightBlack] = KnightBlackLoop;
 
 	auto BishopWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
@@ -210,5 +214,20 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMelody1->setGain(0.15);
 	mMelody1->setPan(0.25);
 	mMainProcessor.addInst(mMelody1);
+	/////////////////////////////////////////////////////////////////////
+
+		/////////////////////////////////////////////////////////////////////
+	//// Melody 2
+	mMelody2 = std::make_shared<CLooper>(fSampleRate);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 659.25, 1, fSampleRate), 0, mBassTriad->getLengthInSec() * 3);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 659.25, 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 783.99, 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 739.99, 1, fSampleRate), mMelody2->getLengthInSec(), mBassTriad->getLengthInSec() * 4);
+
+	mMelody2->setADSRParameters(4, 0, 1, 4);
+	mMelody2->setGain(0.15);
+	mMelody2->setPan(0.75);
+	mMainProcessor.addInst(mMelody2);
 	/////////////////////////////////////////////////////////////////////
 }
