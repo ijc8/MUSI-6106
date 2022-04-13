@@ -156,17 +156,17 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Bass Triad
 	mBassTriad = std::make_shared<CLooper>(fSampleRate);
-	auto bassNote1 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][0], 1, fSampleRate);
+	auto bassNote1 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A1"), 1, fSampleRate);
 	bassNote1->setADSRParameters(0.25, 0.1, .8, 0.15);
 	bassNote1->setPan(0);
 	mBassTriad->scheduleInst(std::move(bassNote1), 0, 1);
 
-	auto bassNote2 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][2], 1, fSampleRate);
+	auto bassNote2 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C2"), 1, fSampleRate);
 	bassNote2->setADSRParameters(0.25, 0.1, .8, 0.15);
 	bassNote2->setPan(1);
 	mBassTriad->scheduleInst(std::move(bassNote2), 0.5, 1);
 
-	auto bassNote3 = std::make_unique<CWavetableOscillator>(mSine, mFrequencies[1][4], 1, fSampleRate);
+	auto bassNote3 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E2"), 1, fSampleRate);
 	bassNote3->setADSRParameters(0.25, 0.1, .8, 0.15);
 	bassNote3->setPan(0.5);
 	mBassTriad->scheduleInst(std::move(bassNote3), 1, 0.5);
@@ -178,22 +178,22 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Accomp Triad
 	mAccompTriad = std::make_shared<CLooper>(fSampleRate);
-	auto accompNote1 = std::make_unique<CWavetableOscillator>(mSine, 440, 0.5, fSampleRate);
+	auto accompNote1 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 0.5, fSampleRate);
 	mAccompTriad->scheduleInst(std::move(accompNote1), 0, mBassTriad->getLengthInSec() * 4);
 
-	auto accompNote2 = std::make_unique<CWavetableOscillator>(mSine, 523.25 , 0.5, fSampleRate);
+	auto accompNote2 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C5"), 0.5, fSampleRate);
 	mAccompTriad->scheduleInst(std::move(accompNote2), 0, mBassTriad->getLengthInSec() * 4);
 
-	auto accompNote3 = std::make_unique<CWavetableOscillator>(mSine, 659.25, 0.5, fSampleRate);
+	auto accompNote3 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E5"), 0.5, fSampleRate);
 	mAccompTriad->scheduleInst(std::move(accompNote3), 0, mBassTriad->getLengthInSec() * 4);
 
-	auto accompNote4 = std::make_unique<CWavetableOscillator>(mSine, 440, 0.5, fSampleRate);
+	auto accompNote4 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 0.5, fSampleRate);
 	mAccompTriad->scheduleInst(std::move(accompNote4), mBassTriad->getLengthInSec() * 4, mBassTriad->getLengthInSec() * 4);
 
-	auto accompNote5 = std::make_unique<CWavetableOscillator>(mSine, 587.33, 0.5, fSampleRate);
+	auto accompNote5 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("D5"), 0.5, fSampleRate);
 	mAccompTriad->scheduleInst(std::move(accompNote5), mBassTriad->getLengthInSec() * 4, mBassTriad->getLengthInSec() * 4);
 
-	auto accompNote6 = std::make_unique<CWavetableOscillator>(mSine, 739.99, 0.5, fSampleRate);
+	auto accompNote6 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("F#5"), 0.5, fSampleRate);
 	mAccompTriad->scheduleInst(std::move(accompNote6), mBassTriad->getLengthInSec() * 4, mBassTriad->getLengthInSec() * 4);
 
 	mMainProcessor.addInst(mAccompTriad);
@@ -204,11 +204,11 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Melody 1
 	mMelody1 = std::make_shared<CLooper>(fSampleRate);
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), 0, mBassTriad->getLengthInSec() * 3);
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 987.77, 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 1046.50, 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), mMelody1->getLengthInSec(), mBassTriad->getLengthInSec() * 4);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), 0, mBassTriad->getLengthInSec() * 3);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("B5"), 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("C6"), 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), mMelody1->getLengthInSec(), mBassTriad->getLengthInSec() * 4);
 
 	mMelody1->setADSRParameters(4, 0, 1, 4);
 	mMelody1->setGain(0.15);
@@ -216,14 +216,14 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMainProcessor.addInst(mMelody1);
 	/////////////////////////////////////////////////////////////////////
 
-		/////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////
 	//// Melody 2
 	mMelody2 = std::make_shared<CLooper>(fSampleRate);
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 659.25, 1, fSampleRate), 0, mBassTriad->getLengthInSec() * 3);
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 659.25, 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 783.99, 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 739.99, 1, fSampleRate), mMelody2->getLengthInSec(), mBassTriad->getLengthInSec() * 4);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), 0, mBassTriad->getLengthInSec() * 3);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("G4"), 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A4"), 1, fSampleRate), mMelody2->getLengthInSec(), 0.5);
+	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), mMelody2->getLengthInSec(), mBassTriad->getLengthInSec() * 4);
 
 	mMelody2->setADSRParameters(4, 0, 1, 4);
 	mMelody2->setGain(0.15);

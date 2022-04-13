@@ -3,6 +3,7 @@
 #include "Wavetable.h"
 #include "MainProcessor.h"
 #include "GameState.h"
+#include "Util.h"
 
 
 class StorySonifier : public juce::ChangeListener, public juce::ActionListener
@@ -51,6 +52,7 @@ private:
 		kNumPieceMelodies
 	};
 
+	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies]{};
 	std::map<std::string, PieceMelody> toPieceMelodyIdx
 	{
 		{"K", kKingWhite},
@@ -67,7 +69,6 @@ private:
 		//{"p", kPawnBlack}
 	};
 
-	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies] {};
 	std::shared_ptr<CLooper> mBassTriad;
 	std::shared_ptr<CLooper> mAccompTriad;
 	std::shared_ptr<CLooper> mMelody1;
