@@ -64,6 +64,8 @@ void StorySonifier::changeListenerCallback(juce::ChangeBroadcaster* source)
 	case 6:
 		mAccompTriad->noteOn(false);
 		break;
+	case 7:
+		mMelody1->noteOn(false);
 	}
 }
 
@@ -193,5 +195,20 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMainProcessor.addInst(mAccompTriad);
 	mAccompTriad->setGain(0.5);
 	mAccompTriad->setADSRParameters(2, 0, 1, 2);
+	/////////////////////////////////////////////////////////////////////
+
+	/////////////////////////////////////////////////////////////////////
+	//// Melody 1
+	mMelody1 = std::make_shared<CLooper>(fSampleRate);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), 0, mBassTriad->getLengthInSec() * 3);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 987.77, 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 1046.50, 1, fSampleRate), mMelody1->getLengthInSec(), 0.5);
+	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, 880, 1, fSampleRate), mMelody1->getLengthInSec(), mBassTriad->getLengthInSec() * 4);
+
+	mMelody1->setADSRParameters(4, 0, 1, 4);
+	mMelody1->setGain(0.15);
+	mMelody1->setPan(0.25);
+	mMainProcessor.addInst(mMelody1);
 	/////////////////////////////////////////////////////////////////////
 }

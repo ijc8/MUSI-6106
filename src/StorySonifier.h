@@ -3,7 +3,6 @@
 #include "Wavetable.h"
 #include "MainProcessor.h"
 #include "GameState.h"
-#include "Util.h"
 
 
 class StorySonifier : public juce::ChangeListener, public juce::ActionListener
@@ -71,6 +70,7 @@ private:
 	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies] {};
 	std::shared_ptr<CLooper> mBassTriad;
 	std::shared_ptr<CLooper> mAccompTriad;
+	std::shared_ptr<CLooper> mMelody1;
 	std::shared_ptr<CInstrument> mCheckAlarm;
 
 	int mBoardChangeCounter = 0;
