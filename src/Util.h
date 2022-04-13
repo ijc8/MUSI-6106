@@ -16,3 +16,13 @@ private:
 
 };
 
+class TEMPO
+{
+public:
+	static float beatToSec(const float numBeats, const float bpm)
+	{
+		assert(numBeats >= 0 && bpm > 0);
+		return numBeats / ( bpm / 60.0f);
+	}
+};
+

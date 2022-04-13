@@ -84,6 +84,7 @@ private:
 		{220, 246.96, 261.64, 293.68, 329.64, 349.24, 392}
 	};
 
+	const float mBpm = 120;
 	float mSampleRate = 48000.0f;
 	float mBlockSize = 0.0f;
 
