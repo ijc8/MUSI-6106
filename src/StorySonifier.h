@@ -43,10 +43,10 @@ private:
 		kKnightBlack,
 		kBishopWhite,
 		kBishopBlack,
-		//kRookWhite,
-		//kRookBlack,
-		//kPawnWhite,
-		//kPawnBlack,
+		kRookWhite,
+		kRookBlack,
+		kPawnWhite,
+		kPawnBlack,
 
 		
 		kNumPieceMelodies
@@ -62,11 +62,11 @@ private:
 		{"N", kKnightWhite},
 		{"n", kKnightBlack},
 		{"B", kBishopWhite},
-		{"b", kBishopBlack}
-		//{"R", kRookWhite},
-		//{"r", kRookBlack},
-		//{"P", kPawnWhite},
-		//{"p", kPawnBlack}
+		{"b", kBishopBlack},
+		{"R", kRookWhite},
+		{"r", kRookBlack},
+		{"P", kPawnWhite},
+		{"p", kPawnBlack}
 	};
 
 	std::shared_ptr<CLooper> mBassTriad;
@@ -76,15 +76,7 @@ private:
 	std::shared_ptr<CInstrument> mCheckAlarm;
 
 	int mBoardChangeCounter = 0;
-
-	float mFrequencies[3][7]
-	{
-		{55, 61.74, 65.41, 73.42, 82.41, 87.31, 98},
-		{110,123.48, 130.82, 146.84, 164.82, 185, 196},
-		{220, 246.96, 261.64, 293.68, 329.64, 349.24, 392}
-	};
-
-	const float mBpm = 120;
+	const float mBpm = 150;
 	float mSampleRate = 48000.0f;
 	float mBlockSize = 0.0f;
 
