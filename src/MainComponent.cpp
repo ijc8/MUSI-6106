@@ -130,6 +130,7 @@ MainComponent::MainComponent()
     m_VolumeSlider.onValueChange = [this]() {
         m_DebugSonifier.setGain(m_VolumeSlider.getValue());
         m_ThreatsSonifier.setGain(m_VolumeSlider.getValue());
+        m_StorySonifier.setGain(m_VolumeSlider.getValue());
     };
     m_VolumeSlider.setValue(0.25);
 }

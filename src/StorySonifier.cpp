@@ -20,7 +20,7 @@ void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 	mBlockSize = iExpectedBlockSize;
 
 	mMainProcessor.setSampleRate(mSampleRate);
-	mMainProcessor.setGain(0.3);
+	mMainProcessor.setGain(1);
 
 	initializeMemberInstruments(fSampleRate);
 
@@ -194,6 +194,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	for (int i = 0; i < kNumPieceMelodies; i++)
 	{
 		mMainProcessor.addInst(mPieceMelodies[i]);
+		mPieceMelodies[i]->setGain(0.75);
 	}
 
 	mCheckAlarm->setSampleRate(mSampleRate);
@@ -201,22 +202,23 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Bass Triad
 	mBassTriad = std::make_shared<CLooper>(fSampleRate);
-	auto bassNote1 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A1"), 1, fSampleRate);
+	auto bassNote1 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A2"), 1, fSampleRate);
 	bassNote1->setADSRParameters(0.25, 0.1, .8, 0.15);
 	bassNote1->setPan(0);
 	mBassTriad->scheduleInst(std::move(bassNote1), 0, TEMPO::beatToSec(1, mBpm));
 
-	auto bassNote2 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C2"), 1, fSampleRate);
+	auto bassNote2 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C3"), 1, fSampleRate);
 	bassNote2->setADSRParameters(0.25, 0.1, .8, 0.15);
 	bassNote2->setPan(1);
 	mBassTriad->scheduleInst(std::move(bassNote2), TEMPO::beatToSec(1, mBpm), TEMPO::beatToSec(1, mBpm));
 
-	auto bassNote3 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E2"), 1, fSampleRate);
+	auto bassNote3 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E3"), 1, fSampleRate);
 	bassNote3->setADSRParameters(0.25, 0.1, .8, 0.15);
 	bassNote3->setPan(0.5);
 	mBassTriad->scheduleInst(std::move(bassNote3), TEMPO::beatToSec(2, mBpm), TEMPO::beatToSec(1, mBpm));
 
 	mBassTriad->setADSRParameters(4, 0, 1, 2);
+	mBassTriad->setGain(0.75);
 	mMainProcessor.addInst(mBassTriad);
 	/////////////////////////////////////////////////////////////////////
 	
@@ -242,7 +244,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mAccompTriad->scheduleInst(std::move(accompNote6), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
 
 	mMainProcessor.addInst(mAccompTriad);
-	mAccompTriad->setGain(0.5);
+	mAccompTriad->setGain(0.25);
 	mAccompTriad->setADSRParameters(2, 0, 1, 2);
 	/////////////////////////////////////////////////////////////////////
 
@@ -256,7 +258,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
 
 	mMelody1->setADSRParameters(4, 0, 1, 4);
-	mMelody1->setGain(0.15);
+	mMelody1->setGain(0.05);
 	mMelody1->setPan(0.25);
 	mMainProcessor.addInst(mMelody1);
 	/////////////////////////////////////////////////////////////////////
@@ -271,7 +273,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("F#4"), 1, fSampleRate), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
 
 	mMelody2->setADSRParameters(4, 0, 1, 4);
-	mMelody2->setGain(0.15);
+	mMelody2->setGain(0.05);
 	mMelody2->setPan(0.75);
 	mMainProcessor.addInst(mMelody2);
 	/////////////////////////////////////////////////////////////////////
