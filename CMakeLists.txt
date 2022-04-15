@@ -114,6 +114,7 @@ target_sources(EngineTest
 
 target_sources(StreamTest
     PRIVATE
+        src/GameStream.cpp
         tests/Stream.cpp)
 
 target_sources(SonifierTest
