@@ -2,10 +2,13 @@
 #define __Scheduler_hdr__
 #include "SoundProcessor.h"
 #include "AtomicRingBuffer.h"
+#include "Util.h"
 
 #include <map>
 #include <unordered_set>
 #include <optional>
+#include <vector>
+#include <string>
 
 
 using std::map;
@@ -29,6 +32,7 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
+	Error_t scheduleTune(CWavetableOscillator osc, std::string notes[], float beats[], int numNotes, float bpm);
 
 	// Returns schedule length in samples
 	int getLengthInSamp() const;

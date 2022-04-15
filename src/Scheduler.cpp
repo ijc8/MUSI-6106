@@ -48,6 +48,19 @@ Error_t CScheduler::scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float
 	return Error_t::kNoError;
 }
 
+Error_t CScheduler::scheduleTune(CWavetableOscillator osc, std::string notes[], float beats[], int numNotes, float bpm)
+{
+	float beatSum = 0;
+	for (int i = 0; i < numNotes; i++)
+	{
+		auto pOsc = std::make_unique<CWavetableOscillator>{new CWavetableOscillator(osc)};
+		pOsc->setFrequency(FREQ::noteToFreq(notes[i]));
+		scheduleInst(std::move(pOsc), TEMPO::beatToSec(beatSum, bpm), TEMPO::beatToSec(beats[i], bpm));
+		beatSum += beats[i];
+	}
+	return Error_t::kNoError;
+}
+
 void CScheduler::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame)
 {
 	checkFlags();

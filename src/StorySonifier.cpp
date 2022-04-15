@@ -120,14 +120,20 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	QueenBlackChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("B4"), 1.0, fSampleRate), 0, 1);
 	mPieceMelodies[kQueenBlack] = QueenBlackChord;
 
-	auto KnightWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
-	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A3"), 0.5f, fSampleRate), 0, 0.2);
-	KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1.0f, fSampleRate), 0.18, 1);
-	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
 
+	//KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A3"), 0.5f, fSampleRate), 0, 0.2);
+	//KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1.0f, fSampleRate), 0.18, 1);
+
+
+	auto KnightWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
 	auto KnightBlackLoop = std::make_shared<CScheduler>(fSampleRate);
-	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A3"), 0.5f, fSampleRate), 0, 0.2);
-	KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1.0f, fSampleRate), 0.18, 1);
+	std::string knightMelody[] = { "A3", "E4" };
+	float knightBeats[] = { 0.25, 1 };
+	//KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A3"), 0.5f, fSampleRate), 0, 0.2);
+	//KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1.0f, fSampleRate), 0.18, 1);
+	KnightWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1.0, fSampleRate), knightMelody, knightBeats, 2, 110);
+	KnightBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 440, 1.0, mSampleRate), knightMelody, knightBeats, 2, 110);
+	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
 	mPieceMelodies[kKnightBlack] = KnightBlackLoop;
 
 	auto BishopWhiteLoop = std::make_shared<CScheduler>(fSampleRate);

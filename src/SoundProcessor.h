@@ -91,6 +91,7 @@ class CWavetableOscillator : public CInstrument
 {
 public:
 	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequencyInHz = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
+	CWavetableOscillator(const CWavetableOscillator& other);
 	virtual ~CWavetableOscillator() = default;
 
 	// Value must be between 0 and 20000 (inclusive)

@@ -159,6 +159,12 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 	setFrequency(fFrequencyInHz);
 }
 
+CWavetableOscillator::CWavetableOscillator(const CWavetableOscillator& other) :
+	CWavetableOscillator(m_Wavetable, m_fFrequencyInHz, m_fGain, m_fSampleRateInHz)
+{
+}
+
+
 Error_t CWavetableOscillator::setFrequency(float fNewFrequencyInHz)
 {
 	if (fNewFrequencyInHz < 0 || fNewFrequencyInHz > 20000)
