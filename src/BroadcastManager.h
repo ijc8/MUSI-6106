@@ -11,11 +11,18 @@ class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadca
 
 public:
 
-    BroadcastManager() : m_Stockfish("../../stockfish/stockfish_14.1_win_x64_avx2.exe") {};
+    BroadcastManager() {};
 
     void toggleStockfish(bool shouldTurnOn)
     {
-        m_bStockfishOn = shouldTurnOn;
+        if (shouldTurnOn)
+        {
+            mStockfish = std::make_unique<Stockfish>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+        }
+        else
+        {
+            mStockfish.reset();
+        }
     }
 
     void actionListenerCallback(const juce::String& message)
@@ -43,9 +50,9 @@ public:
                 m_Game.push(move);
                 sendChangeMessage();
 
-                if (m_bStockfishOn)
+                if (mStockfish)
                 {
-                    m_Game.push(m_Stockfish.analyze(m_Game).bestMove);
+                    m_Game.push(mStockfish->analyze(m_Game).bestMove);
                     sendChangeMessage();
                 }
 
@@ -84,8 +91,7 @@ public:
 
 private:
 
-    bool m_bStockfishOn = false;
-    Stockfish m_Stockfish;
+    std::unique_ptr<Stockfish> mStockfish;
     Chess::Game& m_Game = AppState::getInstance().getGame();
     std::stack<Chess::Move> mUndoHistory;
 
