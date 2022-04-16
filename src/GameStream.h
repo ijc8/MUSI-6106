@@ -9,6 +9,8 @@
 class GameStream {
 public:
     GameStream(const std::string &gameID);
+    ~GameStream();
+    void cancel();
     bool finished();
     std::optional<Chess::Move> pollMove();
 
@@ -17,4 +19,5 @@ private:
     std::mutex mutex;
     std::future<void> task;
     std::unique_ptr<juce::InputStream> stream;
+    std::atomic<bool> running;
 };

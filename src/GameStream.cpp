@@ -16,10 +16,12 @@ GameStream::GameStream(const std::string &gameID) {
         throw std::runtime_error("Lichess connection failed.");
     }
 
+    running = true;
+
     // Then, pull moves from stream in separate thread.
-    task = std::async(std::launch::async, [this, &gameID] {
+    task = std::async(std::launch::async, [this] {
         juce::String line;
-        while ((line = stream->readNextLine()).isNotEmpty()) {
+        while (running && (line = stream->readNextLine()).isNotEmpty()) {
             if (line.isEmpty()) break;
             juce::var obj = juce::JSON::parse(line);
             if (obj.hasProperty("lm")) {
@@ -34,8 +36,17 @@ GameStream::GameStream(const std::string &gameID) {
     });
 }
 
+GameStream::~GameStream() {
+    cancel();
+}
+
+void GameStream::cancel() {
+    running = false;
+}
+
 bool GameStream::finished() {
     // If the task is finished and there are no queued moves, we're done.
+    std::unique_lock<std::mutex> lock(mutex);
     return moves.empty() && !task.valid();
 }
 
