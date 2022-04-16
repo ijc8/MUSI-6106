@@ -32,8 +32,8 @@ public:
 
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
-	Error_t scheduleTune(CWavetableOscillator osc, std::string notes[], float beats[], int numNotes, float bpm);
-	Error_t scheduleChord(CWavetableOscillator osc, std::vector<std::string> notes, float LengthInBeats, float bpm);
+	Error_t scheduleTune(CWavetableOscillator& osc, std::string notes[], float beats[], int numNotes, float bpm);
+	Error_t scheduleChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float LengthInBeats, float bpm);
 
 	// Returns schedule length in samples
 	int getLengthInSamp() const;

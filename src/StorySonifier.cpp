@@ -126,58 +126,34 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mPieceMelodies[kKnightBlack] = KnightBlackLoop;
 
 	auto BishopWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
-	float bishopBpm = 80;
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("D4"), 1.0, fSampleRate), 0, TEMPO::beatToSec(0.25, bishopBpm));
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1.0, fSampleRate), TEMPO::beatToSec(0.25, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("F4"), 1.0, fSampleRate), TEMPO::beatToSec(0.5, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("G4"), 1.0, fSampleRate), TEMPO::beatToSec(0.75, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1.0, fSampleRate), TEMPO::beatToSec(1, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C4"), 1.0, fSampleRate), TEMPO::beatToSec(1.5, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("D4"), 1.0, fSampleRate), TEMPO::beatToSec(1.75, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	mPieceMelodies[kBishopWhite] = BishopWhiteLoop;
-
 	auto BishopBlackLoop = std::make_shared<CScheduler>(fSampleRate);
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("D4"), 1.0, fSampleRate), 0, TEMPO::beatToSec(0.25, bishopBpm));
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1.0, fSampleRate), TEMPO::beatToSec(0.25, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("F4"), 1.0, fSampleRate), TEMPO::beatToSec(0.5, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("G4"), 1.0, fSampleRate), TEMPO::beatToSec(0.75, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1.0, fSampleRate), TEMPO::beatToSec(1, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("C4"), 1.0, fSampleRate), TEMPO::beatToSec(1.5, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
-	BishopBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("D4"), 1.0, fSampleRate), TEMPO::beatToSec(1.75, bishopBpm), TEMPO::beatToSec(0.5, bishopBpm));
+	float bishopBpm = 80;
+	std::string bishopMelody[] = { "D4","E4","F4","G4","E4","C4","D4" };
+	float bishopBeats[]		   = { 0.25, 0.25, 0.25, 0.25, 0.5, 0.25, 0.25 };
+	BishopWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1.0, fSampleRate), bishopMelody, bishopBeats, 7, bishopBpm);
+	BishopBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 44, 1, fSampleRate), bishopMelody, bishopBeats, 7, bishopBpm);
+	mPieceMelodies[kBishopWhite] = BishopWhiteLoop;
 	mPieceMelodies[kBishopBlack] = BishopBlackLoop;
 
 	auto RookWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
-	float rookBpm = 110;
-	RookWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("B3"), 1, fSampleRate), 0, TEMPO::beatToSec(0.33, rookBpm));
-	RookWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C4"), 1, fSampleRate), TEMPO::beatToSec(0.33, rookBpm), TEMPO::beatToSec(0.33, rookBpm));
-	RookWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(0.66, rookBpm), TEMPO::beatToSec(0.33, rookBpm));
-	RookWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("G4"), 1, fSampleRate), TEMPO::beatToSec(1, rookBpm), TEMPO::beatToSec(0.66, rookBpm));
-	RookWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(1.66, rookBpm), TEMPO::beatToSec(0.33, rookBpm));
-	RookWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("G4"), 1, fSampleRate), TEMPO::beatToSec(2, rookBpm), TEMPO::beatToSec(1, rookBpm));
-	mPieceMelodies[kRookWhite] = RookWhiteLoop;
-
 	auto RookBlackLoop = std::make_shared<CScheduler>(fSampleRate);
-	RookBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("B3"), 1, fSampleRate), 0, TEMPO::beatToSec(0.33, rookBpm));
-	RookBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("C4"), 1, fSampleRate), TEMPO::beatToSec(0.33, rookBpm), TEMPO::beatToSec(0.33, rookBpm));
-	RookBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(0.66, rookBpm), TEMPO::beatToSec(0.33, rookBpm));
-	RookBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("G4"), 1, fSampleRate), TEMPO::beatToSec(1, rookBpm), TEMPO::beatToSec(0.66, rookBpm));
-	RookBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(1.66, rookBpm), TEMPO::beatToSec(0.33, rookBpm));
-	RookBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("G4"), 1, fSampleRate), TEMPO::beatToSec(2, rookBpm), TEMPO::beatToSec(1, rookBpm));
+	float rookBpm = 110;
+	std::string rookMelody[] = { "B3", "C4", "E4", "G4", "E4", "G4" };
+	float rookBeats[]		 = { 0.33, 0.33, 0.33, 0.66, 0.33, 1 };
+	RookWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), rookMelody, rookBeats, 6, rookBpm);
+	RookBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), rookMelody, rookBeats, 6, rookBpm);
+	mPieceMelodies[kRookWhite] = RookWhiteLoop;
 	mPieceMelodies[kRookBlack] = RookBlackLoop;
 
-	auto PawnWhiteMelody = std::make_shared<CScheduler>(fSampleRate);
-	float pawnBpm = 180;
-	PawnWhiteMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C5"), 1, fSampleRate), 0, TEMPO::beatToSec(1, pawnBpm));
-	PawnWhiteMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 1, fSampleRate), TEMPO::beatToSec(1, pawnBpm), TEMPO::beatToSec(0.5, pawnBpm));
-	PawnWhiteMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(1.5, pawnBpm), TEMPO::beatToSec(0.5, pawnBpm));
-	PawnWhiteMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E5"), 1, fSampleRate), TEMPO::beatToSec(2, pawnBpm), TEMPO::beatToSec(0.5, pawnBpm));
-	mPieceMelodies[kPawnWhite] = PawnWhiteMelody;
 
+	auto PawnWhiteMelody = std::make_shared<CScheduler>(fSampleRate);
 	auto PawnBlackMelody = std::make_shared<CScheduler>(fSampleRate);
-	PawnBlackMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("C5"), 1, fSampleRate), 0, TEMPO::beatToSec(1, pawnBpm));
-	PawnBlackMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A4"), 1, fSampleRate), TEMPO::beatToSec(1, pawnBpm), TEMPO::beatToSec(0.5, pawnBpm));
-	PawnBlackMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(1.5, pawnBpm), TEMPO::beatToSec(0.5, pawnBpm));
-	PawnBlackMelody->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E5"), 1, fSampleRate), TEMPO::beatToSec(2, pawnBpm), TEMPO::beatToSec(0.5, pawnBpm));
+	float pawnBpm = 180;
+	std::string pawnNotes[] = {"C5", "A4", "E4", "E5"};
+	float pawnBeats[]	    = { 1, 0.5, 0.5, 0.5 };
+	PawnWhiteMelody->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), pawnNotes, pawnBeats, 4, 180);
+	PawnBlackMelody->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), pawnNotes, pawnBeats, 4, 180);
+	mPieceMelodies[kPawnWhite] = PawnWhiteMelody;
 	mPieceMelodies[kPawnBlack] = PawnBlackMelody;
 
 	auto CheckAlarmLoop = std::make_shared<CLooper>(fSampleRate);
@@ -197,21 +173,9 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Bass Triad
 	mBassTriad = std::make_shared<CLooper>(fSampleRate);
-	auto bassNote1 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A2"), 1, fSampleRate);
-	bassNote1->setADSRParameters(0.25, 0.1, .8, 0.15);
-	bassNote1->setPan(0);
-	mBassTriad->scheduleInst(std::move(bassNote1), 0, TEMPO::beatToSec(1, mBpm));
-
-	auto bassNote2 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C3"), 1, fSampleRate);
-	bassNote2->setADSRParameters(0.25, 0.1, .8, 0.15);
-	bassNote2->setPan(1);
-	mBassTriad->scheduleInst(std::move(bassNote2), TEMPO::beatToSec(1, mBpm), TEMPO::beatToSec(1, mBpm));
-
-	auto bassNote3 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E3"), 1, fSampleRate);
-	bassNote3->setADSRParameters(0.25, 0.1, .8, 0.15);
-	bassNote3->setPan(0.5);
-	mBassTriad->scheduleInst(std::move(bassNote3), TEMPO::beatToSec(2, mBpm), TEMPO::beatToSec(1, mBpm));
-
+	std::string bassNotes[] = {"A2", "C3", "E3"};
+	float bassBeats[] = { 1, 1, 1 };
+	mBassTriad->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), bassNotes, bassBeats, 3, mBpm);
 	mBassTriad->setADSRParameters(4, 0, 1, 2);
 	mBassTriad->setGain(0.75);
 	mMainProcessor.addInst(mBassTriad);
@@ -246,12 +210,9 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Melody 1
 	mMelody1 = std::make_shared<CLooper>(fSampleRate);
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), 0, TEMPO::beatToSec(9, mBpm));
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), TEMPO::beatToSec(9, mBpm), TEMPO::beatToSec(1, mBpm));
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("B5"), 1, fSampleRate), TEMPO::beatToSec(10, mBpm), TEMPO::beatToSec(1, mBpm));
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("C6"), 1, fSampleRate), TEMPO::beatToSec(11, mBpm), TEMPO::beatToSec(1, mBpm));
-	mMelody1->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A5"), 1, fSampleRate), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
-
+	std::string melody1Notes[] = {"A5", "A5", "B5", "C6", "A5"};
+	float melody1Beats[] = { 9, 1, 1, 1, 12 };
+	mMelody1->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), melody1Notes, melody1Beats, 5, mBpm);
 	mMelody1->setADSRParameters(4, 0, 1, 4);
 	mMelody1->setGain(0.05);
 	mMelody1->setPan(0.25);
@@ -261,12 +222,9 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Melody 2
 	mMelody2 = std::make_shared<CLooper>(fSampleRate);
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), 0, TEMPO::beatToSec(9, mBpm));
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1, fSampleRate), TEMPO::beatToSec(9, mBpm), TEMPO::beatToSec(1, mBpm));
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("G4"), 1, fSampleRate), TEMPO::beatToSec(10, mBpm), TEMPO::beatToSec(1, mBpm));
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A4"), 1, fSampleRate), TEMPO::beatToSec(11, mBpm), TEMPO::beatToSec(1, mBpm));
-	mMelody2->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("F#4"), 1, fSampleRate), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
-
+	std::string melody2Notes[] = {"E4", "E4", "G4", "A4", "F#4"};
+	float melody2Beats[] = { 9, 1, 1, 1, 12 };
+	mMelody2->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), melody2Notes, melody2Beats, 5, mBpm);
 	mMelody2->setADSRParameters(4, 0, 1, 4);
 	mMelody2->setGain(0.05);
 	mMelody2->setPan(0.75);

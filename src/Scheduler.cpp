@@ -48,7 +48,7 @@ Error_t CScheduler::scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float
 	return Error_t::kNoError;
 }
 
-Error_t CScheduler::scheduleTune(CWavetableOscillator osc, std::string notes[], float beats[], int numNotes, float bpm)
+Error_t CScheduler::scheduleTune(CWavetableOscillator& osc, std::string notes[], float beats[], int numNotes, float bpm)
 {
 	float beatSum = 0;
 	for (int i = 0; i < numNotes; i++)
@@ -61,7 +61,7 @@ Error_t CScheduler::scheduleTune(CWavetableOscillator osc, std::string notes[], 
 	return Error_t::kNoError;
 }
 
-Error_t CScheduler::scheduleChord(CWavetableOscillator osc, std::vector<std::string> notes, float LengthInBeats, float bpm)
+Error_t CScheduler::scheduleChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float LengthInBeats, float bpm)
 {
 	for (std::string& note : notes)
 	{
