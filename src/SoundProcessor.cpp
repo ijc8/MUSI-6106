@@ -160,7 +160,7 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 }
 
 CWavetableOscillator::CWavetableOscillator(const CWavetableOscillator& other) :
-	CWavetableOscillator(m_Wavetable, m_fFrequencyInHz, m_fGain, m_fSampleRateInHz)
+	CWavetableOscillator(other.m_Wavetable, other.m_fFrequencyInHz, other.m_fGain, other.m_fSampleRateInHz)
 {
 }
 

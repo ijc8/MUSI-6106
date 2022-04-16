@@ -109,30 +109,19 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mPieceMelodies[kKingBlack] = std::make_shared<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A4"), 1, fSampleRate);
 
 	auto QueenWhiteChord = std::make_shared<CScheduler>(fSampleRate);
-	QueenWhiteChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1.0, fSampleRate), 0, 1);
-	QueenWhiteChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("G#4"), 1.0, fSampleRate), 0, 1);
-	QueenWhiteChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("B4"), 1.0, fSampleRate), 0, 1);
-	mPieceMelodies[kQueenWhite] = QueenWhiteChord;
-
 	auto QueenBlackChord = std::make_shared<CScheduler>(fSampleRate);
-	QueenBlackChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1.0, fSampleRate), 0, 1);
-	QueenBlackChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("G#4"), 1.0, fSampleRate), 0, 1);
-	QueenBlackChord->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("B4"), 1.0, fSampleRate), 0, 1);
+	std::vector<std::string> QueenMelody = { "E4", "G#4", "B4" };
+	QueenWhiteChord->scheduleChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), QueenMelody, 1, 110);
+	QueenBlackChord->scheduleChord(CWavetableOscillator(mSaw, 440, 1, fSampleRate), QueenMelody, 1, 110);
+	mPieceMelodies[kQueenWhite] = QueenWhiteChord;
 	mPieceMelodies[kQueenBlack] = QueenBlackChord;
-
-
-	//KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A3"), 0.5f, fSampleRate), 0, 0.2);
-	//KnightWhiteLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E4"), 1.0f, fSampleRate), 0.18, 1);
-
 
 	auto KnightWhiteLoop = std::make_shared<CScheduler>(fSampleRate);
 	auto KnightBlackLoop = std::make_shared<CScheduler>(fSampleRate);
 	std::string knightMelody[] = { "A3", "E4" };
-	float knightBeats[] = { 0.25, 1 };
-	//KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A3"), 0.5f, fSampleRate), 0, 0.2);
-	//KnightBlackLoop->scheduleInst(std::make_unique<CWavetableOscillator>(mSaw, FREQ::noteToFreq("E4"), 1.0f, fSampleRate), 0.18, 1);
-	KnightWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1.0, fSampleRate), knightMelody, knightBeats, 2, 110);
-	KnightBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 440, 1.0, mSampleRate), knightMelody, knightBeats, 2, 110);
+	float knightBeats[]		   = { 0.25,  1 };
+	KnightWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), knightMelody, knightBeats, 2, 110);
+	KnightBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), knightMelody, knightBeats, 2, 110);
 	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
 	mPieceMelodies[kKnightBlack] = KnightBlackLoop;
 

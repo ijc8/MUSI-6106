@@ -33,6 +33,7 @@ public:
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 	Error_t scheduleTune(CWavetableOscillator osc, std::string notes[], float beats[], int numNotes, float bpm);
+	Error_t scheduleChord(CWavetableOscillator osc, std::vector<std::string> notes, float LengthInBeats, float bpm);
 
 	// Returns schedule length in samples
 	int getLengthInSamp() const;
@@ -81,6 +82,8 @@ protected:
 	float updateSampleRate(float fValue, float fNewSampleRate);
 	
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
+private:
+	CScheduler(const CScheduler& other);
 };
 
 class CLooper : public CScheduler
@@ -94,5 +97,8 @@ public:
 	void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 protected:
 	int m_iMinLoopLength = 0;
+
+private:
+	CLooper(const CLooper& other);
 };
 #endif
