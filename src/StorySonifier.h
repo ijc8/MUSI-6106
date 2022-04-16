@@ -69,10 +69,10 @@ private:
 		{"p", kPawnBlack}
 	};
 
-	std::shared_ptr<CLooper> mBassTriad;
-	std::shared_ptr<CLooper> mAccompTriad;
-	std::shared_ptr<CLooper> mMelody1;
-	std::shared_ptr<CLooper> mMelody2;
+	std::shared_ptr<CLooper> mBass;
+	std::shared_ptr<CLooper> mAccomp;
+	std::shared_ptr<CLooper> mMelodyL;
+	std::shared_ptr<CLooper> mMelodyR;
 	std::shared_ptr<CInstrument> mCheckAlarm;
 
 	int mBoardChangeCounter = 0;

@@ -61,13 +61,13 @@ Error_t CScheduler::scheduleTune(CWavetableOscillator& osc, std::string notes[],
 	return Error_t::kNoError;
 }
 
-Error_t CScheduler::scheduleChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float LengthInBeats, float bpm)
+Error_t CScheduler::scheduleChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float lengthInBeats, float bpm)
 {
 	for (std::string& note : notes)
 	{
 		auto pOsc = std::unique_ptr<CWavetableOscillator>(new CWavetableOscillator(osc));
 		pOsc->setFrequency(FREQ::noteToFreq(note));
-		scheduleInst(std::move(pOsc), 0, TEMPO::beatToSec(LengthInBeats, bpm));
+		scheduleInst(std::move(pOsc), 0, TEMPO::beatToSec(lengthInBeats, bpm));
 	}
 	return Error_t::kNoError;
 }
