@@ -184,23 +184,15 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	/////////////////////////////////////////////////////////////////////
 	//// Accomp Triad
 	mAccompTriad = std::make_shared<CLooper>(fSampleRate);
-	auto accompNote1 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 0.5, fSampleRate);
-	mAccompTriad->scheduleInst(std::move(accompNote1), 0, TEMPO::beatToSec(12, mBpm));
 
-	auto accompNote2 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("C5"), 0.5, fSampleRate);
-	mAccompTriad->scheduleInst(std::move(accompNote2), 0, TEMPO::beatToSec(12, mBpm));
+	auto chord1 = std::make_unique<CScheduler>(fSampleRate);
+	chord1->scheduleChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), std::vector<std::string>{"A4", "C5", "E5"}, 12, mBpm);
 
-	auto accompNote3 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("E5"), 0.5, fSampleRate);
-	mAccompTriad->scheduleInst(std::move(accompNote3), 0, TEMPO::beatToSec(12, mBpm));
+	auto chord2 = std::make_unique<CScheduler>(fSampleRate);
+	chord2->scheduleChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), std::vector<std::string>{"A4", "D5", "F#5"}, 12, mBpm);
 
-	auto accompNote4 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 0.5, fSampleRate);
-	mAccompTriad->scheduleInst(std::move(accompNote4), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
-
-	auto accompNote5 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("D5"), 0.5, fSampleRate);
-	mAccompTriad->scheduleInst(std::move(accompNote5), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
-
-	auto accompNote6 = std::make_unique<CWavetableOscillator>(mSine, FREQ::noteToFreq("F#5"), 0.5, fSampleRate);
-	mAccompTriad->scheduleInst(std::move(accompNote6), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
+	mAccompTriad->scheduleInst(std::move(chord1), 0, TEMPO::beatToSec(12, mBpm));
+	mAccompTriad->scheduleInst(std::move(chord2), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
 
 	mMainProcessor.addInst(mAccompTriad);
 	mAccompTriad->setGain(0.25);
