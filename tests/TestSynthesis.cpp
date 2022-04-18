@@ -2,6 +2,7 @@
 
 #define _USE_MATH_DEFINES
 #include <iostream>
+#include <thread>
 #include <math.h>
 
 #include "../src/MainProcessor.h"
@@ -387,4 +388,3 @@ TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 	delete[] ppfGroundBuffer;
 	delete[] ppfOutBuffer;
 }
-
