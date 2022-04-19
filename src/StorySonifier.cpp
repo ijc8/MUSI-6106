@@ -111,8 +111,8 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	auto QueenWhiteChord = std::make_shared<CScheduler>(fSampleRate);
 	auto QueenBlackChord = std::make_shared<CScheduler>(fSampleRate);
 	std::vector<std::string> QueenNotes = { "E4", "G#4", "B4" };
-	QueenWhiteChord->scheduleChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), QueenNotes, 1, 110);
-	QueenBlackChord->scheduleChord(CWavetableOscillator(mSaw, 440, 1, fSampleRate), QueenNotes, 1, 110);
+	QueenWhiteChord->constructChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), QueenNotes, 1, 110);
+	QueenBlackChord->constructChord(CWavetableOscillator(mSaw, 440, 1, fSampleRate), QueenNotes, 1, 110);
 	mPieceMelodies[kQueenWhite] = QueenWhiteChord;
 	mPieceMelodies[kQueenBlack] = QueenBlackChord;
 
@@ -120,8 +120,8 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	auto KnightBlackLoop = std::make_shared<CScheduler>(fSampleRate);
 	std::string knightNotes[] = { "A3", "E4" };
 	float knightBeats[]		  = { 0.25,  1 };
-	KnightWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), knightNotes, knightBeats, 2, 110);
-	KnightBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), knightNotes, knightBeats, 2, 110);
+	KnightWhiteLoop->constructTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), knightNotes, knightBeats, 2, 110);
+	KnightBlackLoop->constructTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), knightNotes, knightBeats, 2, 110);
 	mPieceMelodies[kKnightWhite] = KnightWhiteLoop;
 	mPieceMelodies[kKnightBlack] = KnightBlackLoop;
 
@@ -130,8 +130,8 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	float bishopBpm = 80;
 	std::string bishopNotes[] = { "D4","E4" ,"F4" ,"G4" ,"E4" ,"C4", "D4" };
 	float bishopBeats[]		  = { 0.25, 0.25, 0.25, 0.25, 0.5, 0.25, 0.25 };
-	BishopWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1.0, fSampleRate), bishopNotes, bishopBeats, 7, bishopBpm);
-	BishopBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 44, 1, fSampleRate), bishopNotes, bishopBeats, 7, bishopBpm);
+	BishopWhiteLoop->constructTune(CWavetableOscillator(mSine, 440, 1.0, fSampleRate), bishopNotes, bishopBeats, 7, bishopBpm);
+	BishopBlackLoop->constructTune(CWavetableOscillator(mSaw, 44, 1, fSampleRate), bishopNotes, bishopBeats, 7, bishopBpm);
 	mPieceMelodies[kBishopWhite] = BishopWhiteLoop;
 	mPieceMelodies[kBishopBlack] = BishopBlackLoop;
 
@@ -140,8 +140,8 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	float rookBpm = 110;
 	std::string rookNotes[] = { "B3", "C4", "E4", "G4", "E4", "G4" };
 	float rookBeats[]		= { 0.33, 0.33, 0.33, 0.66, 0.33, 1 };
-	RookWhiteLoop->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), rookNotes, rookBeats, 6, rookBpm);
-	RookBlackLoop->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), rookNotes, rookBeats, 6, rookBpm);
+	RookWhiteLoop->constructTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), rookNotes, rookBeats, 6, rookBpm);
+	RookBlackLoop->constructTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), rookNotes, rookBeats, 6, rookBpm);
 	mPieceMelodies[kRookWhite] = RookWhiteLoop;
 	mPieceMelodies[kRookBlack] = RookBlackLoop;
 
@@ -151,8 +151,8 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	float pawnBpm = 180;
 	std::string pawnNotes[] = {"C5", "A4", "E4", "E5"};
 	float pawnBeats[]	    = { 1  , 0.5 , 0.5 , 0.5 };
-	PawnWhiteMelody->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), pawnNotes, pawnBeats, 4, 180);
-	PawnBlackMelody->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), pawnNotes, pawnBeats, 4, 180);
+	PawnWhiteMelody->constructTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), pawnNotes, pawnBeats, 4, 180);
+	PawnBlackMelody->constructTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), pawnNotes, pawnBeats, 4, 180);
 	mPieceMelodies[kPawnWhite] = PawnWhiteMelody;
 	mPieceMelodies[kPawnBlack] = PawnBlackMelody;
 
@@ -175,7 +175,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mBass = std::make_shared<CLooper>(fSampleRate);
 	std::string bassNotes[] = {"A2", "C3", "E3"};
 	float bassBeats[]	    = { 1  , 1   , 1 };
-	mBass->scheduleTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), bassNotes, bassBeats, 3, mBpm);
+	mBass->constructTune(CWavetableOscillator(mSine, 440, 1, fSampleRate), bassNotes, bassBeats, 3, mBpm);
 	mBass->setADSRParameters(4, 0, 1, 2);
 	mBass->setGain(0.75);
 	mMainProcessor.addInst(mBass);
@@ -186,10 +186,10 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mAccomp = std::make_shared<CLooper>(fSampleRate);
 
 	auto chord1 = std::make_unique<CScheduler>(fSampleRate);
-	chord1->scheduleChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), std::vector<std::string>{"A4", "C5", "E5"}, 12, mBpm);
+	chord1->constructChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), std::vector<std::string>{"A4", "C5", "E5"}, 12, mBpm);
 
 	auto chord2 = std::make_unique<CScheduler>(fSampleRate);
-	chord2->scheduleChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), std::vector<std::string>{"A4", "D5", "F#5"}, 12, mBpm);
+	chord2->constructChord(CWavetableOscillator(mSine, 440, 1, fSampleRate), std::vector<std::string>{"A4", "D5", "F#5"}, 12, mBpm);
 
 	mAccomp->scheduleInst(std::move(chord1), 0, TEMPO::beatToSec(12, mBpm));
 	mAccomp->scheduleInst(std::move(chord2), TEMPO::beatToSec(12, mBpm), TEMPO::beatToSec(12, mBpm));
@@ -204,7 +204,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMelodyL = std::make_shared<CLooper>(fSampleRate);
 	std::string melody1Notes[] = {"A5", "A5", "B5", "C6", "A5"};
 	float melody1Beats[]	   = { 9  , 1   , 1   , 1   , 12 };
-	mMelodyL->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), melody1Notes, melody1Beats, 5, mBpm);
+	mMelodyL->constructTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), melody1Notes, melody1Beats, 5, mBpm);
 	mMelodyL->setADSRParameters(4, 0, 1, 4);
 	mMelodyL->setGain(0.05);
 	mMelodyL->setPan(0.25);
@@ -216,7 +216,7 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 	mMelodyR = std::make_shared<CLooper>(fSampleRate);
 	std::string melody2Notes[] = {"E4", "E4", "G4", "A4", "F#4"};
 	float melody2Beats[]	   = { 9  , 1   , 1   , 1   ,  12 };
-	mMelodyR->scheduleTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), melody2Notes, melody2Beats, 5, mBpm);
+	mMelodyR->constructTune(CWavetableOscillator(mSaw, 440, 1, fSampleRate), melody2Notes, melody2Beats, 5, mBpm);
 	mMelodyR->setADSRParameters(4, 0, 1, 4);
 	mMelodyR->setGain(0.05);
 	mMelodyR->setPan(0.75);

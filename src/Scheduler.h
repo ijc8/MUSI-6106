@@ -34,10 +34,10 @@ public:
 	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 
 	// Notes are placed sequentially and have durations according to values passed in with the 'beats' parameter
-	Error_t scheduleTune(CWavetableOscillator& osc, std::string notes[], float beats[], int numNotes, float bpm);
+	Error_t constructTune(CWavetableOscillator& osc, std::string notes[], float beats[], int numNotes, float bpm);
 
 	// Notes are placed all at time = 0
-	Error_t scheduleChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float lengthInBeats, float bpm);
+	Error_t constructChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float lengthInBeats, float bpm);
 
 	// Returns schedule length in samples
 	int getLengthInSamp() const;

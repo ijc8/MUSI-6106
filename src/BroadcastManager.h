@@ -5,6 +5,7 @@
 #include "DebugSonifier.h"
 #include "ChessboardGUI.h"
 #include "EngineBridge.h"
+#include <filesystem>
 
 class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadcaster, public juce::ActionBroadcaster
 {
@@ -17,7 +18,8 @@ public:
     {
         if (shouldTurnOn)
         {
-            mStockfish = std::make_unique<Stockfish>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+            if (std::filesystem::exists("../stockfish/stockfish_14.1_win_x64_avx2.exe"))
+                mStockfish = std::make_unique<Stockfish>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
         }
         else
         {
