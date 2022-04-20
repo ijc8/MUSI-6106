@@ -54,6 +54,10 @@ juce_add_console_app(Tests
 juce_add_console_app(EngineTest
     PRODUCT_NAME "EngineTest")
 
+juce_add_console_app(StreamTest
+    PRODUCT_NAME "StreamTest"
+    NEEDS_CURL TRUE)
+
 juce_add_console_app(TerminalChess
     PRODUCT_NAME "TerminalChess")
 
@@ -111,6 +115,11 @@ target_sources(EngineTest
         src/EngineBridge.cpp
         tests/TestEngineBridge.cpp)
 
+target_sources(StreamTest
+    PRIVATE
+        src/GameStream.cpp
+        tests/Stream.cpp)
+
 target_sources(SonifierTest
 	PRIVATE
 		src/SoundProcessor.cpp
@@ -159,6 +168,12 @@ target_compile_definitions(Tests
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
         JUCE_USE_CURL=0)    # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
+
+target_compile_definitions(StreamTest
+    PRIVATE
+        # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
+        JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
+        JUCE_USE_CURL=1)    # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call    
 
 target_compile_definitions(SonifierTest
 		PRIVATE
@@ -223,6 +238,16 @@ target_link_libraries(TerminalChess
 target_link_libraries(EngineTest
     PRIVATE
         Common)
+
+target_link_libraries(StreamTest
+    PRIVATE
+        Common
+        juce::juce_gui_extra
+        juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
 
 target_link_libraries(SonifierTest
     PRIVATE
