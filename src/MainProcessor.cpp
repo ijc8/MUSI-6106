@@ -67,15 +67,27 @@ void CMainProcessor::checkQueues()
 		}
 		else
 		{
-			m_SetInsts.insert(pInstToAdd);
+			m_ActiveInsts.insert(pInstToAdd);
 		}
+		m_AllInsts.insert(pInstToAdd);
 	}
 
 	std::shared_ptr<CInstrument> instToRemove = 0;
 	while (m_RemoveQueue.pop(instToRemove))
 	{
-		// TODO: Implement method to ensure shared_ptrs DO NOT deallocate on audio thread
-		m_SetInsts.erase(instToRemove);
+		m_ActiveInsts.erase(instToRemove);
+		m_AllInsts.erase(instToRemove);
+		m_GarbageQueue.push(instToRemove);
+	}
+}
+
+void CMainProcessor::timerCallback()
+{
+	std::shared_ptr<CInstrument> instToTrash = 0;
+	while (m_GarbageQueue.pop(instToTrash))
+	{
+		if (instToTrash.unique())
+			instToTrash.reset();
 	}
 }
 

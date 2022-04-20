@@ -79,7 +79,7 @@ juce_add_gui_app(SoundTests
 # Finally, we supply a list of source files that will be built into the target. This is a standard
 # CMake command.
 
-add_library(Common OBJECT src/GameState.cpp)
+add_library(Common OBJECT src/GameState.cpp src/Util.cpp)
 
 target_sources(MusicalChess
     PRIVATE
@@ -91,7 +91,10 @@ target_sources(MusicalChess
         src/MainProcessor.cpp
 	    src/DebugSonifier.cpp
 	    src/ThreatsSonifier.cpp
-        src/EngineBridge.cpp)
+        src/EngineBridge.cpp
+        src/StorySonifier.cpp
+        src/StorySonifier.h
+        src/Util.h)
 
 target_sources(Tests
     PRIVATE

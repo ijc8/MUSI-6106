@@ -349,7 +349,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 	delete[] ppfSchedulerBuffer;
 }
 
-// This test is just used as a lightweight and convenient way to track multi-threading -- no actual testing/comparisons are being made
+
 TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 {
 	CMainProcessor mainProcessor;

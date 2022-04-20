@@ -10,9 +10,11 @@ MainComponent::MainComponent()
     addAndMakeVisible(m_ChessboardGUI);
     Chess::Game& game = AppState::getInstance().getGame();
     m_ChessboardGUI.addActionListener(&m_BroadcastManager);
+    m_BroadcastManager.addActionListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
     m_BroadcastManager.addChangeListener(&m_DebugSonifier);
     m_BroadcastManager.addChangeListener(&m_ThreatsSonifier);
+    m_BroadcastManager.addChangeListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(this);
 
     // text buttons
@@ -78,6 +80,7 @@ MainComponent::MainComponent()
     m_SonifierSelector.onChange = [this]() { onSonifierChange(); };
     m_SonifierSelector.addItem("Debug Sonifier", 1);
     m_SonifierSelector.addItem("Threat Sonifier", 2);
+    m_SonifierSelector.addItem("Story Sonifier", 3);
     m_SonifierSelector.setSelectedId(1);
 
     addAndMakeVisible(m_GameModeSelector);
@@ -127,6 +130,7 @@ MainComponent::MainComponent()
     m_VolumeSlider.onValueChange = [this]() {
         m_DebugSonifier.setGain(m_VolumeSlider.getValue());
         m_ThreatsSonifier.setGain(m_VolumeSlider.getValue());
+        m_StorySonifier.setGain(m_VolumeSlider.getValue());
     };
     m_VolumeSlider.setValue(0.25);
 }
@@ -134,6 +138,7 @@ MainComponent::MainComponent()
 MainComponent::~MainComponent()
 {
     m_BroadcastManager.removeAllChangeListeners();
+    m_BroadcastManager.removeAllActionListeners();
     m_ChessboardGUI.removeAllActionListeners();
     shutdownAudio();
 }
@@ -142,18 +147,21 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 {
     m_DebugSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
     m_ThreatsSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    m_StorySonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     m_DebugSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
     m_ThreatsSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    m_StorySonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
 }
 
 void MainComponent::releaseResources()
 {
     m_DebugSonifier.releaseResources();
     m_ThreatsSonifier.releaseResources();
+    m_StorySonifier.releaseResources();
 }
 
 //==============================================================================
@@ -218,11 +226,18 @@ void MainComponent::onSonifierChange()
     switch (m_SonifierSelector.getSelectedId())
     {
     case 1:
+        m_StorySonifier.setEnabled(false);
         m_ThreatsSonifier.disable();
         m_DebugSonifier.enable();
         break;
-    default:
+    case 2:
+        m_StorySonifier.setEnabled(false);
         m_ThreatsSonifier.enable();
+        m_DebugSonifier.disable();
+        break;
+    default:
+        m_StorySonifier.setEnabled(true);
+        m_ThreatsSonifier.disable();
         m_DebugSonifier.disable();
     }
 }

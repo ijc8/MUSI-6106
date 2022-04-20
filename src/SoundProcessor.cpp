@@ -112,8 +112,9 @@ bool CInstrument::isActive() const
     return m_adsr.isActive();
 }
 
-void CInstrument::noteOn()
+void CInstrument::noteOn(bool shouldReset)
 {
+	mShouldReset = shouldReset;
 	m_bNoteOnPressed.store(true);
 }
 
@@ -157,6 +158,12 @@ CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, flo
 {
 	setFrequency(fFrequencyInHz);
 }
+
+CWavetableOscillator::CWavetableOscillator(const CWavetableOscillator& other) :
+	CWavetableOscillator(other.m_Wavetable, other.m_fFrequencyInHz, other.m_fGain, other.m_fSampleRateInHz)
+{
+}
+
 
 Error_t CWavetableOscillator::setFrequency(float fNewFrequencyInHz)
 {

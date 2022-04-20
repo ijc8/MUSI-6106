@@ -2,10 +2,13 @@
 #define __Scheduler_hdr__
 #include "SoundProcessor.h"
 #include "AtomicRingBuffer.h"
+#include "Util.h"
 
 #include <map>
 #include <unordered_set>
 #include <optional>
+#include <vector>
+#include <string>
 
 
 using std::map;
@@ -30,6 +33,12 @@ public:
 	// Schedule a dynamically-allocated instrument relative to the start of the container
 	Error_t scheduleInst(std::unique_ptr<CInstrument> pInstToPush, float fOnsetInSec, float fDurationInSec);
 
+	// Notes are placed sequentially and have durations according to values passed in with the 'beats' parameter
+	Error_t constructTune(CWavetableOscillator& osc, std::string notes[], float beats[], int numNotes, float bpm);
+
+	// Notes are placed all at time = 0
+	Error_t constructChord(CWavetableOscillator& osc, std::vector<std::string>& notes, float lengthInBeats, float bpm);
+
 	// Returns schedule length in samples
 	int getLengthInSamp() const;
 	float getLengthInSec() const;
@@ -37,11 +46,16 @@ public:
 	// Frame-by-Frame processing function
 	virtual void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 
+	Error_t setSampleRate(float fSampleRate) override;
+
 protected:
 
 	// Set that contains instruments to be currently processed
 	// Instruments will move in and out of this continuously
-	unordered_set<std::shared_ptr<CInstrument>> m_SetInsts;
+	unordered_set<std::shared_ptr<CInstrument>> m_ActiveInsts;
+
+	// Set that contains all instruments that have been pushed
+	unordered_set<std::shared_ptr<CInstrument>> m_AllInsts;
 
 	// This can be viewed as the schedule's internal clock
 	std::atomic<int64_t> m_iSampleCounter = 0;
@@ -67,8 +81,13 @@ protected:
 	// Parses each map and sees if any event triggers exist for child instrument at the current sample counter		
 	// Carries out necessary actions if so
 	virtual void checkTriggers();
+
+	void updateSampleRate(map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate);
+	float updateSampleRate(float fValue, float fNewSampleRate);
 	
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
+private:
+	CScheduler(const CScheduler& other);
 };
 
 class CLooper : public CScheduler
@@ -82,5 +101,8 @@ public:
 	void processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentFrame) override;
 protected:
 	int m_iMinLoopLength = 0;
+
+private:
+	CLooper(const CLooper& other);
 };
 #endif
