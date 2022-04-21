@@ -20,6 +20,7 @@ public:
 
 	void setEnabled(bool shouldEnable);
 	void setGain(float fGain);
+	void StringToPitchBeat(char* seq, std::string* pitch, std::string* beat);
 
 private:
 
@@ -73,7 +74,10 @@ private:
 	std::shared_ptr<CLooper> mAccomp;
 	std::shared_ptr<CLooper> mMelodyL;
 	std::shared_ptr<CLooper> mMelodyR;
+	std::shared_ptr<CLooper> mMelodyJiarui;
 	std::shared_ptr<CInstrument> mCheckAlarm;
+
+	float score_game = 0.5;
 
 	int mBoardChangeCounter = 0;
 	const float mBpm = 150;

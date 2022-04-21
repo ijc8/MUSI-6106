@@ -222,7 +222,9 @@ void CLooper::processFrame(float** ppfOutBuffer, int iNumChannels, int iCurrentF
 	CScheduler::processFrame(ppfOutBuffer, iNumChannels, iCurrentFrame);
 
 	// Wraps around internal clock to allow for looping
-	m_iSampleCounter.store(m_iSampleCounter.load() % m_iScheduleLength.load());
+	if (m_iScheduleLength.load() != 0) {
+		m_iSampleCounter.store(m_iSampleCounter.load() % m_iScheduleLength.load());
+	}
 }
 
 Error_t CLooper::setLoopLength(float fNewLoopLengthInSec)

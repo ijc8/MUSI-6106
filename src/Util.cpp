@@ -13,7 +13,7 @@ float FREQ::noteToFreq(const std::string& note)
 	return 0;
 }
 
-const std::map<std::string, float> FREQ::mToFreq {
+const std::map<std::string, float> FREQ::mToFreq{
 	{"C1", 32.70},
 	{ "C#1", 34.65 },
 	{ "D1",36.71 },
@@ -85,5 +85,6 @@ const std::map<std::string, float> FREQ::mToFreq {
 	{ "G#6",1661 },
 	{ "A6",1760 },
 	{ "A#6",1865 },
-	{ "B6",1976 }
+	{ "B6",1976 },
+	{ "rest",0}
 };
