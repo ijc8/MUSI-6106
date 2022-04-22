@@ -402,18 +402,19 @@ void GameState::execute(Move move) {
     // TODO: Update move clocks.
 }
 
-bool Chess::Game::hasNoHistory() const
-{
-    return history.empty();
-}
-
 void Game::push(Move move) {
     // Push the move and a copy of the game state on to the history stack.
     history.emplace(move, GameState(*this));
     execute(move);
 }
 
-Move Game::pop() {
+std::optional<Move> Game::peek() const {
+    if (history.empty()) return std::nullopt;
+    return std::get<0>(history.top());
+}
+
+std::optional<Move> Game::pop() {
+    if (history.empty()) return std::nullopt;
     auto [move, state] = history.top();
     history.pop();
     // TODO: Restore game state in a less hacky way.
@@ -421,9 +422,8 @@ Move Game::pop() {
     setFen(state.getFen());
     return move;
 }
+
 std::unordered_map<Square, std::optional<Piece>> GameState::getThreats() {
-
-
     GameState copy(*this);
     auto pieceMap = copy.getPieceMap();
 
