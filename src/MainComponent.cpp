@@ -165,9 +165,16 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    m_DebugSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-    m_ThreatsSonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-    m_StorySonifier.process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    if (mNextSonifier)
+    {
+        if (mCurrentSonifier->isIdle())
+        {
+            mCurrentSonifier = mNextSonifier;
+            mCurrentSonifier->setEnabled(true);
+            mNextSonifier = nullptr;
+        }
+    }
 }
 
 void MainComponent::releaseResources()
@@ -180,7 +187,7 @@ void MainComponent::releaseResources()
 //==============================================================================
 void MainComponent::paint(juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 
 }
@@ -239,20 +246,15 @@ void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMod
     switch (nextSonifierMode)
     {
     case Debug:
-        m_StorySonifier.setEnabled(false);
-        m_ThreatsSonifier.setEnabled(false);
-        m_DebugSonifier.setEnabled(true);
+        mNextSonifier = &m_DebugSonifier;
         break;
     case Threats:
-        m_StorySonifier.setEnabled(false);
-        m_ThreatsSonifier.setEnabled(true);
-        m_DebugSonifier.setEnabled(false);
+        mNextSonifier = &m_ThreatsSonifier;
         break;
     default:
-        m_StorySonifier.setEnabled(true);
-        m_ThreatsSonifier.setEnabled(false);
-        m_DebugSonifier.setEnabled(false);
+        mNextSonifier = &m_StorySonifier;
     }
+    mCurrentSonifier->setEnabled(false);
 }
 
 void MainComponent::onPgnButtonClicked()

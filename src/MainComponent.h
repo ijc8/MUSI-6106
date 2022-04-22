@@ -85,7 +85,8 @@ private:
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
     void onSonifierChange(MainComponent::SonifierMode nextSonifier);
-
+    SonifierBase* mCurrentSonifier = &m_DebugSonifier;
+    SonifierBase* mNextSonifier = nullptr;
     std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
