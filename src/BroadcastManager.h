@@ -18,7 +18,7 @@ public:
         if (shouldTurnOn)
         {
             if (std::filesystem::exists("../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
-                mStockfish = std::make_unique<Stockfish>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+                mStockfish = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
             } else {
                 // Allow user to tell us where their engine binary is.
                 // TODO: Remember their selected engine and allow them to change it later.
@@ -30,7 +30,7 @@ public:
                 engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser& chooser) {
                     juce::File file = chooser.getResult();
                     if (file.exists()) {
-                        mStockfish = std::make_unique<Stockfish>(file.getFullPathName().toStdString());
+                        mStockfish = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
                     }
                 });
             }
@@ -107,7 +107,7 @@ public:
 
 private:
 
-    std::unique_ptr<Stockfish> mStockfish;
+    std::unique_ptr<Chess::Engine> mStockfish;
     std::unique_ptr<juce::FileChooser> engineChooser;
 
     Chess::Game& m_Game = AppState::getInstance().getGame();

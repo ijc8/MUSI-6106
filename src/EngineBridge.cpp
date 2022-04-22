@@ -48,11 +48,11 @@ void Subprocess::writeline(const std::string &line) {
     fflush(childStdin);
 }
 
-Stockfish::Stockfish(const std::string &path) : process(path) {
+Chess::Engine::Engine(const std::string &path) : process(path) {
     assert(starts_with(process.readline(), "Stockfish"));
 }
 
-Analysis Stockfish::analyze(const Chess::GameState &state, int time) {
+Chess::Analysis Chess::Engine::analyze(const Chess::GameState &state, int time) {
     // Set up the position.
     process.write("position fen ");
     process.writeline(state.getFen());
