@@ -23,10 +23,16 @@ class MainComponent : public juce::AudioAppComponent, public juce::ChangeListene
 {
 public:
 
-    enum class GameMode {
+    enum GameMode {
         PVP,
         PVC,
         PGN
+    };
+
+    enum SonifierMode {
+        Debug,
+        Threats,
+        Story
     };
 
     //==============================================================================
@@ -73,13 +79,12 @@ private:
     juce::TextButton m_NextButton;
     juce::TextButton m_PrevButton;
 
-    void onSonifierChange();
-
     void onPgnButtonClicked();
     std::unique_ptr<juce::FileChooser> m_FileChooser;
     juce::String m_PgnString;
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
+    void onSonifierChange(MainComponent::SonifierMode nextSonifier);
 
     std::stack<Chess::Move> mUndoHistory;
 

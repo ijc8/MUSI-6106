@@ -77,7 +77,20 @@ MainComponent::MainComponent()
     };
 
     addAndMakeVisible(m_SonifierSelector);
-    m_SonifierSelector.onChange = [this]() { onSonifierChange(); };
+    m_SonifierSelector.onChange = [this]() 
+    { 
+        switch (m_SonifierSelector.getSelectedId())
+        {
+        case 1:
+            onSonifierChange(SonifierMode::Debug);
+            break;
+        case 2:
+            onSonifierChange(SonifierMode::Threats);
+            break;
+        default:
+            onSonifierChange(SonifierMode::Story);
+        }
+    };
     m_SonifierSelector.addItem("Debug Sonifier", 1);
     m_SonifierSelector.addItem("Threat Sonifier", 2);
     m_SonifierSelector.addItem("Story Sonifier", 3);
@@ -221,16 +234,16 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
     }
 }
 
-void MainComponent::onSonifierChange()
+void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMode)
 {
-    switch (m_SonifierSelector.getSelectedId())
+    switch (nextSonifierMode)
     {
-    case 1:
+    case Debug:
         m_StorySonifier.setEnabled(false);
         m_ThreatsSonifier.setEnabled(false);
         m_DebugSonifier.setEnabled(true);
         break;
-    case 2:
+    case Threats:
         m_StorySonifier.setEnabled(false);
         m_ThreatsSonifier.setEnabled(true);
         m_DebugSonifier.setEnabled(false);
