@@ -11,7 +11,7 @@ ThreatsSonifier::ThreatsSonifier (){
 ThreatsSonifier::~ThreatsSonifier() {
 }
 
-void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece)
+void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece)
 
 {
     pan = preySquare.rank + 1 * 0.1f;
@@ -40,24 +40,16 @@ void ThreatsSonifier::sonifyThreatee(Chess::Square const& preySquare, const std:
     inst->noteOn();
     inst->setADSRParameters(2,0,1,2);
     inst->setPan(pan);
-    m_mainProcessor.addInst(inst);
+    mMainProcessor.addInst(inst);
     oscillatorPtrs.push_back(inst);
 
 }
 
-void ThreatsSonifier::process(float **ppfOutBuffer, int iNumChannels, int iNumFrames) {
 
-    m_mainProcessor.process(ppfOutBuffer, iNumChannels, iNumFrames);
-}
-
-
-void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, double fsampleRate){
-
-    m_fSampleRate = static_cast<float>(fsampleRate);
-    m_mainProcessor.setSampleRate(static_cast<float>(fsampleRate));
-    m_mainProcessor.setGain(0.25);
-    m_mainProcessor.setADSRParameters(4,0,1,2);
-    m_fExpectedBlockSize = iExpectedBlockSize;
+void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
+{
+    SonifierBase::prepareToPlay(iExpectedBlockSize, fSampleRate);
+    mMainProcessor.setGain(0.25);
 
 };
 
@@ -75,12 +67,12 @@ Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
             it++;
         }
         else {
-            m_mainProcessor.removeInst(*it);
+            mMainProcessor.removeInst(*it);
             it = oscillatorPtrs.erase(it);
         }
     }
     for (const auto [preySquare, preyPiece] : gameState.getThreats() ) {
-        sonifyThreatee(preySquare, preyPiece);
+        sonifyThreats(preySquare, preyPiece);
     }
     return Error_t::kNoError;
 }

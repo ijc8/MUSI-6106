@@ -9,21 +9,13 @@ StorySonifier::~StorySonifier()
 {
 }
 
-void StorySonifier::process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
-{
-	mMainProcessor.process(ppfOutputBuffer, iNumChannels, iNumFrames);
-}
 
 void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 {
-	mSampleRate = fSampleRate;
-	mBlockSize = iExpectedBlockSize;
-
-	mMainProcessor.setSampleRate(mSampleRate);
+	SonifierBase::prepareToPlay(iExpectedBlockSize, fSampleRate);
 	mMainProcessor.setGain(1);
 
 	initializeMemberInstruments(fSampleRate);
-
 }
 
 void StorySonifier::releaseResources()
@@ -33,19 +25,6 @@ void StorySonifier::releaseResources()
 Error_t StorySonifier::onMove(Chess::Board& board)
 {
 	return Error_t();
-}
-
-void StorySonifier::setEnabled(bool shouldEnable)
-{
-	if (shouldEnable)
-		mMainProcessor.noteOn();
-	else
-		mMainProcessor.noteOff();
-}
-
-void StorySonifier::setGain(float fGain)
-{
-	mMainProcessor.setGain(fGain);
 }
 
 void StorySonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece)

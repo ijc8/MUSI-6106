@@ -4,22 +4,18 @@
 #include "MainProcessor.h"
 #include "GameState.h"
 #include "Util.h"
+#include "SonifierBase.h"
 
-
-class StorySonifier : public juce::ChangeListener, public juce::ActionListener
+class StorySonifier : public SonifierBase, public juce::ActionListener
 {
 public:
 	StorySonifier();
 	~StorySonifier();
 
-	void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames);
-	void prepareToPlay(int iExpectedBlockSize, float fSampleRate);
-	void releaseResources();
+	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
+	void releaseResources() override;
 
 	Error_t onMove(Chess::Board& board);
-
-	void setEnabled(bool shouldEnable);
-	void setGain(float fGain);
 
 private:
 
@@ -29,7 +25,6 @@ private:
 	void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 	void actionListenerCallback(const juce::String& message) override;
 
-	CMainProcessor mMainProcessor;
 	CSineWavetable mSine;
 	CSawWavetable mSaw;
 	CSqrWavetable mSquare;
@@ -77,7 +72,5 @@ private:
 
 	int mBoardChangeCounter = 0;
 	const float mBpm = 150;
-	float mSampleRate = 48000.0f;
-	float mBlockSize = 0.0f;
 
 };

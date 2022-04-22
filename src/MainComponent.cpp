@@ -227,18 +227,18 @@ void MainComponent::onSonifierChange()
     {
     case 1:
         m_StorySonifier.setEnabled(false);
-        m_ThreatsSonifier.disable();
-        m_DebugSonifier.enable();
+        m_ThreatsSonifier.setEnabled(false);
+        m_DebugSonifier.setEnabled(true);
         break;
     case 2:
         m_StorySonifier.setEnabled(false);
-        m_ThreatsSonifier.enable();
-        m_DebugSonifier.disable();
+        m_ThreatsSonifier.setEnabled(true);
+        m_DebugSonifier.setEnabled(false);
         break;
     default:
         m_StorySonifier.setEnabled(true);
-        m_ThreatsSonifier.disable();
-        m_DebugSonifier.disable();
+        m_ThreatsSonifier.setEnabled(false);
+        m_DebugSonifier.setEnabled(false);
     }
 }
 

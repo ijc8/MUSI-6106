@@ -9,51 +9,39 @@
 #include <vector>
 #include <list>
 #include <optional>
+#include "SonifierBase.h"
 
 
 using namespace Chess;
 
 
-class ThreatsSonifier : public juce::ChangeListener {
+class ThreatsSonifier : public SonifierBase 
+{
 public:
     ThreatsSonifier();
 
     virtual ~ThreatsSonifier();
 
-    void process(float **ppfOutBuffer, int iNumChannels, int iNumFrames);
+    void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
+    void releaseResources() override;
 
-    void prepareToPlay(int iExpectedBlockSize, double fSampleRate);
 
-    void releaseResources();
+protected:
 
-    Error_t onMove(Chess::GameState &gameState);
+    void sonifyThreats(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
+
+    Error_t onMove(Chess::GameState& gameState);
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
     {
         onMove(AppState::getInstance().getGame());
     }
 
-    void enable() { m_mainProcessor.noteOn(); };
-    void disable() { m_mainProcessor.noteOff(); };
-
-    void setGain(float fNewGain) { m_mainProcessor.setGain(fNewGain); };
-
-
-protected:
-
-    void sonifyThreatee(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
-
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
 
     CSineWavetable sine;
 
     CSawWavetable saw;
-
-    CMainProcessor m_mainProcessor;
-
-    float m_fSampleRate = 0;
-
-    int m_fExpectedBlockSize = 0;
 
     float pan;
 

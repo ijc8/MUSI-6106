@@ -24,23 +24,15 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     inst->setADSRParameters(2, 0, 1, 2);
     inst->noteOn();
     inst->setPan(pans[panIdx]);
-    m_mainProcessor.addInst(inst);
+    mMainProcessor.addInst(inst);
     oscillatorPtrs.push_back(inst);
 }
 
-void DebugSonifier::process(float **ppfOutBuffer, int iNumChannels, int iNumFrames) {
 
-    m_mainProcessor.process(ppfOutBuffer, iNumChannels, iNumFrames);
-}
-
-
-void DebugSonifier::prepareToPlay(int iExpectedBlockSize, double fsampleRate){
-
-    m_fSampleRate = static_cast<float>(fsampleRate);
-    m_mainProcessor.setSampleRate(static_cast<float>(fsampleRate));
-    m_mainProcessor.setGain(0.25);
-    m_mainProcessor.setADSRParameters(4,0,1,2);
-    m_fExpectedBlockSize = iExpectedBlockSize;
+void DebugSonifier::prepareToPlay(int iExpectedBlockSize, float fsampleRate)
+{
+    SonifierBase::prepareToPlay(iExpectedBlockSize, fsampleRate);
+    mMainProcessor.setGain(0.25);
 
 };
 
@@ -59,7 +51,7 @@ Error_t DebugSonifier::onMove(Chess::Board &board) {
             it++;
         }
         else {
-            m_mainProcessor.removeInst(*it);
+            mMainProcessor.removeInst(*it);
             it = oscillatorPtrs.erase(it);
         }
     }
