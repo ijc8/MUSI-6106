@@ -11,15 +11,29 @@ class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadca
 {
 
 public:
-
     BroadcastManager() {};
 
     void toggleStockfish(bool shouldTurnOn)
     {
         if (shouldTurnOn)
         {
-            if (std::filesystem::exists("../stockfish/stockfish_14.1_win_x64_avx2.exe"))
+            if (std::filesystem::exists("../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
                 mStockfish = std::make_unique<Stockfish>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+            } else {
+                // Allow user to tell us where their engine binary is.
+                // TODO: Remember their selected engine and allow them to change it later.
+                engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
+                    juce::File::getSpecialLocation(juce::File::userHomeDirectory));
+
+                auto chooserFlags = juce::FileBrowserComponent::openMode;
+
+                engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser& chooser) {
+                    juce::File file = chooser.getResult();
+                    if (file.exists()) {
+                        mStockfish = std::make_unique<Stockfish>(file.getFullPathName().toStdString());
+                    }
+                });
+            }
         }
         else
         {
@@ -94,6 +108,8 @@ public:
 private:
 
     std::unique_ptr<Stockfish> mStockfish;
+    std::unique_ptr<juce::FileChooser> engineChooser;
+
     Chess::Game& m_Game = AppState::getInstance().getGame();
     std::stack<Chess::Move> mUndoHistory;
 
