@@ -168,10 +168,10 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
     if (mNextSonifier)
     {
+        mNextSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
         if (mCurrentSonifier->isIdle())
         {
             mCurrentSonifier = mNextSonifier;
-            mCurrentSonifier->setEnabled(true);
             mNextSonifier = nullptr;
         }
     }
@@ -254,7 +254,9 @@ void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMod
     default:
         mNextSonifier = &m_StorySonifier;
     }
+    mNextSonifier->setEnabled(true);
     mCurrentSonifier->setEnabled(false);
+    mSonifierMode = nextSonifierMode;
 }
 
 void MainComponent::onPgnButtonClicked()

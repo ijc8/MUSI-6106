@@ -52,7 +52,10 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-    MainComponent::GameMode m_GameMode = MainComponent::GameMode::PVP;
+    GameMode m_GameMode = PVP;
+    SonifierMode mSonifierMode = Debug;
+    SonifierBase* mCurrentSonifier = &m_DebugSonifier;
+    SonifierBase* mNextSonifier = nullptr;
 
     BroadcastManager m_BroadcastManager;
     DebugSonifier m_DebugSonifier;
@@ -85,8 +88,6 @@ private:
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
     void onSonifierChange(MainComponent::SonifierMode nextSonifier);
-    SonifierBase* mCurrentSonifier = &m_DebugSonifier;
-    SonifierBase* mNextSonifier = nullptr;
     std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
