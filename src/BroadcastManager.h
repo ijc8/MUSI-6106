@@ -19,6 +19,8 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override {
         Game &game = AppState::getInstance().getGame();
         if (game.getTurn() == Color::Black) {
+            // Wait for engine to pick a move in a separate thread,
+            // to avoid blocking the UI.
             task = std::async(std::launch::async, [this, game]{
                 sendActionMessage(engine.analyze(game).bestMove.toString());
             });
@@ -92,12 +94,6 @@ public:
                 juce::Logger::outputDebugString("Legal Move");
                 m_Game.push(move);
                 sendChangeMessage();
-
-                if (engineManager) {
-                    // m_Game.push(mStockfish->analyze(m_Game).bestMove);
-                    // sendChangeMessage();
-                }
-
             }
             else
                 juce::Logger::outputDebugString("Illegal Move");
