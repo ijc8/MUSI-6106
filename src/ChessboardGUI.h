@@ -137,7 +137,8 @@ namespace GUI
 
 		void mouseDrag(const juce::MouseEvent& event) override
 		{
-			setCentrePosition(event.getOffsetFromDragStart() + event.getPosition());
+			juce::MouseEvent relEvent = event.getEventRelativeTo(getParentComponent());
+			setCentrePosition(relEvent.getPosition());
 		}
 
 		void mouseUp(const juce::MouseEvent& event) override
@@ -148,6 +149,7 @@ namespace GUI
 
 	private:
 
+		juce::Point<int> mClickOffset;
 		const Square* m_Square = nullptr;
 		juce::Image m_Image;
 		uint8_t m_Name;
