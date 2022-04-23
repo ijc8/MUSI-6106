@@ -3,8 +3,10 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 #include "GameState.h"
 
+
 namespace GUI
 {
+
 	class Square : public juce::Button, public juce::ActionBroadcaster
 	{
 	public:
@@ -144,12 +146,20 @@ namespace GUI
 		void mouseUp(const juce::MouseEvent& event) override
 		{
 			ImageButton::mouseUp(event);
+			for (juce::Component* component : getParentComponent()->getChildren())
+			{
+				if (component != this && component->getBoundsInParent().contains(event.getEventRelativeTo(getParentComponent()).getPosition()))
+				{
+					component->mouseDown(event);
+					component->mouseUp(event);
+				}
+			}
 			resized();
 		}
 
 	private:
 
-		juce::Point<int> mClickOffset;
+		bool mWasBeingDragged = false;
 		const Square* m_Square = nullptr;
 		juce::Image m_Image;
 		uint8_t m_Name;
