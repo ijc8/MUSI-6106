@@ -130,6 +130,22 @@ namespace GUI
 				setBounds(m_Square->getBounds());
 		}
 
+		void mouseDown(const juce::MouseEvent& event) override
+		{
+			ImageButton::mouseDown(event);
+		}
+
+		void mouseDrag(const juce::MouseEvent& event) override
+		{
+			setCentrePosition(event.getOffsetFromDragStart() + event.getPosition());
+		}
+
+		void mouseUp(const juce::MouseEvent& event) override
+		{
+			ImageButton::mouseUp(event);
+			resized();
+		}
+
 	private:
 
 		const Square* m_Square = nullptr;
@@ -377,7 +393,8 @@ namespace GUI
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
 
 		//Change this to point where your images relative to your working directory
-		const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getChildFile("chessImages");
+		//const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getChildFile("chessImages");
+		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
 
 		Piece m_AllPieces[32]{
 			Piece { pathToImages.getChildFile("W_Rook.png"), 'R', "a1"},
