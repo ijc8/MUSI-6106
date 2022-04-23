@@ -3,7 +3,7 @@
 
 // TODO: Put this in a test.
 // int main() {
-//     Stockfish engine;
+//     ChessEngine engine;
 //     std::cout << engine.getMove().toString() << std::endl;
 //     std::cout << engine.getMove(100).toString() << std::endl;
 //     return 0;
@@ -12,7 +12,7 @@
 using namespace Chess;
 
 int main(int argc, const char **argv) {
-    Stockfish engine("/usr/games/stockfish");
+    Chess::Engine engine("/usr/games/stockfish");
     Game game(argc > 1 ? argv[1] : Game::initialFen);
 
     auto printBoard = [&game](){
@@ -52,7 +52,7 @@ int main(int argc, const char **argv) {
         }
         printBoard();
         std::cout << "Engine is deciding on a move..." << std::endl;
-        Analysis analysis = engine.analyze(game);
+        Chess::Analysis analysis = engine.analyze(game);
         std::cout << "< " << analysis.bestMove.toString() << " - evaluation (centipawns): " << analysis.score << std::endl;
         assert(game.isLegal(analysis.bestMove));
         game.push(analysis.bestMove);

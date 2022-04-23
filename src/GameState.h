@@ -162,9 +162,9 @@ namespace Chess {
     class Game: public GameState {
     public:
         using GameState::GameState;
-        bool hasNoHistory() const;
         void push(Move move);
-        Move pop();
+        std::optional<Move> peek() const;
+        std::optional<Move> pop();
 
     private:
         std::stack<std::tuple<Move, GameState>> history;

@@ -29,19 +29,20 @@ private:
     FILE *childStdin, *childStdout;
 };
 
+namespace Chess {
+    struct Analysis {
+        Chess::Move bestMove;
+        double score;
+    };
 
-struct Analysis {
-    Chess::Move bestMove;
-    double score;
-};
+    class Engine {
+    public:
+        Engine(const std::string &path);
+        Analysis analyze(const Chess::GameState &state, int time=1000);
 
-class Stockfish {
-public:
-    Stockfish(const std::string &path);
-    Analysis analyze(const Chess::GameState &state, int time=1000);
-
-private:
-    Subprocess process;
-};
+    private:
+        Subprocess process;
+    };
+}
 
 #endif
