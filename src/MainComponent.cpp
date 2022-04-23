@@ -94,7 +94,8 @@ MainComponent::MainComponent()
     m_SonifierSelector.addItem("Debug Sonifier", 1);
     m_SonifierSelector.addItem("Threat Sonifier", 2);
     m_SonifierSelector.addItem("Story Sonifier", 3);
-    m_SonifierSelector.setSelectedId(1);
+    m_SonifierSelector.setSelectedId(1, juce::dontSendNotification);
+    mCurrentSonifier->setEnabled(true);
 
     addAndMakeVisible(m_GameModeSelector);
     m_GameModeSelector.onChange = [this]()
@@ -254,8 +255,8 @@ void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMod
     default:
         mNextSonifier = &m_StorySonifier;
     }
-    mNextSonifier->setEnabled(true);
     mCurrentSonifier->setEnabled(false);
+    mNextSonifier->setEnabled(true);
     mSonifierMode = nextSonifierMode;
 }
 
