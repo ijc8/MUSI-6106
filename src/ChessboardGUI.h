@@ -100,7 +100,7 @@ namespace GUI
 		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
 		{
 			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
-			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::yellow);
+			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite);
 			setSize(80, 80);
 		};
 		~Piece() = default;
