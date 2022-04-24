@@ -132,6 +132,11 @@ namespace GUI
 				setBounds(m_Square->getBounds());
 		}
 
+		void setSelected(bool isSelected)
+		{
+			mIsSelected = isSelected;
+		}
+
 		void mouseDown(const juce::MouseEvent& event) override
 		{
 			ImageButton::mouseDown(event);
@@ -139,26 +144,40 @@ namespace GUI
 
 		void mouseDrag(const juce::MouseEvent& event) override
 		{
+			if (!mIsSelected)
+			{
+				triggerClick();
+			}
 			juce::MouseEvent relEvent = event.getEventRelativeTo(getParentComponent());
 			setCentrePosition(relEvent.getPosition());
+			mWasBeingDragged = true;
 		}
 
 		void mouseUp(const juce::MouseEvent& event) override
 		{
-			ImageButton::mouseUp(event);
-			for (juce::Component* component : getParentComponent()->getChildren())
+
+			if (mWasBeingDragged)
 			{
-				if (component != this && component->getBoundsInParent().contains(event.getEventRelativeTo(getParentComponent()).getPosition()))
+				for (juce::Component* component : getParentComponent()->getChildren())
 				{
-					component->mouseDown(event);
-					component->mouseUp(event);
+					if (component != this && component->getBoundsInParent().contains(event.getEventRelativeTo(getParentComponent()).getPosition()))
+					{
+						component->mouseDown(event);
+						component->mouseUp(event);
+					}
 				}
+				mWasBeingDragged = false;
+			}
+			else
+			{
+				ImageButton::mouseUp(event);
 			}
 			resized();
 		}
 
 	private:
 
+		bool mIsSelected = false;
 		bool mWasBeingDragged = false;
 		const Square* m_Square = nullptr;
 		juce::Image m_Image;
@@ -447,12 +466,14 @@ namespace GUI
 		{
 			if (m_SelectedPiece)
 			{
+				m_SelectedPiece->setSelected(false);
 				if (m_SelectedPiece->getId() != piece.getId())
 					sendActionMessage("Deselect " + m_SelectedPiece->getId());
 			}
 			m_SelectedPiece = &piece;
-			piece.setToggleState(true, juce::dontSendNotification);
-			highlightPossibleMoves(piece);
+			m_SelectedPiece->setSelected(true);
+			m_SelectedPiece->setToggleState(true, juce::dontSendNotification);
+			highlightPossibleMoves(m_SelectedPiece);
 			sendActionMessage("Select " + m_SelectedPiece->getId());
 			onStateChange(state::kPlacing);
 		}
@@ -475,15 +496,19 @@ namespace GUI
 			return findSquare(piece.getSquareId());
 		}
 
-		void highlightPossibleMoves(const Piece& piece)
+		void highlightPossibleMoves(const Piece* piece)
 		{
-			Chess::Game game = AppState::getInstance().getGame();
-			std::unordered_set moves = game.generateMoves(Chess::Square(piece.getSquareId().toStdString()));
-			for (const Chess::Move& move : moves)
+			if (piece)
 			{
-				Square* square = findSquare(move.dst.toString());
-				square->isCandidate(true);
+				Chess::Game game = AppState::getInstance().getGame();
+				std::unordered_set moves = game.generateMoves(Chess::Square(piece->getSquareId().toStdString()));
+				for (const Chess::Move& move : moves)
+				{
+					Square* square = findSquare(move.dst.toString());
+					square->isCandidate(true);
+				}
 			}
+
 		}
 
 		void resetPossibleMoves()
@@ -506,6 +531,7 @@ namespace GUI
 				if (m_SelectedPiece)
 				{
 					m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
+					m_SelectedPiece->setSelected(false);
 					sendActionMessage("Deselect " + m_SelectedPiece->getId());
 				}
 				m_SelectedPiece = nullptr;
