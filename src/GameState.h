@@ -141,7 +141,6 @@ namespace Chess {
         int getFullmoveNumber() const { return fullmoveNumber; }
 
         std::unordered_set<Move> generateMoves(Square src) const;
-        std::unordered_set<Move> generateLegalMoves() const;
         bool isInCheck(Color color) const;
         std::optional<std::optional<Color>> getOutcome() const;
         bool wouldBeInCheck(Move move) const;
@@ -155,6 +154,8 @@ namespace Chess {
         void print();
 
     protected:
+        std::unordered_set<Move> generatePotentialMoves(Square src) const;
+
         Color turn;
         std::optional<Square> enPassant;
         CastleRights castleRights;

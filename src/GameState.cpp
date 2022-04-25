@@ -157,8 +157,9 @@ void GameState::setFen(const std::string &fen) {
     enPassant = ep == "-" ? std::nullopt : std::make_optional(Square(ep));
 }
 
-std::unordered_set<Move> GameState::generateMoves(Square src) const {
+std::unordered_set<Move> GameState::generatePotentialMoves(Square src) const {
     // This generates all moves possible from a given square - including moves that may not be legal due to leaving the king in check.
+    // To generate only legal moves, call `generateMoves()` instead.
     // TODO: Split this function up more.
     std::unordered_set<Move> moves;
     if (!getPieceAt(src)) {
@@ -306,7 +307,7 @@ bool GameState::isInCheck(Color color) const {
         // Ignore our own pieces.
         if (piece.color == color) continue;
         // If an opposing piece could capture our king, we're in check.
-        for (auto move : copy.generateMoves(square)) {
+        for (auto move : copy.generatePotentialMoves(square)) {
             if (move.dst == kingPos) {
                 return true;
             }
@@ -321,14 +322,12 @@ bool GameState::wouldBeInCheck(Move move) const {
     return copy.isInCheck(turn);
 }
 
-std::unordered_set<Chess::Move> GameState::generateLegalMoves() const {
+std::unordered_set<Chess::Move> GameState::generateMoves(Square src) const {
     std::unordered_set<Chess::Move> legalMoves;
 
-    for (const auto [square, piece] : pieceMap) {
-        for (auto move : generateMoves(square)) {
-            if (!wouldBeInCheck(move)) {
-                legalMoves.emplace(move);
-            }
+    for (auto move : generatePotentialMoves(src)) {
+        if (!wouldBeInCheck(move)) {
+            legalMoves.emplace(move);
         }
     }
 
@@ -341,25 +340,26 @@ std::optional<std::optional<Color>> GameState::getOutcome() const {
     // Otherwise, we return the winner: White, Black, or (nested) nullopt for a stalemate.
 
     // First, see if we have any legal moves. (If so, game isn't over.)
-    std::unordered_set<Chess::Move> legalMoves = generateLegalMoves();
-    if (legalMoves.empty()) {
-        // No legal moves - game is definitely over; now we just need to see if someone won.
-        if (isInCheck(turn)) {
-            // Checkmate
-            return turn == Color::White ? Chess::Color::Black : Color::White;
-        } else {
-            // Stalemate
-            return std::make_optional<std::optional<Color>>(std::nullopt);
+    for (const auto [square, _] : pieceMap) {
+        if (!generateMoves(square).empty()) {
+            // Ongoing game.
+            return std::nullopt;
         }
+    }
+
+    // No legal moves - game is definitely over; now we just need to see if someone won.
+    if (isInCheck(turn)) {
+        // Checkmate.
+        return turn == Color::White ? Chess::Color::Black : Color::White;
     } else {
-        // Game not yet over
-        return std::nullopt;
+        // Stalemate// Ongoing game.
+        return std::make_optional<std::optional<Color>>(std::nullopt);
     }
 }
 
 bool GameState::isLegal(Move move) const {
     // Check if this is a valid motion for the piece at the source (ignoring check).
-    auto moves = generateMoves(move.src);
+    auto moves = generatePotentialMoves(move.src);
     if (moves.find(move) == moves.end()) {
         return false;
     }
@@ -488,7 +488,7 @@ std::unordered_map<Square, std::optional<Piece>> GameState::getThreats() {
         // Iterating over the pieces of the same color and checking for legal moves
         if (piece.color != copy.turn) continue;
 
-        for (auto move : copy.generateMoves(square)) {
+        for (auto move : copy.generatePotentialMoves(square)) {
             if (copy.getPieceAt(move.dst).has_value()) {
                 threats[move.dst] = copy.getPieceAt(move.dst);
             }
@@ -499,8 +499,6 @@ std::unordered_map<Square, std::optional<Piece>> GameState::getThreats() {
 }
 
 std::unordered_map<Square, std::optional<Piece>> GameState::getAttackers() {
-
-
     Chess::Color color = getTurn();
     auto pieceMap = getPieceMap();
     std::unordered_map<Square, std::optional<Piece>> attackers;
@@ -509,7 +507,7 @@ std::unordered_map<Square, std::optional<Piece>> GameState::getAttackers() {
         // Iterating over the pieces of the same color and checking for legal moves
         if (piece.color != color) continue;
 
-        for (auto move : generateMoves(square)) {
+        for (auto move : generatePotentialMoves(square)) {
             if (getPieceAt(move.dst).has_value()) {
                 attackers[square] = piece;
             }
