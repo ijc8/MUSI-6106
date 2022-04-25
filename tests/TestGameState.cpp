@@ -72,6 +72,10 @@ TEST_CASE("castling works", "[castling]") {
     REQUIRE(game.getPieceAt(Square("g1")) == Piece('K'));
     REQUIRE(!game.getPieceAt(Square("e1")));
     REQUIRE(!game.getPieceAt(Square("h1")));
+    // Real scenario from lichess game which previously triggered a bug: alternate castling notation.
+    game.setFen("rn1qkb1r/pp2pppp/2p2n2/3p4/3P2b1/5NP1/PPP1PPBP/RNBQK2R w KQkq - 0 1");
+    game.execute(Move("e1h1")); // Synonymous with `e1g1`.
+    REQUIRE(game.getPieceAt(Square("g1")) == Piece('K'));
 }
 
 TEST_CASE("AppState singleton provides access to game", "[singleton]") {

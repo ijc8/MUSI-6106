@@ -345,22 +345,25 @@ void GameState::execute(Move move) {
     Piece piece = getPieceAt(move.src).value();
     std::optional<Piece> capture = getPieceAt(move.dst);
     setPieceAt(move.src, std::nullopt);
-    if (move.promotion.has_value()) {
-        setPieceAt(move.dst, Piece(move.promotion.value(), piece.color));
-    } else {
-        setPieceAt(move.dst, piece);
-    }
 
     // Handle castling.
     if (piece.type == Piece::Type::King && abs(move.src.file - move.dst.file) > 1) {
-        // We represent castling by the king's move to the rook's square.
-        // We already moved the king, but we still need to move the rook to the other side of the king.
+        // We represent castling by the king's move to its final square.
+        // (We also support the alternate notation of the king moving to the rook's square.)
         if (move.dst.file > move.src.file) {
             setPieceAt(Square(move.dst.rank, 5), Piece(Piece::Type::Rook, piece.color));
+            setPieceAt(Square(move.dst.rank, 6), Piece(Piece::Type::King, piece.color));
             setPieceAt(Square(move.dst.rank, 7), std::nullopt);
         } else {
             setPieceAt(Square(move.dst.rank, 3), Piece(Piece::Type::Rook, piece.color));
+            setPieceAt(Square(move.dst.rank, 2), Piece(Piece::Type::King, piece.color));
             setPieceAt(Square(move.dst.rank, 0), std::nullopt);
+        }
+    } else {
+        if (move.promotion.has_value()) {
+            setPieceAt(move.dst, Piece(move.promotion.value(), piece.color));
+        } else {
+            setPieceAt(move.dst, piece);
         }
     }
 
