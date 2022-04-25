@@ -293,12 +293,18 @@ std::unordered_set<Move> GameState::generateMoves(Square src) const {
     return moves;
 }
 
-bool GameState::isCheck(Color color) const {
-    Square kingPos = *getPieces(Piece(Piece::Type::King, color)).begin();
+bool GameState::isInCheck(Color color) const {
+    GameState copy(*this);
+    if (color == turn) {
+        // Flip the turn so our opponent's pieces generate valid moves.
+        copy.turn = turn == Color::White ? Color::Black : Color::White;
+    }
+    Square kingPos = *copy.getPieces(Piece(Piece::Type::King, color)).begin();
     for (const auto [square, piece] : pieceMap) {
-        // If an opposing piece could capture our king, we're in check.
+        // Ignore our own pieces.
         if (piece.color == color) continue;
-        for (auto move : generateMoves(square)) {
+        // If an opposing piece could capture our king, we're in check.
+        for (auto move : copy.generateMoves(square)) {
             if (move.dst == kingPos) {
                 return true;
             }
@@ -310,46 +316,38 @@ bool GameState::isCheck(Color color) const {
 bool GameState::wouldBeInCheck(Move move) const {
     GameState copy(*this);
     copy.execute(move);
-    return copy.isCheck(turn);
+    return copy.isInCheck(turn);
 }
 
-std::vector<Chess::Move> GameState::generateLegalMoves() const {
+std::unordered_set<Chess::Move> GameState::generateLegalMoves() const {
+    std::unordered_set<Chess::Move> legalMoves;
 
-    std::vector<Chess::Move> legalMoves;
-    {
-        for (const auto [square, piece] : pieceMap) {
-            // Iterating over the pieces of the same color and checking for legal moves
-            if (piece.color != turn) continue;
-
-            for (auto move: generateMoves(square)) {
-                if (!wouldBeInCheck(move))
-                    legalMoves.push_back(move);
+    for (const auto [square, piece] : pieceMap) {
+        for (auto move : generateMoves(square)) {
+            if (!wouldBeInCheck(move)) {
+                legalMoves.emplace(move);
             }
         }
     }
+
     return legalMoves;
 }
 
 
 std::optional<std::optional<Color>> GameState::getOutcome() const {
-    // I swear this nested use of `optional` is reasonable!
     // We return nullopt if the game is not yet over (no outcome).
     // Otherwise, we return the winner: White, Black, or (nested) nullopt for a stalemate.
-    // TODO:
-    // If we're in check, see if there's a way to get out. (If not, our opponent wins.)
-    // If we're not in check, see if there's any move that doesn't put us in check. (If not, it's stalemate.)
 
-
-    // Check for checkmate if king is in check
-    std::vector<Chess::Move> legalMoves = generateLegalMoves();
-
+    // First, see if we have any legal moves. (If so, game isn't over.)
+    std::unordered_set<Chess::Move> legalMoves = generateLegalMoves();
     if (legalMoves.empty()) {
-        if (isCheck(turn)) {
+        // No legal moves - game is definitely over; now we just need to see if someone won.
+        if (isInCheck(turn)) {
             // Checkmate
             return turn == Color::White ? Chess::Color::Black : Color::White;
         } else {
             // Stalemate
-                return std::make_optional<std::optional<Color>>(std::nullopt);
+            return std::make_optional<std::optional<Color>>(std::nullopt);
         }
     } else {
         // Game not yet over
