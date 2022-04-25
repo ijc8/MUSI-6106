@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 // CMake builds don't use an AppConfig.h, so it's safe to include juce module headers
 // directly. If you need to remain compatible with Projucer-generated builds, and
 // have called `juce_generate_juce_header(<thisTarget>)` in your CMakeLists.txt,
@@ -50,17 +52,23 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
-    //==============================================================================
-    // Your private member variables go here...
     GameMode m_GameMode = PVP;
     SonifierMode mSonifierMode = Debug;
-    Sonifier* mCurrentSonifier = &m_DebugSonifier;
-    Sonifier* mNextSonifier = nullptr;
+    std::unique_ptr<Sonifier> mCurrentSonifier;
+    std::unique_ptr<Sonifier> mNextSonifier = nullptr;
+
+    struct SonifierType {
+        std::string name;
+        std::function<std::unique_ptr<Sonifier>()> create;
+    };
+
+    std::vector<SonifierType> sonifiers = {
+        {"Debug", [](){ return std::make_unique<DebugSonifier>(); }},
+        {"Threat", [](){ return std::make_unique<ThreatsSonifier>(); }},
+        {"Story", [](){ return std::make_unique<StorySonifier>(); }},
+    };
 
     BroadcastManager m_BroadcastManager;
-    DebugSonifier m_DebugSonifier;
-    ThreatsSonifier m_ThreatsSonifier;
-    StorySonifier m_StorySonifier;
     GUI::ChessBoard m_ChessboardGUI;
 
 

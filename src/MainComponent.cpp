@@ -10,11 +10,9 @@ MainComponent::MainComponent()
     addAndMakeVisible(m_ChessboardGUI);
     Chess::Game& game = AppState::getInstance().getGame();
     m_ChessboardGUI.addActionListener(&m_BroadcastManager);
-    m_BroadcastManager.addActionListener(&m_StorySonifier);
+    // TODO: Does this need to be part of the sonifier interface?
+    // m_BroadcastManager.addActionListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
-    m_BroadcastManager.addChangeListener(&m_DebugSonifier);
-    m_BroadcastManager.addChangeListener(&m_ThreatsSonifier);
-    m_BroadcastManager.addChangeListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(this);
 
     // text buttons
@@ -142,9 +140,7 @@ MainComponent::MainComponent()
     m_VolumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     m_VolumeSlider.onValueChange = [this]() {
-        m_DebugSonifier.setGain(m_VolumeSlider.getValue());
-        m_ThreatsSonifier.setGain(m_VolumeSlider.getValue());
-        m_StorySonifier.setGain(m_VolumeSlider.getValue());
+        mCurrentSonifier->setGain(m_VolumeSlider.getValue());
     };
     m_VolumeSlider.setValue(0.25);
 }
@@ -159,9 +155,10 @@ MainComponent::~MainComponent()
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    m_DebugSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
-    m_ThreatsSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
-    m_StorySonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    // TODO: Do this same stuff when we change sonifiers.
+    mCurrentSonifier = sonifiers[0].create();
+    m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
+    mCurrentSonifier->prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
@@ -172,8 +169,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
         mNextSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
         if (mCurrentSonifier->isIdle())
         {
-            mCurrentSonifier = mNextSonifier;
-            mNextSonifier = nullptr;
+            mCurrentSonifier = std::move(mNextSonifier);
         }
     }
 }
@@ -237,17 +233,7 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
 
 void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMode)
 {
-    switch (nextSonifierMode)
-    {
-    case Debug:
-        mNextSonifier = &m_DebugSonifier;
-        break;
-    case Threats:
-        mNextSonifier = &m_ThreatsSonifier;
-        break;
-    default:
-        mNextSonifier = &m_StorySonifier;
-    }
+    mNextSonifier = sonifiers[nextSonifierMode].create();
     mCurrentSonifier->setEnabled(false);
     mNextSonifier->setEnabled(true);
     mSonifierMode = nextSonifierMode;
