@@ -8,20 +8,7 @@ int main(int argc, const char **argv) {
     Game game(argc > 1 ? argv[1] : Game::initialFen);
     bool playing = true;
     while (playing) {
-        for (int rank = 7; rank >= 0; rank--) {
-            std::cout << "12345678"[rank] << "|";
-            for (int file = 0; file < 8; file++) {
-                std::optional<Piece> p = game.getPieceAt(Square(rank, file));
-                std::cout << (p.has_value() ? p->toChar() : ' ') << "|";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "  ";
-        for (int file = 0; file < 8; file++) {
-            std::cout << (char)('a' + file) << " ";
-        }
-        std::cout << std::endl;
-        std::cout << "FEN: " << game.getFen() << std::endl;
+        game.print();
         while (true) {
             std::string s1, s2;
             std::cout << "> ";

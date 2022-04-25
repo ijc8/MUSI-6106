@@ -15,26 +15,9 @@ int main(int argc, const char **argv) {
     Chess::Engine engine("/usr/games/stockfish");
     Game game(argc > 1 ? argv[1] : Game::initialFen);
 
-    auto printBoard = [&game](){
-        for (int rank = 7; rank >= 0; rank--) {
-            std::cout << "12345678"[rank] << "|";
-            for (int file = 0; file < 8; file++) {
-                std::optional<Piece> p = game.getPieceAt(Square(rank, file));
-                std::cout << (p.has_value() ? p->toChar() : ' ') << "|";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "  ";
-        for (int file = 0; file < 8; file++) {
-            std::cout << (char)('a' + file) << " ";
-        }
-        std::cout << std::endl;
-        std::cout << "FEN: " << game.getFen() << std::endl;
-    };
-
     bool playing = true;
     while (playing) {
-        printBoard();
+        game.print();
         while (true) {
             std::string moveString;
             std::cout << "> ";
@@ -50,7 +33,7 @@ int main(int argc, const char **argv) {
                 std::cout << "Illegal move!" << std::endl;
             }
         }
-        printBoard();
+        game.print();
         std::cout << "Engine is deciding on a move..." << std::endl;
         Chess::Analysis analysis = engine.analyze(game);
         std::cout << "< " << analysis.bestMove.toString() << " - evaluation (centipawns): " << analysis.score << std::endl;

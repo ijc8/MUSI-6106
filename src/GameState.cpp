@@ -2,6 +2,7 @@
 #include <array>
 #include <cassert>
 #include <cctype>
+#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -400,6 +401,23 @@ void GameState::execute(Move move) {
     }
 
     // TODO: Update move clocks.
+}
+
+void GameState::print() {
+    for (int rank = 7; rank >= 0; rank--) {
+        std::cout << "12345678"[rank] << "|";
+        for (int file = 0; file < 8; file++) {
+            std::optional<Piece> p = getPieceAt(Square(rank, file));
+            std::cout << (p.has_value() ? p->toChar() : ' ') << "|";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "  ";
+    for (int file = 0; file < 8; file++) {
+        std::cout << (char)('a' + file) << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "FEN: " << getFen() << std::endl;
 }
 
 void Game::push(Move move) {

@@ -150,6 +150,8 @@ namespace Chess {
         std::unordered_map<Square, std::optional<Piece>> getAttackers();
 
         void execute(Move move);
+        // Useful for debugging or console-based applications.
+        void print();
 
     protected:
         Color turn;
