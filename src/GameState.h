@@ -143,6 +143,7 @@ namespace Chess {
         std::unordered_set<Move> generateMoves(Square src) const;
         bool isCheck(Color color) const;
         std::optional<std::optional<Color>> getOutcome() const;
+        std::vector<Chess::Move> generateLegalMoves() const;
         bool wouldBeInCheck(Move move) const;
         bool isLegal(Move move) const;
 

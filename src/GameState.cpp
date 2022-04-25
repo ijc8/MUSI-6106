@@ -313,6 +313,24 @@ bool GameState::wouldBeInCheck(Move move) const {
     return copy.isCheck(turn);
 }
 
+std::vector<Chess::Move> GameState::generateLegalMoves() const {
+
+    std::vector<Chess::Move> legalMoves;
+    {
+        for (const auto [square, piece] : pieceMap) {
+            // Iterating over the pieces of the same color and checking for legal moves
+            if (piece.color != turn) continue;
+
+            for (auto move: generateMoves(square)) {
+                if (!wouldBeInCheck(move))
+                    legalMoves.push_back(move);
+            }
+        }
+    }
+    return legalMoves;
+}
+
+
 std::optional<std::optional<Color>> GameState::getOutcome() const {
     // I swear this nested use of `optional` is reasonable!
     // We return nullopt if the game is not yet over (no outcome).
@@ -323,46 +341,20 @@ std::optional<std::optional<Color>> GameState::getOutcome() const {
 
 
     // Check for checkmate if king is in check
-    if (this->isCheck(this->getTurn()))
-    {
-        int legalMoveFlag = 0;
-        for (const auto [square, piece] : pieceMap) {
-            // Iterating over the pieces of the same color and checking for legal moves
-            if (piece.color != this->turn) continue;
+    std::vector<Chess::Move> legalMoves = generateLegalMoves();
 
-            for (auto move : this->generateMoves(square)) {
-                if(isLegal(move))
-                    legalMoveFlag++;
-                }
-            if(legalMoveFlag == 0)
-            {
-                return this->turn == Color::White? Chess::Color::Black : Color::White;
-            }
+    if (legalMoves.empty()) {
+        if (isCheck(turn)) {
+            // Checkmate
+            return turn == Color::White ? Chess::Color::Black : Color::White;
+        } else {
+            // Stalemate
+                return std::make_optional<std::optional<Color>>(std::nullopt);
         }
+    } else {
+        // Game not yet over
+        return std::nullopt;
     }
-
-//    Check for stalemate
-    else
-    {
-        int legalMoveFlag = 0;
-        for (const auto [square, piece] : pieceMap) {
-            // Iterating over the pieces of the same color and checking for legal moves
-            if (piece.color != this->turn) continue;
-
-            for (auto move : this->generateMoves(square)) {
-                if(wouldBeInCheck(move))
-                    continue;
-                else
-                    legalMoveFlag++;
-            }
-            if(legalMoveFlag == 0)
-            {
-                return std::nullopt_t<std::nullopt>;
-            }
-        }
-    }
-
-    return std::nullopt;
 }
 
 bool GameState::isLegal(Move move) const {

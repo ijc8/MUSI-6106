@@ -84,3 +84,28 @@ TEST_CASE("AppState singleton provides access to game", "[singleton]") {
     REQUIRE(&state == &state2);
     REQUIRE(state2.getGame().getPieceAt(Square("h4")) == Piece('Q'));
 }
+
+TEST_CASE("Test Checkmate", "[outcomes]") {
+
+    GameState gameState;
+    gameState.setFen("r2q1k1r/ppp1bQ2/2npBp1p/4pPp1/4P3/3P3P/PPP3P1/R1B2RK1 b - - 3 15");
+    std::optional<std::optional<Color>> color = gameState.getOutcome();
+    REQUIRE(color == Color::White);
+}
+
+TEST_CASE("Test Stalemate", "[outcomes]") {
+
+    GameState gameState;
+    gameState.setFen("k7/P7/1Q6/3K4/8/8/8/8 b - - 0 1");
+    std::optional<std::optional<Color>> color = gameState.getOutcome();
+    REQUIRE(color == std::make_optional<std::optional<Color>>(std::nullopt));
+}
+
+
+TEST_CASE("Test Neither", "[outcomes]") {
+
+    GameState gameState;
+    gameState.setFen("r2q1k1r/ppp1bQ2/2npBp1p/4pPp1/4P3/3P3P/PPP3P1/R1B2RK1 b - - 3 15");
+    std::optional<std::optional<Color>> color = gameState.getOutcome();
+    REQUIRE(color == std::nullopt);
+}
