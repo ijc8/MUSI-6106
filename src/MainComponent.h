@@ -54,8 +54,8 @@ private:
     // Your private member variables go here...
     GameMode m_GameMode = PVP;
     SonifierMode mSonifierMode = Debug;
-    SonifierBase* mCurrentSonifier = &m_DebugSonifier;
-    SonifierBase* mNextSonifier = nullptr;
+    Sonifier* mCurrentSonifier = &m_DebugSonifier;
+    Sonifier* mNextSonifier = nullptr;
 
     BroadcastManager m_BroadcastManager;
     DebugSonifier m_DebugSonifier;

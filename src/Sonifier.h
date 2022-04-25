@@ -5,11 +5,11 @@
 #include "GameState.h"
 #include "Util.h"
 
-class SonifierBase : public juce::ChangeListener
+class Sonifier : public juce::ChangeListener
 {
 public:
-	SonifierBase() {};
-	~SonifierBase() {};
+	Sonifier() {};
+	~Sonifier() {};
 
 	virtual void prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 	{

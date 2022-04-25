@@ -8,10 +8,10 @@
 #include "MainProcessor.h"
 #include <vector>
 #include <list>
-#include "SonifierBase.h"
+#include "Sonifier.h"
 
 
-class DebugSonifier : public SonifierBase {
+class DebugSonifier : public Sonifier {
 public:
         DebugSonifier();
 

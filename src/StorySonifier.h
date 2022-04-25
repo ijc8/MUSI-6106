@@ -4,9 +4,9 @@
 #include "MainProcessor.h"
 #include "GameState.h"
 #include "Util.h"
-#include "SonifierBase.h"
+#include "Sonifier.h"
 
-class StorySonifier : public SonifierBase, public juce::ActionListener
+class StorySonifier : public Sonifier, public juce::ActionListener
 {
 public:
 	StorySonifier();

@@ -83,7 +83,6 @@ add_library(Common OBJECT src/GameState.cpp src/Util.cpp)
 
 target_sources(MusicalChess
     PRIVATE
-        src/AtomicRingBuffer.h
         src/Main.cpp
         src/MainComponent.cpp
         src/SoundProcessor.cpp
@@ -92,15 +91,11 @@ target_sources(MusicalChess
 	    src/DebugSonifier.cpp
 	    src/ThreatsSonifier.cpp
         src/EngineBridge.cpp
-        src/StorySonifier.cpp
-        src/StorySonifier.h
-        src/SonifierBase.h
-        src/Util.h)
+        src/StorySonifier.cpp)
 
 target_sources(Tests
     PRIVATE
         src/MainProcessor.cpp
-        src/Wavetable.h
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         tests/TestGameState.cpp
@@ -135,17 +130,8 @@ target_sources(SoundTests
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp
-        src/SoundProcessor.h
-        src/Wavetable.h
-        src/ErrorDef.h
-        src/Scheduler.h
-        src/MainProcessor.h
-	src/DebugSonifier.h
-	src/DebugSonifier.cpp
-	src/GameState.h
-	src/ThreatsSonifier.h
-	src/ThreatsSonifier.cpp
-        tests/soundTests/MainComponent.h
+        src/DebugSonifier.cpp
+	    src/ThreatsSonifier.cpp
         tests/soundTests/MainComponent.cpp
         tests/soundTests/Main.cpp)
 

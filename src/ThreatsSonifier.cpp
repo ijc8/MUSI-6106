@@ -48,7 +48,7 @@ void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::
 
 void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 {
-    SonifierBase::prepareToPlay(iExpectedBlockSize, fSampleRate);
+    Sonifier::prepareToPlay(iExpectedBlockSize, fSampleRate);
     mMainProcessor.setGain(0.25);
 
 };

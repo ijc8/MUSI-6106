@@ -31,7 +31,7 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
 
 void DebugSonifier::prepareToPlay(int iExpectedBlockSize, float fsampleRate)
 {
-    SonifierBase::prepareToPlay(iExpectedBlockSize, fsampleRate);
+    Sonifier::prepareToPlay(iExpectedBlockSize, fsampleRate);
     mMainProcessor.setGain(0.25);
 
 };

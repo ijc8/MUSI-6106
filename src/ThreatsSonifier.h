@@ -9,13 +9,13 @@
 #include <vector>
 #include <list>
 #include <optional>
-#include "SonifierBase.h"
+#include "Sonifier.h"
 
 
 using namespace Chess;
 
 
-class ThreatsSonifier : public SonifierBase 
+class ThreatsSonifier : public Sonifier 
 {
 public:
     ThreatsSonifier();
