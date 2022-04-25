@@ -13,7 +13,6 @@ public:
 	~StorySonifier();
 
 	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
-	void releaseResources() override;
 
 	Error_t onMove(Chess::Board& board);
 

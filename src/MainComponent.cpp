@@ -178,13 +178,6 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     }
 }
 
-void MainComponent::releaseResources()
-{
-    m_DebugSonifier.releaseResources();
-    m_ThreatsSonifier.releaseResources();
-    m_StorySonifier.releaseResources();
-}
-
 //==============================================================================
 void MainComponent::paint(juce::Graphics& g)
 {

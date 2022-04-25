@@ -19,8 +19,6 @@ public:
 
         void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
-        void releaseResources() override;
-
 protected:
 
     void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);

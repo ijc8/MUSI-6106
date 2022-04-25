@@ -23,8 +23,6 @@ public:
     virtual ~ThreatsSonifier();
 
     void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
-    void releaseResources() override;
-
 
 protected:
 

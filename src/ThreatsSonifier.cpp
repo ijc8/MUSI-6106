@@ -53,12 +53,6 @@ void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 
 };
 
-
-void ThreatsSonifier::releaseResources(){
-
-};
-
-
 Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
     auto it = oscillatorPtrs.begin();
     while (it != oscillatorPtrs.end()){

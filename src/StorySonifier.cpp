@@ -18,10 +18,6 @@ void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 	initializeMemberInstruments(fSampleRate);
 }
 
-void StorySonifier::releaseResources()
-{
-}
-
 Error_t StorySonifier::onMove(Chess::Board& board)
 {
 	return Error_t();

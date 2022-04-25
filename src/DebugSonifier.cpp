@@ -36,13 +36,6 @@ void DebugSonifier::prepareToPlay(int iExpectedBlockSize, float fsampleRate)
 
 };
 
-
-void DebugSonifier::releaseResources()
-{
-
-};
-
-
 Error_t DebugSonifier::onMove(Chess::Board &board) {
     auto it = oscillatorPtrs.begin();
     while (it != oscillatorPtrs.end()){
