@@ -23,10 +23,16 @@ class MainComponent : public juce::AudioAppComponent, public juce::ChangeListene
 {
 public:
 
-    enum class GameMode {
+    enum GameMode {
         PVP,
         PVC,
         PGN
+    };
+
+    enum SonifierMode {
+        Debug,
+        Threats,
+        Story
     };
 
     //==============================================================================
@@ -46,7 +52,10 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-    MainComponent::GameMode m_GameMode = MainComponent::GameMode::PVP;
+    GameMode m_GameMode = PVP;
+    SonifierMode mSonifierMode = Debug;
+    SonifierBase* mCurrentSonifier = &m_DebugSonifier;
+    SonifierBase* mNextSonifier = nullptr;
 
     BroadcastManager m_BroadcastManager;
     DebugSonifier m_DebugSonifier;
@@ -73,14 +82,12 @@ private:
     juce::TextButton m_NextButton;
     juce::TextButton m_PrevButton;
 
-    void onSonifierChange();
-
     void onPgnButtonClicked();
     std::unique_ptr<juce::FileChooser> m_FileChooser;
     juce::String m_PgnString;
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
-
+    void onSonifierChange(MainComponent::SonifierMode nextSonifier);
     std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)

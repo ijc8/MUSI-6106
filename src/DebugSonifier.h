@@ -8,45 +8,33 @@
 #include "MainProcessor.h"
 #include <vector>
 #include <list>
+#include "SonifierBase.h"
 
 
-class DebugSonifier : public juce::ChangeListener {
+class DebugSonifier : public SonifierBase {
 public:
         DebugSonifier();
 
         virtual ~DebugSonifier();
 
-        void process(float **ppfOutBuffer, int iNumChannels, int iNumFrames);
+        void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
-        void prepareToPlay(int iExpectedBlockSize, double fSampleRate);
-
-        void releaseResources();
-
-        Error_t onMove(Chess::Board & board);
-
-		void changeListenerCallback(juce::ChangeBroadcaster* source) override
-		{
-             onMove(AppState::getInstance().getGame());
-		}
-
-        void enable() {  m_mainProcessor.noteOn(); };
-        void disable() { m_mainProcessor.noteOff(); };
-
-        void setGain(float fNewGain) { m_mainProcessor.setGain(fNewGain); };
+        void releaseResources() override;
 
 protected:
 
     void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
+
+    Error_t onMove(Chess::Board& board);
+
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override
+    {
+        onMove(AppState::getInstance().getGame());
+    }
     
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
 
     CSineWavetable sine;
-
-    CMainProcessor m_mainProcessor;
-
-    float m_fSampleRate = 0;
-
-    int m_fExpectedBlockSize = 0;
 
 
 };

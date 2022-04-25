@@ -425,6 +425,7 @@ namespace GUI
 			piece.setToggleState(true, juce::dontSendNotification);
 			highlightPossibleMoves(piece);
 			sendActionMessage("Select " + m_SelectedPiece->getId());
+			onStateChange(state::kPlacing);
 		}
 
 		Square* findSquare(const juce::String squareId) const

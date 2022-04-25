@@ -39,11 +39,11 @@ MainComponent::MainComponent()
     addAndMakeVisible(Board3);
     Board3.setButtonText("8/8/8/8/8/8/8/8");
     Board3.onClick = [this](){
-        m_Board.setBoardFen("8/8/8/8/8/8/8/8");
-        m_DebugSonifier.onMove(m_Board);
+        //m_Board.setBoardFen("8/8/8/8/8/8/8/8");
+        //m_DebugSonifier.onMove(m_Board);
     };
 
-    m_DebugSonifier.enable();
+    //m_DebugSonifier.enable();
 }
 
 MainComponent::~MainComponent()
