@@ -230,6 +230,7 @@ void MainComponent::setSonifier(int sonifierIndex)
     m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
     m_BroadcastManager.addActionListener(mCurrentSonifier.get());
     mCurrentSonifier->onMove(AppState::getInstance().getGame());
+    mCurrentSonifier->setGain(m_VolumeSlider.getValue());
 }
 
 void MainComponent::onPgnButtonClicked()
