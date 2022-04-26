@@ -31,19 +31,12 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
 
 void DebugSonifier::prepareToPlay(int iExpectedBlockSize, float fsampleRate)
 {
-    SonifierBase::prepareToPlay(iExpectedBlockSize, fsampleRate);
+    Sonifier::prepareToPlay(iExpectedBlockSize, fsampleRate);
     mMainProcessor.setGain(0.25);
 
 };
 
-
-void DebugSonifier::releaseResources()
-{
-
-};
-
-
-Error_t DebugSonifier::onMove(Chess::Board &board) {
+void DebugSonifier::onMove(Chess::Game &board) {
     auto it = oscillatorPtrs.begin();
     while (it != oscillatorPtrs.end()){
         if ((*it)->isActive()) {
@@ -58,5 +51,4 @@ Error_t DebugSonifier::onMove(Chess::Board &board) {
     for( const auto [square, piece] : board.getPieceMap() ) {
         sonifyPiece(square, piece);
     }
-    return Error_t::kNoError;
 }

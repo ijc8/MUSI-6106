@@ -12,19 +12,13 @@ StorySonifier::~StorySonifier()
 
 void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 {
-	SonifierBase::prepareToPlay(iExpectedBlockSize, fSampleRate);
+	Sonifier::prepareToPlay(iExpectedBlockSize, fSampleRate);
 	mMainProcessor.setGain(1);
 
 	initializeMemberInstruments(fSampleRate);
 }
 
-void StorySonifier::releaseResources()
-{
-}
-
-Error_t StorySonifier::onMove(Chess::Board& board)
-{
-	return Error_t();
+void StorySonifier::onMove(Chess::Game& board) {
 }
 
 void StorySonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece)

@@ -10,11 +10,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(m_ChessboardGUI);
     Chess::Game& game = AppState::getInstance().getGame();
     m_ChessboardGUI.addActionListener(&m_BroadcastManager);
-    m_BroadcastManager.addActionListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
-    m_BroadcastManager.addChangeListener(&m_DebugSonifier);
-    m_BroadcastManager.addChangeListener(&m_ThreatsSonifier);
-    m_BroadcastManager.addChangeListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(this);
 
     // text buttons
@@ -78,22 +74,12 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_SonifierSelector);
     m_SonifierSelector.onChange = [this]() 
-    { 
-        switch (m_SonifierSelector.getSelectedId())
-        {
-        case 1:
-            onSonifierChange(SonifierMode::Debug);
-            break;
-        case 2:
-            onSonifierChange(SonifierMode::Threats);
-            break;
-        default:
-            onSonifierChange(SonifierMode::Story);
-        }
+    {
+        setSonifier(m_SonifierSelector.getSelectedItemIndex());
     };
-    m_SonifierSelector.addItem("Debug Sonifier", 1);
-    m_SonifierSelector.addItem("Threat Sonifier", 2);
-    m_SonifierSelector.addItem("Story Sonifier", 3);
+    for (int i = 0; i < sonifiers.size(); i++) {
+        m_SonifierSelector.addItem(sonifiers[i].name + " Sonifier", i + 1);
+    }
     m_SonifierSelector.setSelectedId(1, juce::dontSendNotification);
     mCurrentSonifier->setEnabled(true);
 
@@ -142,9 +128,7 @@ MainComponent::MainComponent()
     m_VolumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     m_VolumeSlider.onValueChange = [this]() {
-        m_DebugSonifier.setGain(m_VolumeSlider.getValue());
-        m_ThreatsSonifier.setGain(m_VolumeSlider.getValue());
-        m_StorySonifier.setGain(m_VolumeSlider.getValue());
+        mCurrentSonifier->setGain(m_VolumeSlider.getValue());
     };
     m_VolumeSlider.setValue(0.25);
 }
@@ -159,30 +143,20 @@ MainComponent::~MainComponent()
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    m_DebugSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
-    m_ThreatsSonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
-    m_StorySonifier.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    this->samplesPerBlockExpected = samplesPerBlockExpected;
+    this->sampleRate = sampleRate;
+    setSonifier(0);
 }
 
-void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-    if (mNextSonifier)
-    {
-        mNextSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-        if (mCurrentSonifier->isIdle())
-        {
-            mCurrentSonifier = mNextSonifier;
-            mNextSonifier = nullptr;
+void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
+    if (mOldSonifier) {
+        mOldSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+        if (mOldSonifier->isIdle()) {
+            // TODO: Maybe not in the audio thread.
+            mOldSonifier.reset();
         }
     }
-}
-
-void MainComponent::releaseResources()
-{
-    m_DebugSonifier.releaseResources();
-    m_ThreatsSonifier.releaseResources();
-    m_StorySonifier.releaseResources();
+    mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
 }
 
 //==============================================================================
@@ -242,22 +216,21 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
     }
 }
 
-void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMode)
+void MainComponent::setSonifier(int sonifierIndex)
 {
-    switch (nextSonifierMode)
-    {
-    case Debug:
-        mNextSonifier = &m_DebugSonifier;
-        break;
-    case Threats:
-        mNextSonifier = &m_ThreatsSonifier;
-        break;
-    default:
-        mNextSonifier = &m_StorySonifier;
+    mOldSonifier = std::move(mCurrentSonifier);
+    mCurrentSonifier = sonifiers[sonifierIndex].create();
+    if (mOldSonifier) {
+        mOldSonifier->setEnabled(false);
+        m_BroadcastManager.removeChangeListener(mOldSonifier.get());
+        m_BroadcastManager.removeActionListener(mOldSonifier.get());
     }
-    mCurrentSonifier->setEnabled(false);
-    mNextSonifier->setEnabled(true);
-    mSonifierMode = nextSonifierMode;
+    mCurrentSonifier->prepareToPlay(samplesPerBlockExpected, sampleRate);
+    mCurrentSonifier->setEnabled(true);
+    m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
+    m_BroadcastManager.addActionListener(mCurrentSonifier.get());
+    mCurrentSonifier->onMove(AppState::getInstance().getGame());
+    mCurrentSonifier->setGain(m_VolumeSlider.getValue());
 }
 
 void MainComponent::onPgnButtonClicked()

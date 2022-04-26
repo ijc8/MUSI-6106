@@ -4,18 +4,17 @@
 #include "MainProcessor.h"
 #include "GameState.h"
 #include "Util.h"
-#include "SonifierBase.h"
+#include "Sonifier.h"
 
-class StorySonifier : public SonifierBase, public juce::ActionListener
+class StorySonifier : public Sonifier
 {
 public:
 	StorySonifier();
 	~StorySonifier();
 
 	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
-	void releaseResources() override;
 
-	Error_t onMove(Chess::Board& board);
+	void onMove(Chess::Game &board) override;
 
 private:
 

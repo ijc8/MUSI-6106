@@ -5,11 +5,11 @@
 #include "GameState.h"
 #include "Util.h"
 
-class SonifierBase : public juce::ChangeListener
+class Sonifier : public juce::ChangeListener, public juce::ActionListener
 {
 public:
-	SonifierBase() {};
-	~SonifierBase() {};
+	Sonifier() {};
+	~Sonifier() {};
 
 	virtual void prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 	{
@@ -19,8 +19,6 @@ public:
 		mMainProcessor.setSampleRate(mSampleRate);
 		mMainProcessor.setADSRParameters(1, 0, 1, 1);
 	}
-
-	virtual void releaseResources() = 0;
 
 	void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
 	{
@@ -44,6 +42,15 @@ public:
 	{
 		mMainProcessor.setGain(fGain);
 	}
+
+	virtual void onMove(Chess::Game &game) = 0;
+
+	virtual void actionListenerCallback(const juce::String &message) override {}
+
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override {
+        onMove(AppState::getInstance().getGame());
+    }
+    
 
 protected:
 

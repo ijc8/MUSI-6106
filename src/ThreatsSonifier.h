@@ -9,13 +9,13 @@
 #include <vector>
 #include <list>
 #include <optional>
-#include "SonifierBase.h"
+#include "Sonifier.h"
 
 
 using namespace Chess;
 
 
-class ThreatsSonifier : public SonifierBase 
+class ThreatsSonifier : public Sonifier 
 {
 public:
     ThreatsSonifier();
@@ -23,19 +23,12 @@ public:
     virtual ~ThreatsSonifier();
 
     void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
-    void releaseResources() override;
-
 
 protected:
 
     void sonifyThreats(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
 
-    Error_t onMove(Chess::GameState& gameState);
-
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override
-    {
-        onMove(AppState::getInstance().getGame());
-    }
+    void onMove(Chess::Game& gameState) override;
 
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
 

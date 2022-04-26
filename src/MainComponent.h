@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 // CMake builds don't use an AppConfig.h, so it's safe to include juce module headers
 // directly. If you need to remain compatible with Projucer-generated builds, and
 // have called `juce_generate_juce_header(<thisTarget>)` in your CMakeLists.txt,
@@ -29,12 +31,6 @@ public:
         PGN
     };
 
-    enum SonifierMode {
-        Debug,
-        Threats,
-        Story
-    };
-
     //==============================================================================
     MainComponent();
     ~MainComponent();
@@ -42,7 +38,7 @@ public:
     //==============================================================================
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
-    void releaseResources() override;
+    void releaseResources() override {};
 
     void paint(juce::Graphics& g) override;
     void resized() override;
@@ -50,17 +46,24 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
-    //==============================================================================
-    // Your private member variables go here...
+    int samplesPerBlockExpected;
+    double sampleRate;
+
     GameMode m_GameMode = PVP;
-    SonifierMode mSonifierMode = Debug;
-    SonifierBase* mCurrentSonifier = &m_DebugSonifier;
-    SonifierBase* mNextSonifier = nullptr;
+    std::unique_ptr<Sonifier> mOldSonifier, mCurrentSonifier;
+
+    struct SonifierType {
+        std::string name;
+        std::function<std::unique_ptr<Sonifier>()> create;
+    };
+
+    std::vector<SonifierType> sonifiers = {
+        {"Debug", [](){ return std::make_unique<DebugSonifier>(); }},
+        {"Threat", [](){ return std::make_unique<ThreatsSonifier>(); }},
+        {"Story", [](){ return std::make_unique<StorySonifier>(); }},
+    };
 
     BroadcastManager m_BroadcastManager;
-    DebugSonifier m_DebugSonifier;
-    ThreatsSonifier m_ThreatsSonifier;
-    StorySonifier m_StorySonifier;
     GUI::ChessBoard m_ChessboardGUI;
 
 
@@ -87,7 +90,7 @@ private:
     juce::String m_PgnString;
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
-    void onSonifierChange(MainComponent::SonifierMode nextSonifier);
+    void setSonifier(int sonifierIndex);
     std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
