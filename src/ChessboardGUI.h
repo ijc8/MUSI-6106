@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <juce_gui_extra/juce_gui_extra.h>
 #include "GameState.h"
 
@@ -208,6 +209,9 @@ namespace GUI
 
 		ChessBoard()
 		{
+			std::cout << "Original: " << cwd.getFullPathName() << std::endl;
+			std::cout << "Current: " << juce::File::getCurrentWorkingDirectory().getFullPathName() << std::endl;
+			std::cout << "Executable: " << juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentExecutableFile).getFullPathName() << std::endl;
 			auto genColor = [](int row, int col) {
 				if (row % 2 == 0)
 				{
@@ -424,7 +428,7 @@ namespace GUI
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
 
 		//Change this to point where your images relative to your working directory
-		//const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getChildFile("chessImages");
+		const juce::File cwd = juce::File::getCurrentWorkingDirectory();
 		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
 
 		Piece m_AllPieces[32]{
