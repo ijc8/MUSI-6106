@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_gui_extra/juce_gui_extra.h>
+#include "ChessImageData.h"
 #include "GameState.h"
 
 
@@ -97,9 +98,11 @@ namespace GUI
 	class Piece : public juce::ImageButton
 	{
 	public:
-		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
+		Piece(const char *resourceName, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
 		{
-			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
+			int size;
+			const char *data = ChessImageData::getNamedResource(resourceName, size);
+			m_Image = juce::ImageFileFormat::loadFrom(data, size);
 			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite);
 			setSize(80, 80);
 		};
@@ -423,43 +426,39 @@ namespace GUI
 		Piece* m_SelectedPiece = nullptr;
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
 
-		//Change this to point where your images relative to your working directory
-		//const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getChildFile("chessImages");
-		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
-
 		Piece m_AllPieces[32]{
-			Piece { pathToImages.getChildFile("W_Rook.png"), 'R', "a1"},
-			Piece { pathToImages.getChildFile("W_Knight.png"), 'N', "b1"},
-			Piece { pathToImages.getChildFile("W_Bishop.png"), 'B', "c1"},
-			Piece { pathToImages.getChildFile("W_Queen.png"), 'Q', "d1"},
-			Piece { pathToImages.getChildFile("W_King.png"), 'K', "e1"},
-			Piece { pathToImages.getChildFile("W_Bishop.png"), 'B', "f1"},
-			Piece { pathToImages.getChildFile("W_Knight.png"), 'N', "g1"},
-			Piece { pathToImages.getChildFile("W_Rook.png"), 'R', "h1"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "a2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "b2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "c2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "d2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "e2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "f2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "g2"},
-			Piece { pathToImages.getChildFile("W_Pawn.png"), 'P', "h2"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "a7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "b7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "c7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "d7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "e7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "f7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "g7"},
-			Piece { pathToImages.getChildFile("B_Pawn.png"), 'p', "h7"},
-			Piece { pathToImages.getChildFile("B_Rook.png"), 'r', "a8"},
-			Piece { pathToImages.getChildFile("B_Knight.png"), 'n', "b8"},
-			Piece { pathToImages.getChildFile("B_Bishop.png"), 'b', "c8"},
-			Piece { pathToImages.getChildFile("B_Queen.png"), 'q', "d8"},
-			Piece { pathToImages.getChildFile("B_King.png"), 'k', "e8"},
-			Piece { pathToImages.getChildFile("B_Bishop.png"), 'b', "f8"},
-			Piece { pathToImages.getChildFile("B_Knight.png"), 'n', "g8"},
-			Piece { pathToImages.getChildFile("B_Rook.png"), 'r', "h8"}
+			Piece {"W_Rook_png", 'R', "a1"},
+			Piece {"W_Knight_png", 'N', "b1"},
+			Piece {"W_Bishop_png", 'B', "c1"},
+			Piece {"W_Queen_png", 'Q', "d1"},
+			Piece {"W_King_png", 'K', "e1"},
+			Piece {"W_Bishop_png", 'B', "f1"},
+			Piece {"W_Knight_png", 'N', "g1"},
+			Piece {"W_Rook_png", 'R', "h1"},
+			Piece {"W_Pawn_png", 'P', "a2"},
+			Piece {"W_Pawn_png", 'P', "b2"},
+			Piece {"W_Pawn_png", 'P', "c2"},
+			Piece {"W_Pawn_png", 'P', "d2"},
+			Piece {"W_Pawn_png", 'P', "e2"},
+			Piece {"W_Pawn_png", 'P', "f2"},
+			Piece {"W_Pawn_png", 'P', "g2"},
+			Piece {"W_Pawn_png", 'P', "h2"},
+			Piece {"B_Pawn_png", 'p', "a7"},
+			Piece {"B_Pawn_png", 'p', "b7"},
+			Piece {"B_Pawn_png", 'p', "c7"},
+			Piece {"B_Pawn_png", 'p', "d7"},
+			Piece {"B_Pawn_png", 'p', "e7"},
+			Piece {"B_Pawn_png", 'p', "f7"},
+			Piece {"B_Pawn_png", 'p', "g7"},
+			Piece {"B_Pawn_png", 'p', "h7"},
+			Piece {"B_Rook_png", 'r', "a8"},
+			Piece {"B_Knight_png", 'n', "b8"},
+			Piece {"B_Bishop_png", 'b', "c8"},
+			Piece {"B_Queen_png", 'q', "d8"},
+			Piece {"B_King_png", 'k', "e8"},
+			Piece {"B_Bishop_png", 'b', "f8"},
+			Piece {"B_Knight_png", 'n', "g8"},
+			Piece {"B_Rook_png", 'r', "h8"}
 		};
 
 		void selectPiece(Piece& piece)
