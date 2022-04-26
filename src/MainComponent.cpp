@@ -74,22 +74,12 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(m_SonifierSelector);
     m_SonifierSelector.onChange = [this]() 
-    { 
-        switch (m_SonifierSelector.getSelectedId())
-        {
-        case 1:
-            onSonifierChange(SonifierMode::Debug);
-            break;
-        case 2:
-            onSonifierChange(SonifierMode::Threats);
-            break;
-        default:
-            onSonifierChange(SonifierMode::Story);
-        }
+    {
+        setSonifier(m_SonifierSelector.getSelectedItemIndex());
     };
-    m_SonifierSelector.addItem("Debug Sonifier", 1);
-    m_SonifierSelector.addItem("Threat Sonifier", 2);
-    m_SonifierSelector.addItem("Story Sonifier", 3);
+    for (int i = 0; i < sonifiers.size(); i++) {
+        m_SonifierSelector.addItem(sonifiers[i].name + " Sonifier", i + 1);
+    }
     m_SonifierSelector.setSelectedId(1, juce::dontSendNotification);
     mCurrentSonifier->setEnabled(true);
 
@@ -155,7 +145,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 {
     this->samplesPerBlockExpected = samplesPerBlockExpected;
     this->sampleRate = sampleRate;
-    onSonifierChange(SonifierMode::Debug);
+    setSonifier(0);
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
@@ -226,11 +216,10 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
     }
 }
 
-void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMode)
+void MainComponent::setSonifier(int sonifierIndex)
 {
-    std::cout << "Hello " << nextSonifierMode << " " << sonifiers[nextSonifierMode].name << std::endl;
     mOldSonifier = std::move(mCurrentSonifier);
-    mCurrentSonifier = sonifiers[nextSonifierMode].create();
+    mCurrentSonifier = sonifiers[sonifierIndex].create();
     if (mOldSonifier) {
         mOldSonifier->setEnabled(false);
         m_BroadcastManager.removeChangeListener(mOldSonifier.get());
@@ -241,7 +230,6 @@ void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMod
     m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
     m_BroadcastManager.addActionListener(mCurrentSonifier.get());
     mCurrentSonifier->onMove(AppState::getInstance().getGame());
-    mSonifierMode = nextSonifierMode;
 }
 
 void MainComponent::onPgnButtonClicked()

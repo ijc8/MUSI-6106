@@ -31,12 +31,6 @@ public:
         PGN
     };
 
-    enum SonifierMode {
-        Debug,
-        Threats,
-        Story
-    };
-
     //==============================================================================
     MainComponent();
     ~MainComponent();
@@ -56,7 +50,6 @@ private:
     double sampleRate;
 
     GameMode m_GameMode = PVP;
-    SonifierMode mSonifierMode = Debug;
     std::unique_ptr<Sonifier> mOldSonifier, mCurrentSonifier;
 
     struct SonifierType {
@@ -97,7 +90,7 @@ private:
     juce::String m_PgnString;
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
-    void onSonifierChange(MainComponent::SonifierMode nextSonifier);
+    void setSonifier(int sonifierIndex);
     std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
