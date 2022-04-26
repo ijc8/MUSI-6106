@@ -6,7 +6,7 @@
 #include "Util.h"
 #include "Sonifier.h"
 
-class StorySonifier : public Sonifier, public juce::ActionListener
+class StorySonifier : public Sonifier
 {
 public:
 	StorySonifier();

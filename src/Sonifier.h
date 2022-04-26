@@ -5,7 +5,7 @@
 #include "GameState.h"
 #include "Util.h"
 
-class Sonifier : public juce::ChangeListener
+class Sonifier : public juce::ChangeListener, public juce::ActionListener
 {
 public:
 	Sonifier() {};
@@ -42,6 +42,8 @@ public:
 	{
 		mMainProcessor.setGain(fGain);
 	}
+
+	virtual void actionListenerCallback(const juce::String &message) override {}
 
 protected:
 

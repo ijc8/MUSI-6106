@@ -52,10 +52,12 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
+    int samplesPerBlockExpected;
+    double sampleRate;
+
     GameMode m_GameMode = PVP;
     SonifierMode mSonifierMode = Debug;
-    std::unique_ptr<Sonifier> mCurrentSonifier;
-    std::unique_ptr<Sonifier> mNextSonifier = nullptr;
+    std::unique_ptr<Sonifier> mOldSonifier, mCurrentSonifier;
 
     struct SonifierType {
         std::string name;

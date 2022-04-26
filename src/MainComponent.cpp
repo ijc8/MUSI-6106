@@ -10,8 +10,6 @@ MainComponent::MainComponent()
     addAndMakeVisible(m_ChessboardGUI);
     Chess::Game& game = AppState::getInstance().getGame();
     m_ChessboardGUI.addActionListener(&m_BroadcastManager);
-    // TODO: Does this need to be part of the sonifier interface?
-    // m_BroadcastManager.addActionListener(&m_StorySonifier);
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
     m_BroadcastManager.addChangeListener(this);
 
@@ -155,23 +153,20 @@ MainComponent::~MainComponent()
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    // TODO: Do this same stuff when we change sonifiers.
-    mCurrentSonifier = sonifiers[0].create();
-    m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
-    mCurrentSonifier->prepareToPlay(samplesPerBlockExpected, sampleRate);
+    this->samplesPerBlockExpected = samplesPerBlockExpected;
+    this->sampleRate = sampleRate;
+    onSonifierChange(SonifierMode::Debug);
 }
 
-void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-    if (mNextSonifier)
-    {
-        mNextSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-        if (mCurrentSonifier->isIdle())
-        {
-            mCurrentSonifier = std::move(mNextSonifier);
+void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
+    if (mOldSonifier) {
+        mOldSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+        if (mOldSonifier->isIdle()) {
+            // TODO: Maybe not in the audio thread.
+            mOldSonifier.reset();
         }
     }
+    mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
 }
 
 //==============================================================================
@@ -233,9 +228,19 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
 
 void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMode)
 {
-    mNextSonifier = sonifiers[nextSonifierMode].create();
-    mCurrentSonifier->setEnabled(false);
-    mNextSonifier->setEnabled(true);
+    std::cout << "Hello " << nextSonifierMode << " " << sonifiers[nextSonifierMode].name << std::endl;
+    mOldSonifier = std::move(mCurrentSonifier);
+    mCurrentSonifier = sonifiers[nextSonifierMode].create();
+    if (mOldSonifier) {
+        mOldSonifier->setEnabled(false);
+        m_BroadcastManager.removeChangeListener(mOldSonifier.get());
+        m_BroadcastManager.removeActionListener(mOldSonifier.get());
+    }
+    mCurrentSonifier->prepareToPlay(samplesPerBlockExpected, sampleRate);
+    mCurrentSonifier->setEnabled(true);
+    m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
+    m_BroadcastManager.addActionListener(mCurrentSonifier.get());
+    // TODO: mCurrentSonifier->onMove(AppState::getInstance().getGame());
     mSonifierMode = nextSonifierMode;
 }
 
