@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <juce_gui_extra/juce_gui_extra.h>
 #include "ChessImageData.h"
 #include "GameState.h"
@@ -104,7 +103,6 @@ namespace GUI
 			int size;
 			const char *data = ChessImageData::getNamedResource(resourceName, size);
 			m_Image = juce::ImageFileFormat::loadFrom(data, size);
-			// m_Image = juce::ImageFileFormat::loadFrom(imageFile);
 			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite);
 			setSize(80, 80);
 		};
@@ -427,9 +425,6 @@ namespace GUI
 		ChessBoard::state m_CurrentState = ChessBoard::state::kIdle;
 		Piece* m_SelectedPiece = nullptr;
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
-
-		//Change this to point where your images relative to your working directory
-		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
 
 		Piece m_AllPieces[32]{
 			Piece {"W_Rook_png", 'R', "a1"},
