@@ -28,12 +28,7 @@ protected:
 
     void sonifyThreats(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
 
-    Error_t onMove(Chess::GameState& gameState);
-
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override
-    {
-        onMove(AppState::getInstance().getGame());
-    }
+    void onMove(Chess::Game& gameState) override;
 
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
 

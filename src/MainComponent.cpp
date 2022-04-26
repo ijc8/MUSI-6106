@@ -240,7 +240,7 @@ void MainComponent::onSonifierChange(MainComponent::SonifierMode nextSonifierMod
     mCurrentSonifier->setEnabled(true);
     m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
     m_BroadcastManager.addActionListener(mCurrentSonifier.get());
-    // TODO: mCurrentSonifier->onMove(AppState::getInstance().getGame());
+    mCurrentSonifier->onMove(AppState::getInstance().getGame());
     mSonifierMode = nextSonifierMode;
 }
 

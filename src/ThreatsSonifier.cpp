@@ -53,7 +53,7 @@ void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 
 };
 
-Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
+void ThreatsSonifier::onMove(Chess::Game &gameState) {
     auto it = oscillatorPtrs.begin();
     while (it != oscillatorPtrs.end()){
         if ((*it)->isActive()){
@@ -68,5 +68,4 @@ Error_t ThreatsSonifier::onMove(Chess::GameState &gameState) {
     for (const auto [preySquare, preyPiece] : gameState.getThreats() ) {
         sonifyThreats(preySquare, preyPiece);
     }
-    return Error_t::kNoError;
 }

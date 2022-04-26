@@ -43,7 +43,14 @@ public:
 		mMainProcessor.setGain(fGain);
 	}
 
+	virtual void onMove(Chess::Game &game) = 0;
+
 	virtual void actionListenerCallback(const juce::String &message) override {}
+
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override {
+        onMove(AppState::getInstance().getGame());
+    }
+    
 
 protected:
 

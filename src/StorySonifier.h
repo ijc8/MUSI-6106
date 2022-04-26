@@ -14,7 +14,7 @@ public:
 
 	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
-	Error_t onMove(Chess::Board& board);
+	void onMove(Chess::Game &board) override;
 
 private:
 

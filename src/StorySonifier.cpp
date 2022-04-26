@@ -18,9 +18,7 @@ void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 	initializeMemberInstruments(fSampleRate);
 }
 
-Error_t StorySonifier::onMove(Chess::Board& board)
-{
-	return Error_t();
+void StorySonifier::onMove(Chess::Game& board) {
 }
 
 void StorySonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece)

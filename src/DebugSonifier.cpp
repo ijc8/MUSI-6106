@@ -36,7 +36,7 @@ void DebugSonifier::prepareToPlay(int iExpectedBlockSize, float fsampleRate)
 
 };
 
-Error_t DebugSonifier::onMove(Chess::Board &board) {
+void DebugSonifier::onMove(Chess::Game &board) {
     auto it = oscillatorPtrs.begin();
     while (it != oscillatorPtrs.end()){
         if ((*it)->isActive()) {
@@ -51,5 +51,4 @@ Error_t DebugSonifier::onMove(Chess::Board &board) {
     for( const auto [square, piece] : board.getPieceMap() ) {
         sonifyPiece(square, piece);
     }
-    return Error_t::kNoError;
 }

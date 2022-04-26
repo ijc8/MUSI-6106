@@ -23,13 +23,8 @@ protected:
 
     void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
 
-    Error_t onMove(Chess::Board& board);
+    void onMove(Chess::Game &board) override;
 
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override
-    {
-        onMove(AppState::getInstance().getGame());
-    }
-    
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
 
     CSineWavetable sine;
