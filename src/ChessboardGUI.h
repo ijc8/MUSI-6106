@@ -3,8 +3,10 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 #include "GameState.h"
 
+
 namespace GUI
 {
+
 	class Square : public juce::Button, public juce::ActionBroadcaster
 	{
 	public:
@@ -98,7 +100,7 @@ namespace GUI
 		Piece(juce::File imageFile, uint8_t name, juce::String intialSquareId) : m_Name(name), m_SquareId(intialSquareId), m_Team( (isupper(name) ? Chess::Color::White : Chess::Color::Black))
 		{
 			m_Image = juce::ImageFileFormat::loadFrom(imageFile);
-			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::yellow);
+			setImages(false, true, true, m_Image, 1, juce::Colours::transparentBlack, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite, juce::Image(nullptr), 0.5, juce::Colours::transparentWhite);
 			setSize(80, 80);
 		};
 		~Piece() = default;
@@ -130,8 +132,53 @@ namespace GUI
 				setBounds(m_Square->getBounds());
 		}
 
+		void setSelected(bool isSelected)
+		{
+			mIsSelected = isSelected;
+		}
+
+		void mouseDown(const juce::MouseEvent& event) override
+		{
+			ImageButton::mouseDown(event);
+		}
+
+		void mouseDrag(const juce::MouseEvent& event) override
+		{
+			if (!mIsSelected)
+			{
+				triggerClick();
+			}
+			juce::MouseEvent relEvent = event.getEventRelativeTo(getParentComponent());
+			setCentrePosition(relEvent.getPosition());
+			mWasBeingDragged = true;
+		}
+
+		void mouseUp(const juce::MouseEvent& event) override
+		{
+
+			if (mWasBeingDragged)
+			{
+				for (juce::Component* component : getParentComponent()->getChildren())
+				{
+					if (component != this && component->getBoundsInParent().contains(event.getEventRelativeTo(getParentComponent()).getPosition()))
+					{
+						component->mouseDown(event);
+						component->mouseUp(event);
+					}
+				}
+				mWasBeingDragged = false;
+			}
+			else
+			{
+				ImageButton::mouseUp(event);
+			}
+			resized();
+		}
+
 	private:
 
+		bool mIsSelected = false;
+		bool mWasBeingDragged = false;
 		const Square* m_Square = nullptr;
 		juce::Image m_Image;
 		uint8_t m_Name;
@@ -377,7 +424,8 @@ namespace GUI
 		Square* m_AllSquares[BoardSize][BoardSize]{ nullptr };
 
 		//Change this to point where your images relative to your working directory
-		const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getChildFile("chessImages");
+		//const juce::File pathToImages = juce::File::getCurrentWorkingDirectory().getChildFile("chessImages");
+		const juce::File pathToImages = juce::File("C:/Users/JohnK/Documents/ASE/MusicalChess/MUSI-6106/chessImages");
 
 		Piece m_AllPieces[32]{
 			Piece { pathToImages.getChildFile("W_Rook.png"), 'R', "a1"},
@@ -418,12 +466,14 @@ namespace GUI
 		{
 			if (m_SelectedPiece)
 			{
+				m_SelectedPiece->setSelected(false);
 				if (m_SelectedPiece->getId() != piece.getId())
 					sendActionMessage("Deselect " + m_SelectedPiece->getId());
 			}
 			m_SelectedPiece = &piece;
-			piece.setToggleState(true, juce::dontSendNotification);
-			highlightPossibleMoves(piece);
+			m_SelectedPiece->setSelected(true);
+			m_SelectedPiece->setToggleState(true, juce::dontSendNotification);
+			highlightPossibleMoves(m_SelectedPiece);
 			sendActionMessage("Select " + m_SelectedPiece->getId());
 			onStateChange(state::kPlacing);
 		}
@@ -446,15 +496,19 @@ namespace GUI
 			return findSquare(piece.getSquareId());
 		}
 
-		void highlightPossibleMoves(const Piece& piece)
+		void highlightPossibleMoves(const Piece* piece)
 		{
-			Chess::Game game = AppState::getInstance().getGame();
-			std::unordered_set moves = game.generateMoves(Chess::Square(piece.getSquareId().toStdString()));
-			for (const Chess::Move& move : moves)
+			if (piece)
 			{
-				Square* square = findSquare(move.dst.toString());
-				square->isCandidate(true);
+				Chess::Game game = AppState::getInstance().getGame();
+				std::unordered_set moves = game.generateMoves(Chess::Square(piece->getSquareId().toStdString()));
+				for (const Chess::Move& move : moves)
+				{
+					Square* square = findSquare(move.dst.toString());
+					square->isCandidate(true);
+				}
 			}
+
 		}
 
 		void resetPossibleMoves()
@@ -477,6 +531,7 @@ namespace GUI
 				if (m_SelectedPiece)
 				{
 					m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
+					m_SelectedPiece->setSelected(false);
 					sendActionMessage("Deselect " + m_SelectedPiece->getId());
 				}
 				m_SelectedPiece = nullptr;
