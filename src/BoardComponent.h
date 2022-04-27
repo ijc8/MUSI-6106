@@ -10,20 +10,16 @@ class BoardComponent: public juce::Component,
                       public juce::ChangeListener,
                       public juce::ActionListener {
   public:
-    enum class state {
-        kIdle,
-        kPlacing,
-        kSwitching,
-
-        kNumStates
+    enum class State {
+        Idle,
+        Placing,
+        Switching,
     };
 
-    enum class mode {
-        kPVP,
-        kPVC,
-        kPGN,
-
-        kNumModes
+    enum class Mode {
+        PVP,
+        PVC,
+        PGN,
     };
 
     class Square: public juce::Button, public juce::ActionBroadcaster {
@@ -143,19 +139,19 @@ class BoardComponent: public juce::Component,
 
     BoardComponent();
     ~BoardComponent();
-    void paint(juce::Graphics &g) override {}
+    void paint(juce::Graphics &g) override;
     void resized() override;
     void buttonClicked(juce::Button *button) override;
     void changeListenerCallback(juce::ChangeBroadcaster *source) override;
     void actionListenerCallback(const juce::String &message) override;
-    void onModeChange(BoardComponent::mode newMode);
+    void onModeChange(Mode newMode);
 
   private:
     static constexpr int BoardSize = 8;
     static constexpr int NumPieces = 32;
 
-    BoardComponent::mode m_CurrentMode = BoardComponent::mode::kPVP;
-    BoardComponent::state m_CurrentState = BoardComponent::state::kIdle;
+    Mode m_CurrentMode = Mode::PVP;
+    State m_CurrentState = State::Idle;
     Piece *m_SelectedPiece = nullptr;
     Square *m_AllSquares[BoardSize][BoardSize]{nullptr};
 
@@ -182,5 +178,5 @@ class BoardComponent: public juce::Component,
     Square *findSquare(const Piece &piece) const;
     void highlightPossibleMoves(const Piece *piece);
     void resetPossibleMoves();
-    void onStateChange(BoardComponent::state newState);
+    void onStateChange(State newState);
 };

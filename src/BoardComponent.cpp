@@ -37,7 +37,7 @@ BoardComponent::BoardComponent() {
     for (int row = 0; row < BoardSize; row++) {
         for (int col = 0; col < BoardSize; col++) {
             Square *square = new Square(row, col, genColor(row, col));
-            addAndMakeVisible(square);
+            // addAndMakeVisible(square);
             square->addListener(this);
             square->addActionListener(this);
             m_AllSquares[row][col] = square;
@@ -66,6 +66,16 @@ BoardComponent::~BoardComponent() {
         piece.removeListener(this);
 }
 
+void BoardComponent::paint(juce::Graphics &g) {
+    static const juce::Colour lightSquare(240, 217, 181);
+    static const juce::Colour darkSquare(181, 136, 99);
+
+    // NOTE: We assume our container is maintaining our 1:1 aspect ratio.
+    int size = getWidth();
+    float squareSize = (float)size / BoardSize;
+    g.fillCheckerBoard(juce::Rectangle<float>(0, 0, size, size), squareSize, squareSize, lightSquare, darkSquare);
+}
+
 void BoardComponent::resized() {
     auto area = getBounds();
     int squareHeight = area.getHeight() / BoardSize;
@@ -88,14 +98,14 @@ void BoardComponent::resized() {
 }
 
 void BoardComponent::buttonClicked(juce::Button *button) {
-    if (m_CurrentMode != BoardComponent::mode::kPGN) {
+    if (m_CurrentMode != Mode::PGN) {
         for (Piece &piece : m_AllPieces) {
             if (button == &piece) {
                 if (m_SelectedPiece) {
                     if (m_SelectedPiece == &piece) {
-                        onStateChange(state::kIdle);
+                        onStateChange(State::Idle);
                     } else if (m_SelectedPiece->isAlly(piece)) {
-                        onStateChange(state::kSwitching);
+                        onStateChange(State::Switching);
                         m_SelectedPiece->setToggleState(
                             false, juce::dontSendNotification);
                         selectPiece(piece);
@@ -105,18 +115,18 @@ void BoardComponent::buttonClicked(juce::Button *button) {
                         sendActionMessage(intent);
                     }
                 } else {
-                    if (m_CurrentMode == BoardComponent::mode::kPVP) {
+                    if (m_CurrentMode == Mode::PVP) {
                         if (AppState::getInstance().getGame().getTurn() ==
                             piece.getTeam()) {
                             selectPiece(piece);
-                            onStateChange(state::kPlacing);
+                            onStateChange(State::Placing);
                         }
                     } else {
                         if (AppState::getInstance().getGame().getTurn() ==
                                 Chess::Color::White &&
                             piece.getTeam() == Chess::Color::White) {
                             selectPiece(piece);
-                            onStateChange(state::kPlacing);
+                            onStateChange(State::Placing);
                         }
                     }
                 }
@@ -128,7 +138,7 @@ void BoardComponent::buttonClicked(juce::Button *button) {
             for (int col = 0; col < BoardSize; col++) {
                 Square *&square = m_AllSquares[row][col];
                 if (button == square) {
-                    if (m_CurrentState == state::kPlacing) {
+                    if (m_CurrentState == State::Placing) {
                         juce::String intent =
                             m_SelectedPiece->getSquareId() + square->getId();
                         sendActionMessage(intent);
@@ -159,7 +169,7 @@ void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
             }
         }
     }
-    onStateChange(state::kIdle);
+    onStateChange(State::Idle);
 }
 
 void BoardComponent::actionListenerCallback(const juce::String &message) {
@@ -173,11 +183,11 @@ void BoardComponent::actionListenerCallback(const juce::String &message) {
     }
 }
 
-void BoardComponent::onModeChange(BoardComponent::mode newMode) {
+void BoardComponent::onModeChange(BoardComponent::Mode newMode) {
     switch (newMode) {
-    case BoardComponent::mode::kPVP:
+    case Mode::PVP:
         break;
-    case BoardComponent::mode::kPVC:
+    case Mode::PVC:
         break;
     default:;
     }
@@ -195,7 +205,7 @@ void BoardComponent::selectPiece(Piece &piece) {
     m_SelectedPiece->setToggleState(true, juce::dontSendNotification);
     highlightPossibleMoves(m_SelectedPiece);
     sendActionMessage("Select " + m_SelectedPiece->getId());
-    onStateChange(state::kPlacing);
+    onStateChange(State::Placing);
 }
 
 BoardComponent::Square *
@@ -234,9 +244,9 @@ void BoardComponent::resetPossibleMoves() {
     }
 }
 
-void BoardComponent::onStateChange(BoardComponent::state newState) {
+void BoardComponent::onStateChange(BoardComponent::State newState) {
     switch (newState) {
-    case BoardComponent::state::kIdle:
+    case State::Idle:
         if (m_SelectedPiece) {
             m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
             m_SelectedPiece->setSelected(false);
@@ -245,7 +255,7 @@ void BoardComponent::onStateChange(BoardComponent::state newState) {
         m_SelectedPiece = nullptr;
         resetPossibleMoves();
         break;
-    case BoardComponent::state::kSwitching:
+    case State::Switching:
         resetPossibleMoves();
         break;
     default:;
