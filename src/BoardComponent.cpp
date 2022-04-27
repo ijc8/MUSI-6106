@@ -84,8 +84,6 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
     Chess::Color turn = game.getTurn();
     std::optional<Chess::Piece> piece = game.getPieceAt(clicked);
 
-    std::cout << "down! " << event.x << " " << event.y << " " << clicked.toString() << std::endl;
-
     if (selected) {
         Chess::Piece selectedPiece = *game.getPieceAt(*selected);
         if (clicked == *selected) {
@@ -107,20 +105,20 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
             for (int i = 0; i < sizeof(promotions) / sizeof(*promotions); i++) {
                 m.addItem(i + 1, promotions[i].first);
             }
- 
-            m.showMenuAsync(juce::PopupMenu::Options(), [this](int result) {
+            m.showMenuAsync(juce::PopupMenu::Options(), [this, clicked](int result) {
                 if (result == 0) {
-                    // user dismissed the menu without picking anything
+                    // User dismissed the promotion menu; cancel the move.
                     selected.reset();
                     onStateChange(State::Idle);
                 } else {
                     Chess::Piece::Type type = promotions[result - 1].second;
-                    std::cout << "Chose to promote to " << Chess::Piece(type, Chess::Color::White).toChar() << std::endl;
-                    // TODO!
+                    juce::String intent = Chess::Move(*selected, clicked, type).toString();
+                    sendActionMessage(intent);
+                    selected.reset();
                 }
             });
         } else {
-            juce::String intent = selected->toString() + clicked.toString(); // m_SelectedPiece->getSquareId() + piece.getSquareId();
+            juce::String intent = Chess::Move(*selected, clicked).toString();
             sendActionMessage(intent);
             selected.reset();
         }

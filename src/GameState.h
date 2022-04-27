@@ -54,12 +54,15 @@ namespace Chess {
         Move(Square src_, Square dst_, std::optional<Piece::Type> promotion_ = std::nullopt)
             : src(src_), dst(dst_), promotion(promotion_) {}
         Move(const std::string &squares)  // Build from string of form "b1c3".
-            : Move(Square(squares.substr(0, 2)), Square(squares.substr(2))) {}
+            : Move(Square(squares.substr(0, 2)), Square(squares.substr(2)),
+                   squares.size() > 4 ? std::make_optional(Piece::FromChar.at(toupper(squares[4]))) : std::nullopt) {}
         bool operator==(const Move &other) const {
             return src == other.src && dst == other.dst && promotion == other.promotion;
         }
         std::string toString() const {
-            return src.toString() + dst.toString();
+            std::string s =  src.toString() + dst.toString();
+            if (promotion) s += tolower(Piece::ToChar.at(*promotion));
+            return s;
         }
         Square src, dst;
         std::optional<Piece::Type> promotion;
