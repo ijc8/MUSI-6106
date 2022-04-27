@@ -66,7 +66,14 @@ namespace Chess {
     };
 }
 
-// Implement hash for Square so that we create a map of Square -> Piece.
+// Implement hash for Piece, Square, and Move so we can use them as keys in maps.
+template <>
+struct std::hash<Chess::Piece> {
+    std::size_t operator()(const Chess::Piece &piece) const {
+        return ((uint)piece.type << 1) | (uint)piece.color;
+    }
+};
+
 template <>
 struct std::hash<Chess::Square> {
     std::size_t operator()(const Chess::Square &square) const {

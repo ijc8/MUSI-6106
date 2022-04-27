@@ -1,69 +1,37 @@
 #include "BoardComponent.h"
 
-BoardComponent::Square::Square(int row, int column, juce::Colour color)
-    : juce::Button("square"), m_SquareColor(color), m_Row(row), m_Col(column),
-      m_IsCandidate(false) {
-    setSize(80, 80);
-}
-
-void BoardComponent::Square::paintButton(juce::Graphics &g,
-                                         bool shouldDrawButtonAsHighlighted,
-                                         bool shouldDrawButtonAsDown) {
-    if (m_IsCandidate) {
-        if (shouldDrawButtonAsHighlighted) {
-            g.fillAll(juce::Colours::red);
-            sendActionMessage("Preview " + getId());
-        } else
-            g.fillAll(juce::Colours::yellow);
-    } else
-        g.fillAll(m_SquareColor);
-}
+// void BoardComponent::Square::paintButton(juce::Graphics &g,
+//                                          bool shouldDrawButtonAsHighlighted,
+//                                          bool shouldDrawButtonAsDown) {
+//     if (m_IsCandidate) {
+//         if (shouldDrawButtonAsHighlighted) {
+//             g.fillAll(juce::Colours::red);
+//             sendActionMessage("Preview " + getId());
+//         } else
+//             g.fillAll(juce::Colours::yellow);
+//     } else
+//         g.fillAll(m_SquareColor);
+// }
 
 BoardComponent::BoardComponent() {
-    auto genColor = [](int row, int col) {
-        if (row % 2 == 0) {
-            if (col % 2 == 0)
-                return juce::Colour(240, 217, 181);
-            else
-                return juce::Colour(181, 136, 99);
-        } else {
-            if (col % 2 == 0)
-                return juce::Colour(181, 136, 99);
-            else
-                return juce::Colour(240, 217, 181);
-        }
+    std::pair<Chess::Piece::Type, std::string> types[] = {
+        {Chess::Piece::Type::Pawn, "Pawn"},
+        {Chess::Piece::Type::Knight, "Knight"},
+        {Chess::Piece::Type::Bishop, "Bishop"},
+        {Chess::Piece::Type::Rook, "Rook"},
+        {Chess::Piece::Type::Queen, "Queen"},
+        {Chess::Piece::Type::King, "King"},
     };
+    std::pair<Chess::Color, std::string> colors[] = {{Chess::Color::White, "W"}, {Chess::Color::Black, "B"}};
 
-    for (int row = 0; row < BoardSize; row++) {
-        for (int col = 0; col < BoardSize; col++) {
-            Square *square = new Square(row, col, genColor(row, col));
-            // addAndMakeVisible(square);
-            square->addListener(this);
-            square->addActionListener(this);
-            m_AllSquares[row][col] = square;
+    for (auto &[type, typeName] : types) {
+        for (auto &[color, colorName] : colors) {
+            int size;
+            std::string resourceName = colorName + "_" + typeName + "_png";
+            const char *data = ChessImageData::getNamedResource(resourceName.c_str(), size);
+            pieceImages.emplace(Chess::Piece(type, color), juce::ImageFileFormat::loadFrom(data, size));
         }
     }
-
-    for (Piece &piece : m_AllPieces) {
-        addAndMakeVisible(piece);
-        piece.placeAt(findSquare(piece));
-        piece.addListener(this);
-    }
-}
-
-BoardComponent::~BoardComponent() {
-    for (int row = 0; row < BoardSize; row++) {
-        for (int col = 0; col < BoardSize; col++) {
-            Square *&square = m_AllSquares[row][col];
-            square->removeListener(this);
-            square->removeActionListener(this);
-            delete square;
-            square = nullptr;
-        }
-    }
-
-    for (Piece &piece : m_AllPieces)
-        piece.removeListener(this);
 }
 
 void BoardComponent::paint(juce::Graphics &g) {
@@ -86,76 +54,72 @@ void BoardComponent::resized() {
         ypos -= squareHeight;
         int xpos = 0;
         for (int col = 0; col < BoardSize; col++) {
-            m_AllSquares[row][col]->setBounds(xpos, ypos, squareWidth,
-                                              squareHeight);
+            // m_AllSquares[row][col]->setBounds(xpos, ypos, squareWidth,
+            //                                   squareHeight);
             xpos += squareWidth;
         }
-    }
-
-    for (Piece &piece : m_AllPieces) {
-        piece.resized();
     }
 }
 
 void BoardComponent::buttonClicked(juce::Button *button) {
     if (m_CurrentMode != Mode::PGN) {
-        for (Piece &piece : m_AllPieces) {
-            if (button == &piece) {
-                if (m_SelectedPiece) {
-                    if (m_SelectedPiece == &piece) {
-                        onStateChange(State::Idle);
-                    } else if (m_SelectedPiece->isAlly(piece)) {
-                        onStateChange(State::Switching);
-                        m_SelectedPiece->setToggleState(
-                            false, juce::dontSendNotification);
-                        selectPiece(piece);
-                    } else {
-                        juce::String intent = m_SelectedPiece->getSquareId() +
-                                              piece.getSquareId();
-                        sendActionMessage(intent);
-                    }
-                } else {
-                    if (m_CurrentMode == Mode::PVP) {
-                        if (AppState::getInstance().getGame().getTurn() ==
-                            piece.getTeam()) {
-                            selectPiece(piece);
-                            onStateChange(State::Placing);
-                        }
-                    } else {
-                        if (AppState::getInstance().getGame().getTurn() ==
-                                Chess::Color::White &&
-                            piece.getTeam() == Chess::Color::White) {
-                            selectPiece(piece);
-                            onStateChange(State::Placing);
-                        }
-                    }
-                }
-                return;
-            }
-        }
+        // for (Piece &piece : m_AllPieces) {
+        //     if (button == &piece) {
+        //         if (m_SelectedPiece) {
+        //             if (m_SelectedPiece == &piece) {
+        //                 onStateChange(State::Idle);
+        //             } else if (m_SelectedPiece->isAlly(piece)) {
+        //                 onStateChange(State::Switching);
+        //                 m_SelectedPiece->setToggleState(
+        //                     false, juce::dontSendNotification);
+        //                 selectPiece(piece);
+        //             } else {
+        //                 juce::String intent = m_SelectedPiece->getSquareId() +
+        //                                       piece.getSquareId();
+        //                 sendActionMessage(intent);
+        //             }
+        //         } else {
+        //             if (m_CurrentMode == Mode::PVP) {
+        //                 if (AppState::getInstance().getGame().getTurn() ==
+        //                     piece.getTeam()) {
+        //                     selectPiece(piece);
+        //                     onStateChange(State::Placing);
+        //                 }
+        //             } else {
+        //                 if (AppState::getInstance().getGame().getTurn() ==
+        //                         Chess::Color::White &&
+        //                     piece.getTeam() == Chess::Color::White) {
+        //                     selectPiece(piece);
+        //                     onStateChange(State::Placing);
+        //                 }
+        //             }
+        //         }
+        //         return;
+        //     }
+        // }
 
-        for (int row = 0; row < BoardSize; row++) {
-            for (int col = 0; col < BoardSize; col++) {
-                Square *&square = m_AllSquares[row][col];
-                if (button == square) {
-                    if (m_CurrentState == State::Placing) {
-                        juce::String intent =
-                            m_SelectedPiece->getSquareId() + square->getId();
-                        sendActionMessage(intent);
-                    }
-                    return;
-                }
-            }
-        }
+        // for (int row = 0; row < BoardSize; row++) {
+        //     for (int col = 0; col < BoardSize; col++) {
+        //         Square *&square = m_AllSquares[row][col];
+        //         if (button == square) {
+        //             if (m_CurrentState == State::Placing) {
+        //                 juce::String intent =
+        //                     m_SelectedPiece->getSquareId() + square->getId();
+        //                 sendActionMessage(intent);
+        //             }
+        //             return;
+        //         }
+        //     }
+        // }
     }
 }
 
 void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
     std::list<Piece *> pieceList;
-    for (Piece &piece : m_AllPieces) {
-        piece.setVisible(false);
-        pieceList.push_front(&piece);
-    }
+    // for (Piece &piece : m_AllPieces) {
+    //     piece.setVisible(false);
+    //     pieceList.push_front(&piece);
+    // }
 
     auto pieceMap = AppState::getInstance().getGame().getPieceMap();
     for (const auto [square, piece] : pieceMap) {
@@ -163,7 +127,7 @@ void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
             if (guiPiece->getId().toStdString() ==
                 std::string{piece.toChar()}) {
                 guiPiece->setVisible(true);
-                guiPiece->placeAt(findSquare(square.toString()));
+                // guiPiece->placeAt(findSquare(square.toString()));
                 pieceList.remove(guiPiece);
                 break;
             }
@@ -208,20 +172,20 @@ void BoardComponent::selectPiece(Piece &piece) {
     onStateChange(State::Placing);
 }
 
-BoardComponent::Square *
-BoardComponent::findSquare(const std::string &squareId) const {
-    for (int row = 0; row < BoardSize; row++) {
-        for (int col = 0; col < BoardSize; col++) {
-            Square *square = m_AllSquares[row][col];
-            if (squareId == square->getId())
-                return square;
-        }
-    }
-}
+// BoardComponent::Square *
+// BoardComponent::findSquare(const std::string &squareId) const {
+//     for (int row = 0; row < BoardSize; row++) {
+//         for (int col = 0; col < BoardSize; col++) {
+//             Square *square = m_AllSquares[row][col];
+//             if (squareId == square->getId())
+//                 return square;
+//         }
+//     }
+// }
 
-BoardComponent::Square *BoardComponent::findSquare(const Piece &piece) const {
-    return findSquare(piece.getSquareId());
-}
+// BoardComponent::Square *BoardComponent::findSquare(const Piece &piece) const {
+//     return findSquare(piece.getSquareId());
+// }
 
 void BoardComponent::highlightPossibleMoves(const Piece *piece) {
     if (piece) {
@@ -229,8 +193,8 @@ void BoardComponent::highlightPossibleMoves(const Piece *piece) {
         std::unordered_set moves =
             game.generateMoves(Chess::Square(piece->getSquareId()));
         for (const Chess::Move &move : moves) {
-            Square *square = findSquare(move.dst.toString());
-            square->isCandidate(true);
+            // Square *square = findSquare(move.dst.toString());
+            // square->isCandidate(true);
         }
     }
 }
@@ -238,8 +202,8 @@ void BoardComponent::highlightPossibleMoves(const Piece *piece) {
 void BoardComponent::resetPossibleMoves() {
     for (int row = 0; row < BoardSize; row++) {
         for (int col = 0; col < BoardSize; col++) {
-            Square *&square = m_AllSquares[row][col];
-            square->isCandidate(false);
+            // Square *&square = m_AllSquares[row][col];
+            // square->isCandidate(false);
         }
     }
 }

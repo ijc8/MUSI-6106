@@ -22,33 +22,6 @@ class BoardComponent: public juce::Component,
         PGN,
     };
 
-    class Square: public juce::Button, public juce::ActionBroadcaster {
-      public:
-        Square(int row, int column, juce::Colour color);
-        ~Square() = default;
-        void paintButton(juce::Graphics &g, bool shouldDrawButtonAsHighlighted,
-                         bool shouldDrawButtonAsDown) override;
-
-        void resized() override { setBounds(getBounds()); }
-        std::string getId() const {
-            return std::string({(char)(m_Col + 'a'), (char)(m_Row + '1')});
-        };
-
-        void isCandidate(bool isCandidate) {
-            m_IsCandidate = isCandidate;
-            repaint();
-        };
-
-      private:
-        int m_Row;
-        int m_Col;
-        uint8_t m_Rank;
-        uint8_t m_File;
-        juce::String m_Id;
-        juce::Colour m_SquareColor;
-        bool m_IsCandidate;
-    };
-
     class Piece: public juce::ImageButton {
       public:
         Piece(const char *resourceName, uint8_t name,
@@ -81,15 +54,15 @@ class BoardComponent: public juce::Component,
 
         bool isAlly(const Piece &piece) const { return m_Team == piece.m_Team; }
 
-        void placeAt(const Square *square) {
-            m_Square = square;
-            m_SquareId = square->getId();
-            setBounds(square->getBounds());
-        }
+        // void placeAt(const Square *square) {
+        //     m_Square = square;
+        //     m_SquareId = square->getId();
+        //     setBounds(square->getBounds());
+        // }
 
         void resized() override {
-            if (m_Square)
-                setBounds(m_Square->getBounds());
+            // if (m_Square)
+            //     setBounds(m_Square->getBounds());
         }
 
         void setSelected(bool isSelected) { mIsSelected = isSelected; }
@@ -130,7 +103,7 @@ class BoardComponent: public juce::Component,
       private:
         bool mIsSelected = false;
         bool mWasBeingDragged = false;
-        const Square *m_Square = nullptr;
+        // const Square *m_Square = nullptr;
         juce::Image m_Image;
         uint8_t m_Name;
         std::string m_SquareId;
@@ -138,7 +111,6 @@ class BoardComponent: public juce::Component,
     };
 
     BoardComponent();
-    ~BoardComponent();
     void paint(juce::Graphics &g) override;
     void resized() override;
     void buttonClicked(juce::Button *button) override;
@@ -153,29 +125,13 @@ class BoardComponent: public juce::Component,
     Mode m_CurrentMode = Mode::PVP;
     State m_CurrentState = State::Idle;
     Piece *m_SelectedPiece = nullptr;
-    Square *m_AllSquares[BoardSize][BoardSize]{nullptr};
+    // Square *m_AllSquares[BoardSize][BoardSize]{nullptr};
 
-    Piece m_AllPieces[32]{
-        Piece{"W_Rook_png", 'R', "a1"},   Piece{"W_Knight_png", 'N', "b1"},
-        Piece{"W_Bishop_png", 'B', "c1"}, Piece{"W_Queen_png", 'Q', "d1"},
-        Piece{"W_King_png", 'K', "e1"},   Piece{"W_Bishop_png", 'B', "f1"},
-        Piece{"W_Knight_png", 'N', "g1"}, Piece{"W_Rook_png", 'R', "h1"},
-        Piece{"W_Pawn_png", 'P', "a2"},   Piece{"W_Pawn_png", 'P', "b2"},
-        Piece{"W_Pawn_png", 'P', "c2"},   Piece{"W_Pawn_png", 'P', "d2"},
-        Piece{"W_Pawn_png", 'P', "e2"},   Piece{"W_Pawn_png", 'P', "f2"},
-        Piece{"W_Pawn_png", 'P', "g2"},   Piece{"W_Pawn_png", 'P', "h2"},
-        Piece{"B_Pawn_png", 'p', "a7"},   Piece{"B_Pawn_png", 'p', "b7"},
-        Piece{"B_Pawn_png", 'p', "c7"},   Piece{"B_Pawn_png", 'p', "d7"},
-        Piece{"B_Pawn_png", 'p', "e7"},   Piece{"B_Pawn_png", 'p', "f7"},
-        Piece{"B_Pawn_png", 'p', "g7"},   Piece{"B_Pawn_png", 'p', "h7"},
-        Piece{"B_Rook_png", 'r', "a8"},   Piece{"B_Knight_png", 'n', "b8"},
-        Piece{"B_Bishop_png", 'b', "c8"}, Piece{"B_Queen_png", 'q', "d8"},
-        Piece{"B_King_png", 'k', "e8"},   Piece{"B_Bishop_png", 'b', "f8"},
-        Piece{"B_Knight_png", 'n', "g8"}, Piece{"B_Rook_png", 'r', "h8"}};
+    std::unordered_map<Chess::Piece, juce::Image> pieceImages;
 
     void selectPiece(Piece &piece);
-    Square *findSquare(const std::string &squareId) const;
-    Square *findSquare(const Piece &piece) const;
+    // Square *findSquare(const std::string &squareId) const;
+    // Square *findSquare(const Piece &piece) const;
     void highlightPossibleMoves(const Piece *piece);
     void resetPossibleMoves();
     void onStateChange(State newState);
