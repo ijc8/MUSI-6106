@@ -44,6 +44,7 @@ namespace Chess {
         bool operator==(const Square &other) const {
             return rank == other.rank && file == other.file;
         }
+        bool operator!=(const Square &other) { return !(*this == other); }
         std::string toString() const {
             return std::string{(char)(file + 'a'), (char)(rank + '1')};
         }

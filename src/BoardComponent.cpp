@@ -54,6 +54,16 @@ void BoardComponent::paint(juce::Graphics &g) {
         float leftMargin = (squareSize - pieceWidth) / 2.0;
         g.drawImage(image, juce::Rectangle<float>(x + leftMargin, y + topMargin, pieceWidth, pieceHeight));
     }
+
+    if (dragging) {
+        juce::Image &image = pieceImages[dragging->piece];
+        float pieceWidth = pieceHeight * image.getWidth() / image.getHeight();
+        float leftMargin = (squareSize - pieceWidth) / 2.0;
+        juce::Point<int> mousePos = getMouseXYRelative();
+        float x = mousePos.x - dragging->offset.x + leftMargin;
+        float y = mousePos.y - dragging->offset.y + topMargin;
+        g.drawImage(image, juce::Rectangle<float>(x, y, pieceWidth, pieceHeight));
+    }
 }
 
 float BoardComponent::getSquareSize() const {
@@ -72,68 +82,95 @@ juce::Rectangle<float> BoardComponent::squareToRect(Chess::Square square) const 
     return juce::Rectangle<float>(x, y, squareSize, squareSize);
 }
 
-void BoardComponent::mouseDrag(const juce::MouseEvent &event) {
-    std::cout << "drag! " << event.x << " " << event.y << std::endl;
+void BoardComponent::makeMove(const juce::MouseEvent &event) {
+    Chess::Game &game = AppState::getInstance().getGame();
+    Chess::Square target = coordsToSquare(event.x, event.y);
+    Chess::Piece selectedPiece = *game.getPieceAt(*selected);
+    Chess::Color turn = game.getTurn();
+
+    if (selectedPiece.type == Chess::Piece::Type::Pawn &&
+                target.rank == (turn == Chess::Color::White ? 7 : 0)) {
+        // Pawn promotion - need to prompt the user to select which piece they want.
+        juce::PopupMenu m;
+        static const std::pair<std::string, Chess::Piece::Type> promotions[] = {
+            {"Queen", Chess::Piece::Type::Queen},
+            {"Knight", Chess::Piece::Type::Knight},
+            {"Rook", Chess::Piece::Type::Rook},
+            {"Bishop", Chess::Piece::Type::Bishop},
+        };
+        for (int i = 0; i < sizeof(promotions) / sizeof(*promotions); i++) {
+            auto &[name, type] = promotions[i];
+            m.addItem(i + 1, name, true, false, pieceImages[Chess::Piece(type, turn)]);
+        }
+        m.showMenuAsync(juce::PopupMenu::Options(), [this, target](int result) {
+            if (result == 0) {
+                // User dismissed the promotion menu; cancel the move.
+                selected.reset();
+                onStateChange(State::Idle);
+            } else {
+                // Complete move by filling in the promotion.
+                Chess::Piece::Type type = promotions[result - 1].second;
+                juce::String intent = Chess::Move(*selected, target, type).toString();
+                sendActionMessage(intent);
+                selected.reset();
+            }
+        });
+    } else {
+        juce::String intent = Chess::Move(*selected, target).toString();
+        sendActionMessage(intent);
+        selected.reset();
+    }
 }
 
 void BoardComponent::mouseDown(const juce::MouseEvent &event) {
     if (m_CurrentMode == Mode::PGN) return;
 
-    Chess::Square clicked = coordsToSquare(event.x, event.y);
+    Chess::Square target = coordsToSquare(event.x, event.y);
+    juce::Rectangle<float> rect = squareToRect(target);
     Chess::Game &game = AppState::getInstance().getGame();
     Chess::Color turn = game.getTurn();
-    std::optional<Chess::Piece> piece = game.getPieceAt(clicked);
+    std::optional<Chess::Piece> piece = game.getPieceAt(target);
+    Chess::Piece selectedPiece = *game.getPieceAt(*selected);
 
     if (selected) {
-        Chess::Piece selectedPiece = *game.getPieceAt(*selected);
-        if (clicked == *selected) {
+        if (target == *selected) {
             onStateChange(State::Idle);
             selected.reset();
         } else if (piece && selectedPiece.color == piece->color) {
             onStateChange(State::Switching);
             // selectPiece(piece);
-            selected = clicked;
-        } else if (selectedPiece.type == Chess::Piece::Type::Pawn &&
-                   clicked.rank == (turn == Chess::Color::White ? 7 : 0)) {
-            juce::PopupMenu m;
-            static const std::pair<std::string, Chess::Piece::Type> promotions[] = {
-                {"Queen", Chess::Piece::Type::Queen},
-                {"Knight", Chess::Piece::Type::Knight},
-                {"Rook", Chess::Piece::Type::Rook},
-                {"Bishop", Chess::Piece::Type::Bishop},
-            };
-            for (int i = 0; i < sizeof(promotions) / sizeof(*promotions); i++) {
-                auto &[name, type] = promotions[i];
-                m.addItem(i + 1, name, true, false, pieceImages[Chess::Piece(type, turn)]);
-            }
-            m.showMenuAsync(juce::PopupMenu::Options(), [this, clicked](int result) {
-                if (result == 0) {
-                    // User dismissed the promotion menu; cancel the move.
-                    selected.reset();
-                    onStateChange(State::Idle);
-                } else {
-                    Chess::Piece::Type type = promotions[result - 1].second;
-                    juce::String intent = Chess::Move(*selected, clicked, type).toString();
-                    sendActionMessage(intent);
-                    selected.reset();
-                }
-            });
+            selected = target;
+            dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
         } else {
-            juce::String intent = Chess::Move(*selected, clicked).toString();
-            sendActionMessage(intent);
-            selected.reset();
+            makeMove(event);
         }
     } else {
         if (m_CurrentMode == Mode::PVP) {
             if (piece && turn == piece->color && (m_CurrentMode == Mode::PVP || turn == Chess::Color::White)) {
                 // selectPiece(piece);
                 onStateChange(State::Placing);
-                selected = clicked;
+                selected = target;
+                dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
             }
         }
     }
 
     // sendActionMessage("Preview " + getId()) ?
+}
+
+void BoardComponent::mouseDrag(const juce::MouseEvent &event) {
+    repaint();
+}
+
+
+void BoardComponent::mouseUp(const juce::MouseEvent &event) {
+    if (!dragging) return;
+    Chess::Square target = coordsToSquare(event.x, event.y);
+    if (target != *selected) {
+        makeMove(event);
+    }
+    dragging.reset();
+    repaint();
 }
 
 void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
