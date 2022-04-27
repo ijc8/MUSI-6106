@@ -103,7 +103,8 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
                 {"Bishop", Chess::Piece::Type::Bishop},
             };
             for (int i = 0; i < sizeof(promotions) / sizeof(*promotions); i++) {
-                m.addItem(i + 1, promotions[i].first);
+                auto &[name, type] = promotions[i];
+                m.addItem(i + 1, name, true, false, pieceImages[Chess::Piece(type, turn)]);
             }
             m.showMenuAsync(juce::PopupMenu::Options(), [this, clicked](int result) {
                 if (result == 0) {
