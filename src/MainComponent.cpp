@@ -272,7 +272,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
     {
     case GameMode::PVC:
         m_BroadcastManager.toggleStockfish(true);
-        m_ChessboardGUI.onModeChange(GUI::ChessBoard::mode::kPVC);
+        m_ChessboardGUI.onModeChange(BoardComponent::mode::kPVC);
         m_pgnButton.setButtonText("Load PGN");
         m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         m_PgnString.clear();
@@ -290,7 +290,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         break;
     case GameMode::PVP:
         m_BroadcastManager.toggleStockfish(false);
-        m_ChessboardGUI.onModeChange(GUI::ChessBoard::mode::kPVP);
+        m_ChessboardGUI.onModeChange(BoardComponent::mode::kPVP);
         m_pgnButton.setButtonText("Load PGN");
         m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         m_PgnString.clear();
@@ -308,7 +308,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         break;
     default:
         m_BroadcastManager.toggleStockfish(false);
-        m_ChessboardGUI.onModeChange(GUI::ChessBoard::mode::kPGN);
+        m_ChessboardGUI.onModeChange(BoardComponent::mode::kPGN);
         m_pgnButton.setEnabled(true);
         buttonPreset1.setEnabled(false);
         buttonPreset2.setEnabled(false);

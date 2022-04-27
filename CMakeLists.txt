@@ -86,6 +86,7 @@ target_sources(MusicalChess
     PRIVATE
         src/Main.cpp
         src/MainComponent.cpp
+        src/BoardComponent.cpp
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp

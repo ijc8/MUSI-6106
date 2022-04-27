@@ -7,7 +7,7 @@
 
 #include "GameState.h"
 #include "DebugSonifier.h"
-#include "ChessboardGUI.h"
+#include "BoardComponent.h"
 #include "EngineBridge.h"
 
 class EngineManager: public juce::ActionBroadcaster, public juce::ChangeListener {
