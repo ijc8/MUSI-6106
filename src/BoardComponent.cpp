@@ -1,18 +1,5 @@
 #include "BoardComponent.h"
 
-// void BoardComponent::Square::paintButton(juce::Graphics &g,
-//                                          bool shouldDrawButtonAsHighlighted,
-//                                          bool shouldDrawButtonAsDown) {
-//     if (m_IsCandidate) {
-//         if (shouldDrawButtonAsHighlighted) {
-//             g.fillAll(juce::Colours::red);
-//             sendActionMessage("Preview " + getId());
-//         } else
-//             g.fillAll(juce::Colours::yellow);
-//     } else
-//         g.fillAll(m_SquareColor);
-// }
-
 BoardComponent::BoardComponent() {
     std::pair<Chess::Piece::Type, std::string> types[] = {
         {Chess::Piece::Type::Pawn, "Pawn"},
@@ -41,8 +28,20 @@ void BoardComponent::paint(juce::Graphics &g) {
     // Draw squares.
     // NOTE: We assume our parent is maintaining our 1:1 aspect ratio.
     int size = getWidth();
-    float squareSize = (float)size / BoardSize;
+    float squareSize = getSquareSize();
     g.fillCheckerBoard(juce::Rectangle<float>(0, 0, size, size), squareSize, squareSize, lightSquare, darkSquare);
+
+    if (selected) {
+        g.setColour(juce::Colours::red.withAlpha(0.5f));
+        g.fillRect(squareToRect(*selected));
+        // TODO: Maybe cache this.
+        auto candidates = AppState::getInstance().getGame().generateMoves(*selected);
+        g.setColour(juce::Colours::yellow.withAlpha(0.5f));
+        for (auto move : candidates) {
+            g.fillRect(squareToRect(move.dst));
+        }
+        g.setColour(juce::Colours::black);
+    }
 
     // Draw pieces.
     float pieceHeight = squareSize * .8;
@@ -57,78 +56,63 @@ void BoardComponent::paint(juce::Graphics &g) {
     }
 }
 
-void BoardComponent::buttonClicked(juce::Button *button) {
-    if (m_CurrentMode != Mode::PGN) {
-        // for (Piece &piece : m_AllPieces) {
-        //     if (button == &piece) {
-        //         if (m_SelectedPiece) {
-        //             if (m_SelectedPiece == &piece) {
-        //                 onStateChange(State::Idle);
-        //             } else if (m_SelectedPiece->isAlly(piece)) {
-        //                 onStateChange(State::Switching);
-        //                 m_SelectedPiece->setToggleState(
-        //                     false, juce::dontSendNotification);
-        //                 selectPiece(piece);
-        //             } else {
-        //                 juce::String intent = m_SelectedPiece->getSquareId() +
-        //                                       piece.getSquareId();
-        //                 sendActionMessage(intent);
-        //             }
-        //         } else {
-        //             if (m_CurrentMode == Mode::PVP) {
-        //                 if (AppState::getInstance().getGame().getTurn() ==
-        //                     piece.getTeam()) {
-        //                     selectPiece(piece);
-        //                     onStateChange(State::Placing);
-        //                 }
-        //             } else {
-        //                 if (AppState::getInstance().getGame().getTurn() ==
-        //                         Chess::Color::White &&
-        //                     piece.getTeam() == Chess::Color::White) {
-        //                     selectPiece(piece);
-        //                     onStateChange(State::Placing);
-        //                 }
-        //             }
-        //         }
-        //         return;
-        //     }
-        // }
+float BoardComponent::getSquareSize() const {
+    return (float)getWidth() / BoardSize;
+}
 
-        // for (int row = 0; row < BoardSize; row++) {
-        //     for (int col = 0; col < BoardSize; col++) {
-        //         Square *&square = m_AllSquares[row][col];
-        //         if (button == square) {
-        //             if (m_CurrentState == State::Placing) {
-        //                 juce::String intent =
-        //                     m_SelectedPiece->getSquareId() + square->getId();
-        //                 sendActionMessage(intent);
-        //             }
-        //             return;
-        //         }
-        //     }
-        // }
+Chess::Square BoardComponent::coordsToSquare(int x, int y) const {
+    float squareSize = getSquareSize();
+    return Chess::Square(7 - (int)(y / squareSize), (int)(x / squareSize));
+}
+
+juce::Rectangle<float> BoardComponent::squareToRect(Chess::Square square) const {
+    float squareSize = getSquareSize();
+    float x = squareSize * square.file;
+    float y = squareSize * (7 - square.rank);
+    return juce::Rectangle<float>(x, y, squareSize, squareSize);
+}
+
+void BoardComponent::mouseDrag(const juce::MouseEvent &event) {
+    std::cout << "drag! " << event.x << " " << event.y << std::endl;
+}
+
+void BoardComponent::mouseDown(const juce::MouseEvent &event) {
+    if (m_CurrentMode == Mode::PGN) return;
+
+    Chess::Square clicked = coordsToSquare(event.x, event.y);
+    Chess::Game &game = AppState::getInstance().getGame();
+    Chess::Color turn = game.getTurn();
+    std::optional<Chess::Piece> piece = game.getPieceAt(clicked);
+
+    std::cout << "down! " << event.x << " " << event.y << " " << clicked.toString() << std::endl;
+
+    if (selected) {
+        if (clicked == *selected) {
+            onStateChange(State::Idle);
+            selected.reset();
+        } else if (piece && game.getPieceAt(*selected)->color == piece->color) {
+            onStateChange(State::Switching);
+            // selectPiece(piece);
+            selected = clicked;
+        } else {
+            juce::String intent = selected->toString() + clicked.toString(); // m_SelectedPiece->getSquareId() + piece.getSquareId();
+            sendActionMessage(intent);
+            selected.reset();
+        }
+    } else {
+        if (m_CurrentMode == Mode::PVP) {
+            if (piece && turn == piece->color && (m_CurrentMode == Mode::PVP || turn == Chess::Color::White)) {
+                // selectPiece(piece);
+                onStateChange(State::Placing);
+                selected = clicked;
+            }
+        }
     }
+
+    // sendActionMessage("Preview " + getId()) ?
 }
 
 void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
-    // std::list<Piece *> pieceList;
-    // for (Piece &piece : m_AllPieces) {
-    //     piece.setVisible(false);
-    //     pieceList.push_front(&piece);
-    // }
-
-    auto pieceMap = AppState::getInstance().getGame().getPieceMap();
-    for (const auto [square, piece] : pieceMap) {
-        // for (Piece *guiPiece : pieceList) {
-        //     if (guiPiece->getId().toStdString() ==
-        //         std::string{piece.toChar()}) {
-        //         guiPiece->setVisible(true);
-        //         // guiPiece->placeAt(findSquare(square.toString()));
-        //         pieceList.remove(guiPiece);
-        //         break;
-        //     }
-        // }
-    }
     onStateChange(State::Idle);
 }
 
@@ -156,14 +140,9 @@ void BoardComponent::onModeChange(BoardComponent::Mode newMode) {
 
 // void BoardComponent::selectPiece(Piece &piece) {
 //     if (m_SelectedPiece) {
-//         m_SelectedPiece->setSelected(false);
 //         if (m_SelectedPiece->getId() != piece.getId())
 //             sendActionMessage("Deselect " + m_SelectedPiece->getId());
 //     }
-//     m_SelectedPiece = &piece;
-//     m_SelectedPiece->setSelected(true);
-//     m_SelectedPiece->setToggleState(true, juce::dontSendNotification);
-//     highlightPossibleMoves(m_SelectedPiece);
 //     sendActionMessage("Select " + m_SelectedPiece->getId());
 //     onStateChange(State::Placing);
 // }
@@ -222,4 +201,5 @@ void BoardComponent::onStateChange(BoardComponent::State newState) {
     }
 
     m_CurrentState = newState;
+    repaint();
 }

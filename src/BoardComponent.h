@@ -5,7 +5,6 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 class BoardComponent: public juce::Component,
-                      public juce::Button::Listener,
                       public juce::ActionBroadcaster,
                       public juce::ChangeListener,
                       public juce::ActionListener {
@@ -53,7 +52,8 @@ class BoardComponent: public juce::Component,
 
     BoardComponent();
     void paint(juce::Graphics &g) override;
-    void buttonClicked(juce::Button *button) override;
+    void mouseDown(const juce::MouseEvent &event) override;
+    void mouseDrag(const juce::MouseEvent &event) override;
     void changeListenerCallback(juce::ChangeBroadcaster *source) override;
     void actionListenerCallback(const juce::String &message) override;
     void onModeChange(Mode newMode);
@@ -62,12 +62,15 @@ class BoardComponent: public juce::Component,
     static constexpr int BoardSize = 8;
     static constexpr int NumPieces = 32;
 
-    Mode m_CurrentMode = Mode::PVP;
-    State m_CurrentState = State::Idle;
-    // Piece *m_SelectedPiece = nullptr;
-
     std::unordered_map<Chess::Piece, juce::Image> pieceImages;
 
+    Mode m_CurrentMode = Mode::PVP;
+    State m_CurrentState = State::Idle;
+    std::optional<Chess::Square> selected;
+
+    float getSquareSize() const;
+    Chess::Square coordsToSquare(int x, int y) const;
+    juce::Rectangle<float> squareToRect(Chess::Square square) const;
     // void selectPiece(Piece &piece);
     // Square *findSquare(const std::string &squareId) const;
     // Square *findSquare(const Piece &piece) const;
