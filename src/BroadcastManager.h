@@ -86,7 +86,7 @@ public:
         }
         else 
         {
-            Chess::Move move = Chess::Move(Chess::Square(message.substring(0, 2).toStdString()), Chess::Square(message.substring(2, 4).toStdString()));
+            Chess::Move move = Chess::Move(message.toStdString());
             if (m_Game.isLegal(move))
             {
                 emptyUndoHistory();

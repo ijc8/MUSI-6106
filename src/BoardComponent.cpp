@@ -87,13 +87,38 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
     std::cout << "down! " << event.x << " " << event.y << " " << clicked.toString() << std::endl;
 
     if (selected) {
+        Chess::Piece selectedPiece = *game.getPieceAt(*selected);
         if (clicked == *selected) {
             onStateChange(State::Idle);
             selected.reset();
-        } else if (piece && game.getPieceAt(*selected)->color == piece->color) {
+        } else if (piece && selectedPiece.color == piece->color) {
             onStateChange(State::Switching);
             // selectPiece(piece);
             selected = clicked;
+        } else if (selectedPiece.type == Chess::Piece::Type::Pawn &&
+                   clicked.rank == (turn == Chess::Color::White ? 7 : 0)) {
+            juce::PopupMenu m;
+            static const std::pair<std::string, Chess::Piece::Type> promotions[] = {
+                {"Queen", Chess::Piece::Type::Queen},
+                {"Knight", Chess::Piece::Type::Knight},
+                {"Rook", Chess::Piece::Type::Rook},
+                {"Bishop", Chess::Piece::Type::Bishop},
+            };
+            for (int i = 0; i < sizeof(promotions) / sizeof(*promotions); i++) {
+                m.addItem(i + 1, promotions[i].first);
+            }
+ 
+            m.showMenuAsync(juce::PopupMenu::Options(), [this](int result) {
+                if (result == 0) {
+                    // user dismissed the menu without picking anything
+                    selected.reset();
+                    onStateChange(State::Idle);
+                } else {
+                    Chess::Piece::Type type = promotions[result - 1].second;
+                    std::cout << "Chose to promote to " << Chess::Piece(type, Chess::Color::White).toChar() << std::endl;
+                    // TODO!
+                }
+            });
         } else {
             juce::String intent = selected->toString() + clicked.toString(); // m_SelectedPiece->getSquareId() + piece.getSquareId();
             sendActionMessage(intent);
@@ -128,13 +153,6 @@ void BoardComponent::actionListenerCallback(const juce::String &message) {
 }
 
 void BoardComponent::onModeChange(BoardComponent::Mode newMode) {
-    switch (newMode) {
-    case Mode::PVP:
-        break;
-    case Mode::PVC:
-        break;
-    default:;
-    }
     m_CurrentMode = newMode;
 }
 
@@ -147,55 +165,12 @@ void BoardComponent::onModeChange(BoardComponent::Mode newMode) {
 //     onStateChange(State::Placing);
 // }
 
-// BoardComponent::Square *
-// BoardComponent::findSquare(const std::string &squareId) const {
-//     for (int row = 0; row < BoardSize; row++) {
-//         for (int col = 0; col < BoardSize; col++) {
-//             Square *square = m_AllSquares[row][col];
-//             if (squareId == square->getId())
-//                 return square;
-//         }
-//     }
-// }
-
-// BoardComponent::Square *BoardComponent::findSquare(const Piece &piece) const {
-//     return findSquare(piece.getSquareId());
-// }
-
-// void BoardComponent::highlightPossibleMoves(const Piece *piece) {
-//     if (piece) {
-//         Chess::Game game = AppState::getInstance().getGame();
-//         std::unordered_set moves =
-//             game.generateMoves(Chess::Square(piece->getSquareId()));
-//         for (const Chess::Move &move : moves) {
-//             Square *square = findSquare(move.dst.toString());
-//             square->isCandidate(true);
-//         }
-//     }
-// }
-
-void BoardComponent::resetPossibleMoves() {
-    for (int row = 0; row < BoardSize; row++) {
-        for (int col = 0; col < BoardSize; col++) {
-            // Square *&square = m_AllSquares[row][col];
-            // square->isCandidate(false);
-        }
-    }
-}
-
 void BoardComponent::onStateChange(BoardComponent::State newState) {
     switch (newState) {
     case State::Idle:
-        // if (m_SelectedPiece) {
-        //     m_SelectedPiece->setToggleState(false, juce::dontSendNotification);
-        //     m_SelectedPiece->setSelected(false);
-        //     sendActionMessage("Deselect " + m_SelectedPiece->getId());
-        // }
-        // m_SelectedPiece = nullptr;
-        resetPossibleMoves();
+        // TODO: sendActionMessage("Deselect " + m_SelectedPiece->getId());
         break;
     case State::Switching:
-        resetPossibleMoves();
         break;
     default:;
     }

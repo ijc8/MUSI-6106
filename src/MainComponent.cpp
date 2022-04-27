@@ -43,9 +43,9 @@ MainComponent::MainComponent()
     };
 
     addAndMakeVisible(buttonPreset5);
-    buttonPreset5.setButtonText("3r1rk1/ppp1qpp1/3p1n1p/2b1p3/2BnP3/2NP1N2/PPP1QPPP/R1B2RK1");
+    buttonPreset5.setButtonText("rnbqkbnr/1P2pppp/8/p7/8/8/PPPP1PPP/RNBQKBNR");
     buttonPreset5.onClick = [this, &game]() {
-        game.setBoardFen("3r1rk1/ppp1qpp1/3p1n1p/2b1p3/2BnP3/2NP1N2/PPP1QPPP/R1B2RK1");
+        game.setBoardFen("rnbqkbnr/1P2pppp/8/p7/8/8/PPPP1PPP/RNBQKBNR");
         m_BroadcastManager.sendChangeMessage();
     };
 

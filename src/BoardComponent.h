@@ -75,6 +75,5 @@ class BoardComponent: public juce::Component,
     // Square *findSquare(const std::string &squareId) const;
     // Square *findSquare(const Piece &piece) const;
     // void highlightPossibleMoves(const Piece *piece);
-    void resetPossibleMoves();
     void onStateChange(State newState);
 };
