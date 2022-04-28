@@ -44,6 +44,7 @@ namespace Chess {
         bool operator==(const Square &other) const {
             return rank == other.rank && file == other.file;
         }
+        bool operator!=(const Square &other) { return !(*this == other); }
         std::string toString() const {
             return std::string{(char)(file + 'a'), (char)(rank + '1')};
         }
@@ -54,19 +55,29 @@ namespace Chess {
         Move(Square src_, Square dst_, std::optional<Piece::Type> promotion_ = std::nullopt)
             : src(src_), dst(dst_), promotion(promotion_) {}
         Move(const std::string &squares)  // Build from string of form "b1c3".
-            : Move(Square(squares.substr(0, 2)), Square(squares.substr(2))) {}
+            : Move(Square(squares.substr(0, 2)), Square(squares.substr(2)),
+                   squares.size() > 4 ? std::make_optional(Piece::FromChar.at(toupper(squares[4]))) : std::nullopt) {}
         bool operator==(const Move &other) const {
             return src == other.src && dst == other.dst && promotion == other.promotion;
         }
         std::string toString() const {
-            return src.toString() + dst.toString();
+            std::string s =  src.toString() + dst.toString();
+            if (promotion) s += tolower(Piece::ToChar.at(*promotion));
+            return s;
         }
         Square src, dst;
         std::optional<Piece::Type> promotion;
     };
 }
 
-// Implement hash for Square so that we create a map of Square -> Piece.
+// Implement hash for Piece, Square, and Move so we can use them as keys in maps.
+template <>
+struct std::hash<Chess::Piece> {
+    std::size_t operator()(const Chess::Piece &piece) const {
+        return ((uint8_t)piece.type << 1) | (uint8_t)piece.color;
+    }
+};
+
 template <>
 struct std::hash<Chess::Square> {
     std::size_t operator()(const Chess::Square &square) const {

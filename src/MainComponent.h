@@ -9,7 +9,7 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 #include <juce_audio_utils/juce_audio_utils.h>
 
-#include "ChessboardGUI.h"
+#include "BoardComponent.h"
 #include "DebugSonifier.h"
 #include "ThreatsSonifier.h"
 #include "StorySonifier.h"
@@ -64,7 +64,7 @@ private:
     };
 
     BroadcastManager m_BroadcastManager;
-    GUI::ChessBoard m_ChessboardGUI;
+    BoardComponent m_ChessboardGUI;
 
 
     juce::TextButton buttonPreset1;
