@@ -11,6 +11,7 @@
 
 #include "BoardComponent.h"
 #include "DebugSonifier.h"
+#include "CommentarySonifier.h"
 #include "ThreatsSonifier.h"
 #include "StorySonifier.h"
 #include "GameState.h"
@@ -61,6 +62,7 @@ private:
         {"Debug", [](){ return std::make_unique<DebugSonifier>(); }},
         {"Threat", [](){ return std::make_unique<ThreatsSonifier>(); }},
         {"Story", [](){ return std::make_unique<StorySonifier>(); }},
+        {"Commentary", [](){ return std::make_unique<CommentarySonifier>(); }},
     };
 
     BroadcastManager m_BroadcastManager;

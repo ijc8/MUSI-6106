@@ -90,6 +90,7 @@ target_sources(MusicalChess
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp
+        src/CommentarySonifier.cpp
 	    src/DebugSonifier.cpp
 	    src/ThreatsSonifier.cpp
         src/EngineBridge.cpp
