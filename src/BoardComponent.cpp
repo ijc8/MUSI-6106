@@ -10,7 +10,7 @@ BoardComponent::BoardComponent() {
         {Chess::Piece::Type::King, "King"},
     };
     std::pair<Chess::Color, std::string> colors[] = {{Chess::Color::White, "W"}, {Chess::Color::Black, "B"}};
-
+    // Load chess piece images.
     for (auto &[type, typeName] : types) {
         for (auto &[color, colorName] : colors) {
             int size;
@@ -91,7 +91,7 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
     if (selectedPiece.type == Chess::Piece::Type::Pawn &&
                 target.rank == (turn == Chess::Color::White ? 7 : 0)) {
         // Pawn promotion - need to prompt the user to select which piece they want.
-        juce::PopupMenu m;
+        juce::PopupMenu menu;
         static const std::pair<std::string, Chess::Piece::Type> promotions[] = {
             {"Queen", Chess::Piece::Type::Queen},
             {"Knight", Chess::Piece::Type::Knight},
@@ -100,13 +100,12 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
         };
         for (int i = 0; i < sizeof(promotions) / sizeof(*promotions); i++) {
             auto &[name, type] = promotions[i];
-            m.addItem(i + 1, name, true, false, pieceImages[Chess::Piece(type, turn)]);
+            menu.addItem(i + 1, name, true, false, pieceImages[Chess::Piece(type, turn)]);
         }
-        m.showMenuAsync(juce::PopupMenu::Options(), [this, target](int result) {
+        menu.showMenuAsync(juce::PopupMenu::Options(), [this, target](int result) {
             if (result == 0) {
                 // User dismissed the promotion menu; cancel the move.
-                selected.reset();
-                onStateChange(State::Idle);
+                select();
             } else {
                 // Complete move by filling in the promotion.
                 Chess::Piece::Type type = promotions[result - 1].second;
@@ -130,16 +129,13 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
     Chess::Game &game = AppState::getInstance().getGame();
     Chess::Color turn = game.getTurn();
     std::optional<Chess::Piece> piece = game.getPieceAt(target);
-    Chess::Piece selectedPiece = *game.getPieceAt(*selected);
 
     if (selected) {
+        Chess::Piece selectedPiece = *game.getPieceAt(*selected);
         if (target == *selected) {
-            onStateChange(State::Idle);
-            selected.reset();
+            select();
         } else if (piece && selectedPiece.color == piece->color) {
-            onStateChange(State::Switching);
-            // selectPiece(piece);
-            selected = target;
+            select(target);
             dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
         } else {
             makeMove(event);
@@ -147,18 +143,15 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
     } else {
         if (m_CurrentMode == Mode::PVP) {
             if (piece && turn == piece->color && (m_CurrentMode == Mode::PVP || turn == Chess::Color::White)) {
-                // selectPiece(piece);
-                onStateChange(State::Placing);
-                selected = target;
+                select(target);
                 dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
             }
         }
     }
-
-    // sendActionMessage("Preview " + getId()) ?
 }
 
 void BoardComponent::mouseDrag(const juce::MouseEvent &event) {
+    (void)event;
     repaint();
 }
 
@@ -174,17 +167,18 @@ void BoardComponent::mouseUp(const juce::MouseEvent &event) {
 }
 
 void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
-    onStateChange(State::Idle);
+    (void)source;
+    select();
 }
 
 void BoardComponent::actionListenerCallback(const juce::String &message) {
     if (message.contains("Preview")) {
-        // if (m_SelectedPiece) {
-        //     juce::String newMessage = message.substring(0, 8) +
-        //                               m_SelectedPiece->getSquareId() +
-        //                               message.substring(8, 10);
-        //     sendActionMessage(newMessage);
-        // }
+        if (selected) {
+            juce::String newMessage = message.substring(0, 8) +
+                                      selected->toString() +
+                                      message.substring(8, 10);
+            sendActionMessage(newMessage);
+        }
     }
 }
 
@@ -192,25 +186,15 @@ void BoardComponent::onModeChange(BoardComponent::Mode newMode) {
     m_CurrentMode = newMode;
 }
 
-// void BoardComponent::selectPiece(Piece &piece) {
-//     if (m_SelectedPiece) {
-//         if (m_SelectedPiece->getId() != piece.getId())
-//             sendActionMessage("Deselect " + m_SelectedPiece->getId());
-//     }
-//     sendActionMessage("Select " + m_SelectedPiece->getId());
-//     onStateChange(State::Placing);
-// }
-
-void BoardComponent::onStateChange(BoardComponent::State newState) {
-    switch (newState) {
-    case State::Idle:
-        // TODO: sendActionMessage("Deselect " + m_SelectedPiece->getId());
-        break;
-    case State::Switching:
-        break;
-    default:;
+void BoardComponent::select(std::optional<Chess::Square> square) {
+    Chess::Game &game = AppState::getInstance().getGame();
+    if (selected && !(square && *selected == *square)) {
+        sendActionMessage("Deselect " + std::string({game.getPieceAt(*selected)->toChar()}));
     }
-
-    m_CurrentState = newState;
+    if (square) {
+        sendActionMessage("Preview " + square->toString());
+        sendActionMessage("Select " + std::string({game.getPieceAt(*square)->toChar()}));
+    }
+    selected = square;
     repaint();
 }

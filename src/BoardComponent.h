@@ -9,12 +9,6 @@ class BoardComponent: public juce::Component,
                       public juce::ChangeListener,
                       public juce::ActionListener {
   public:
-    enum class State {
-        Idle,
-        Placing,
-        Switching,
-    };
-
     enum class Mode {
         PVP,
         PVC,
@@ -37,7 +31,6 @@ class BoardComponent: public juce::Component,
     std::unordered_map<Chess::Piece, juce::Image> pieceImages;
 
     Mode m_CurrentMode = Mode::PVP;
-    State m_CurrentState = State::Idle;
     std::optional<Chess::Square> selected;
     struct FloatingPiece { Chess::Piece piece; juce::Point<float> offset; };
     std::optional<FloatingPiece> dragging;
@@ -46,5 +39,5 @@ class BoardComponent: public juce::Component,
     Chess::Square coordsToSquare(int x, int y) const;
     juce::Rectangle<float> squareToRect(Chess::Square square) const;
     void makeMove(const juce::MouseEvent &event);
-    void onStateChange(State newState);
+    void select(std::optional<Chess::Square> square = std::nullopt);
 };
