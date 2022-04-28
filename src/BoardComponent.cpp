@@ -180,7 +180,7 @@ void BoardComponent::select(std::optional<Chess::Square> square) {
         sendActionMessage("Deselect " + std::string({game.getPieceAt(*selected)->toChar()}));
     }
     if (square) {
-        sendActionMessage("Preview " + square->toString());
+        //sendActionMessage("Preview " + square->toString());
         sendActionMessage("Select " + std::string({game.getPieceAt(*square)->toChar()}));
     }
     selected = square;

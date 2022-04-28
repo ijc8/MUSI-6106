@@ -74,7 +74,7 @@ namespace Chess {
 template <>
 struct std::hash<Chess::Piece> {
     std::size_t operator()(const Chess::Piece &piece) const {
-        return ((uint)piece.type << 1) | (uint)piece.color;
+        return ((uint8_t)piece.type << 1) | (uint8_t)piece.color;
     }
 };
 
