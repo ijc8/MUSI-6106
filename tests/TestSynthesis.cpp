@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "../src/MainProcessor.h"
+#include "../src/Waveform.h"
 
 void genSine(float** ppfBuffer, float fFreq, float fGain, float fPan, float fSampleRate, int iNumChannels, int iNumSamples)
 {
@@ -55,8 +56,7 @@ void CHECK_ARRAY_CLOSE(float** ppfBuffer1, float** ppfBuffer2, int iNumChannels,
 
 TEST_CASE("Parameter Setting", "[CWavetableOscillator]")
 {
-	CSineWavetable sine;
-	CWavetableOscillator osc(sine);
+	CWavetableOscillator osc(Waveform::sine);
 
 	// Checks default parameter values
 	REQUIRE(osc.getFrequency() == 0);
@@ -103,8 +103,7 @@ TEST_CASE("CWavetableOscillator Accuracy", "[CWavetableOscillator]")
 		ppfOscBuffer[channel] = new float[iNumFrames] {0};
 	}
 
-	CSineWavetable sineWavetable;
-	CWavetableOscillator* osc = new CWavetableOscillator(sineWavetable);
+	CWavetableOscillator* osc = new CWavetableOscillator(Waveform::sine);
 
 	SECTION("Check Various Frequencies")
 	{
@@ -203,8 +202,7 @@ TEST_CASE("CWavetableOscillator Accuracy", "[CWavetableOscillator]")
 
 TEST_CASE("Shifting Parameters", "[CWavetableOscillator]")
 {
-	CSineWavetable sine;
-	CWavetableOscillator osc(sine);
+	CWavetableOscillator osc(Waveform::sine);
 
 	osc.setFrequency(440);
 	osc.setGain(0.5);
@@ -243,17 +241,16 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 	float fGain = 1.0f;
 	float fPan = 0.5f;
 	float fSampleRate = 44100;
-	CSineWavetable sine;
-	std::shared_ptr<CWavetableOscillator> pOsc = std::make_shared<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
+	std::shared_ptr<CWavetableOscillator> pOsc = std::make_shared<CWavetableOscillator>(Waveform::sine, fFreq, fGain, fSampleRate);
 	std::shared_ptr<CScheduler> pSchedule = std::make_shared<CScheduler>(fSampleRate);
 	std::shared_ptr<CLooper> pLooper = std::make_shared<CLooper>(fSampleRate);
 
 
 	SECTION("Handes Out of Bounds Parameters")
 	{
-		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
-		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
-		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), -2, -2) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), 3, 0) == Error_t::kFunctionInvalidArgsError);
+		REQUIRE(pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), -2, 3) == Error_t::kFunctionInvalidArgsError);
 		
 		std::unique_ptr<CInstrument> pOscNULL;
 		REQUIRE(pSchedule->scheduleInst(std::move(pOscNULL), 0, 1) == Error_t::kFunctionInvalidArgsError);
@@ -261,16 +258,16 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 
 	SECTION("Returns Correct Length")
 	{
-		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 0, 2);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), 0, 2);
 		REQUIRE(pSchedule->getLengthInSec() == 2);
 		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
-		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 1, 1);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), 1, 1);
 		REQUIRE(pSchedule->getLengthInSec() == 2);
 		REQUIRE(pSchedule->getLengthInSamp() == 2 * fSampleRate);
-		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 2, 4);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), 2, 4);
 		REQUIRE(pSchedule->getLengthInSec() == 6);
 		REQUIRE(pSchedule->getLengthInSamp() == 6 * fSampleRate);
-		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine), 2.25, 4.5);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine), 2.25, 4.5);
 		REQUIRE(pSchedule->getLengthInSec() == 6.75);
 		REQUIRE(pSchedule->getLengthInSamp() == 6.75 * fSampleRate);
 	}
@@ -283,7 +280,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		assert((fDurationInSec + fOnsetInSec) * fSampleRate < iLength);
 
 		pSchedule->setADSRParameters(0, 0, 1, 0);
-		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
+		pSchedule->scheduleInst(std::make_unique<CWavetableOscillator>(Waveform::sine, fFreq, fGain, fSampleRate), fOnsetInSec, fDurationInSec);
 
 		int iNoteOn = static_cast<int>(fOnsetInSec * fSampleRate);
 		int iNoteOff = static_cast<int>((fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate) + iNoteOn;
@@ -313,7 +310,7 @@ TEST_CASE("Scheduler Testing", "[CScheduler]")
 		int iNoteOn = static_cast<int>(fOnsetInSec * fSampleRate);
 		int iNoteOff = static_cast<int>((fDurationInSec - pOsc->getADSRParameters().release) * fSampleRate) + iNoteOn;
 
-		auto tempOsc = std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
+		auto tempOsc = std::make_unique<CWavetableOscillator>(Waveform::sine, fFreq, fGain, fSampleRate);
 		pLooper->setADSRParameters(0, 0, 1, 0);
 
 		pLooper->scheduleInst(std::move(tempOsc), fOnsetInSec, fDurationInSec);
@@ -354,8 +351,6 @@ TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 {
 	CMainProcessor mainProcessor;
 
-	CSineWavetable sine;
-
 	const float fFreq = 440;
 	const float fGain = 1.0;
 	const float fPan = 0.5f;
@@ -372,7 +367,7 @@ TEST_CASE("Multi-Threading Tests", "[MainProcessor]")
 
 	genSine(ppfGroundBuffer, fFreq, fGain, fPan, fSampleRate, iNumChannels, iNumFrames);
 
-	auto inst = std::make_unique<CWavetableOscillator>(sine, fFreq, fGain, fSampleRate);
+	auto inst = std::make_unique<CWavetableOscillator>(Waveform::sine, fFreq, fGain, fSampleRate);
 	inst->setADSRParameters(0, 0, 1, 0);
 	mainProcessor.setADSRParameters(0, 0, 1, 0);
 	std::thread thread1(&CMainProcessor::scheduleInst, &mainProcessor, std::move(inst), 0, 1);

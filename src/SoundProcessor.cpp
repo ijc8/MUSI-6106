@@ -151,16 +151,16 @@ void CInstrument::checkFlags()
 //=======================================================================
 
 //=======================================================================
-CWavetableOscillator::CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequencyInHz, float fGain, float fSampleRate) :
+CWavetableOscillator::CWavetableOscillator(const juce::AudioSampleBuffer &wavetableToUse, float fFrequencyInHz, float fGain, float fSampleRate) :
 	CInstrument(fGain, fSampleRate),
-	m_Wavetable(wavetableToUse),
+	wavetable(wavetableToUse),
 	m_iTableSize(wavetableToUse.getNumSamples())
 {
 	setFrequency(fFrequencyInHz);
 }
 
 CWavetableOscillator::CWavetableOscillator(const CWavetableOscillator& other) :
-	CWavetableOscillator(other.m_Wavetable, other.m_fFrequencyInHz, other.m_fGain, other.m_fSampleRateInHz)
+	CWavetableOscillator(other.wavetable, other.m_fFrequencyInHz, other.m_fGain, other.m_fSampleRateInHz)
 {
 }
 
@@ -212,7 +212,7 @@ void CWavetableOscillator::processFrame(float** ppfOutBuffer, int iNumChannels, 
 
 	float frac = m_fCurrentIndex - (float)index0;
 
-	const float* wavetableReader = m_Wavetable.getReadPointer(0);
+	const float* wavetableReader = wavetable.getReadPointer(0);
 	float value0 = wavetableReader[index0];
 	float value1 = wavetableReader[index1];
 

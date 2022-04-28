@@ -3,6 +3,7 @@
 //
 
 #include "ThreatsSonifier.h"
+#include "Waveform.h"
 
 ThreatsSonifier::ThreatsSonifier (){
     srand(static_cast<unsigned>(time(0)));
@@ -22,19 +23,19 @@ void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::
 
     std::shared_ptr<CInstrument> inst;
     if (preyPiece->type == Chess::Piece::Type::Pawn) {
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Bishop || preyPiece->type == Chess::Piece::Type::Knight || preyPiece->type == Chess::Piece::Type::Rook){
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Queen){
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::King){
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
     }
 
     inst->noteOn();

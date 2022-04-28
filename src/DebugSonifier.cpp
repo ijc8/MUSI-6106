@@ -3,6 +3,7 @@
 //
 
 #include "DebugSonifier.h"
+#include "Waveform.h"
 
 DebugSonifier::DebugSonifier (){
     srand(static_cast<unsigned>(time(0)));
@@ -20,7 +21,7 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     int gainIdx = static_cast<int>(square.rank);
     int panIdx = rand() % 8;
 
-    auto inst = std::make_shared<CWavetableOscillator>(sine, frequencies[freqIdx], gains[gainIdx], 44100);
+    auto inst = std::make_shared<CWavetableOscillator>(Waveform::sine, frequencies[freqIdx], gains[gainIdx], 44100);
     inst->setADSRParameters(2, 0, 1, 2);
     inst->noteOn();
     inst->setPan(pans[panIdx]);

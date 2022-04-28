@@ -4,7 +4,6 @@
 #include <cassert>
 #include "ErrorDef.h"
 #include "GameState.h"
-#include "Wavetable.h"
 #include "MainProcessor.h"
 #include <vector>
 #include <list>
@@ -26,10 +25,6 @@ protected:
     void onMove(Chess::Game &board) override;
 
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
-
-    CSineWavetable sine;
-
-
 };
 
 
