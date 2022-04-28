@@ -4,3 +4,5 @@ IndentWidth: 4
 ---
 Language: Cpp
 SpaceBeforeInheritanceColon: false
+ColumnLimit: 0
+AllowShortIfStatementsOnASingleLine: true

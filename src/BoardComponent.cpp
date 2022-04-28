@@ -67,7 +67,7 @@ void BoardComponent::paint(juce::Graphics &g) {
 }
 
 float BoardComponent::getSquareSize() const {
-    return (float)getWidth() / BoardSize;
+    return (float)getWidth() / 8;
 }
 
 Chess::Square BoardComponent::coordsToSquare(int x, int y) const {
@@ -89,7 +89,7 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
     Chess::Color turn = game.getTurn();
 
     if (selectedPiece.type == Chess::Piece::Type::Pawn &&
-                target.rank == (turn == Chess::Color::White ? 7 : 0)) {
+        target.rank == (turn == Chess::Color::White ? 7 : 0)) {
         // Pawn promotion - need to prompt the user to select which piece they want.
         juce::PopupMenu menu;
         static const std::pair<std::string, Chess::Piece::Type> promotions[] = {
@@ -122,7 +122,7 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
 }
 
 void BoardComponent::mouseDown(const juce::MouseEvent &event) {
-    if (m_CurrentMode == Mode::PGN) return;
+    if (mode == Mode::PGN) return;
 
     Chess::Square target = coordsToSquare(event.x, event.y);
     juce::Rectangle<float> rect = squareToRect(target);
@@ -141,8 +141,8 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
             makeMove(event);
         }
     } else {
-        if (m_CurrentMode == Mode::PVP) {
-            if (piece && turn == piece->color && (m_CurrentMode == Mode::PVP || turn == Chess::Color::White)) {
+        if (mode == Mode::PVP) {
+            if (piece && turn == piece->color && (mode == Mode::PVP || turn == Chess::Color::White)) {
                 select(target);
                 dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
             }
@@ -154,7 +154,6 @@ void BoardComponent::mouseDrag(const juce::MouseEvent &event) {
     (void)event;
     repaint();
 }
-
 
 void BoardComponent::mouseUp(const juce::MouseEvent &event) {
     if (!dragging) return;
@@ -171,19 +170,8 @@ void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
     select();
 }
 
-void BoardComponent::actionListenerCallback(const juce::String &message) {
-    if (message.contains("Preview")) {
-        if (selected) {
-            juce::String newMessage = message.substring(0, 8) +
-                                      selected->toString() +
-                                      message.substring(8, 10);
-            sendActionMessage(newMessage);
-        }
-    }
-}
-
-void BoardComponent::onModeChange(BoardComponent::Mode newMode) {
-    m_CurrentMode = newMode;
+void BoardComponent::setMode(BoardComponent::Mode newMode) {
+    mode = newMode;
 }
 
 void BoardComponent::select(std::optional<Chess::Square> square) {

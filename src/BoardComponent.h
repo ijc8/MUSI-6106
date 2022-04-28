@@ -4,10 +4,7 @@
 #include "GameState.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
-class BoardComponent: public juce::Component,
-                      public juce::ActionBroadcaster,
-                      public juce::ChangeListener,
-                      public juce::ActionListener {
+class BoardComponent: public juce::Component, public juce::ActionBroadcaster, public juce::ChangeListener {
   public:
     enum class Mode {
         PVP,
@@ -21,18 +18,18 @@ class BoardComponent: public juce::Component,
     void mouseDrag(const juce::MouseEvent &event) override;
     void mouseUp(const juce::MouseEvent &event) override;
     void changeListenerCallback(juce::ChangeBroadcaster *source) override;
-    void actionListenerCallback(const juce::String &message) override;
-    void onModeChange(Mode newMode);
+    void setMode(Mode newMode);
 
   private:
-    static constexpr int BoardSize = 8;
-    static constexpr int NumPieces = 32;
-
     std::unordered_map<Chess::Piece, juce::Image> pieceImages;
 
-    Mode m_CurrentMode = Mode::PVP;
+    Mode mode = Mode::PVP;
     std::optional<Chess::Square> selected;
-    struct FloatingPiece { Chess::Piece piece; juce::Point<float> offset; };
+
+    struct FloatingPiece {
+        Chess::Piece piece;
+        juce::Point<float> offset;
+    };
     std::optional<FloatingPiece> dragging;
 
     float getSquareSize() const;
