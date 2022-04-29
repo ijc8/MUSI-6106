@@ -54,6 +54,7 @@ public:
 
                 if (mStockfish)
                 {
+                    //sendActionMessage("Score" + (mStockfish->analyze(m_Game)).toStdString());
                     m_Game.push(mStockfish->analyze(m_Game).bestMove);
                     sendChangeMessage();
                 }

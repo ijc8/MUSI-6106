@@ -1,4 +1,4 @@
-#include "EngineBridge.h"
+ #include "EngineBridge.h"
 
 // Concise way to split a string in C++ >= 11. (Based on https://stackoverflow.com/a/64886763/13204291.)
 std::vector<std::string> split(const std::string &str, const std::regex &regex) {

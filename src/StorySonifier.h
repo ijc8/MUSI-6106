@@ -4,6 +4,7 @@
 #include "MainProcessor.h"
 #include "GameState.h"
 #include "Util.h"
+#include "EngineBridge.h"
 
 
 class StorySonifier : public juce::ChangeListener, public juce::ActionListener
@@ -22,6 +23,9 @@ public:
 	void setGain(float fGain);
 	void StringToPitchBeat(char* seq, std::string* pitch, std::string* beat);
 
+	std::string addpitch(std::string str, int number);
+	
+
 private:
 
 	void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
@@ -29,6 +33,7 @@ private:
 
 	void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 	void actionListenerCallback(const juce::String& message) override;
+	
 
 	CMainProcessor mMainProcessor;
 	CSineWavetable mSine;
@@ -77,7 +82,9 @@ private:
 	std::shared_ptr<CLooper> mMelodyJiarui;
 	std::shared_ptr<CInstrument> mCheckAlarm;
 
-	float score_game = 0.5;
+	int score_game = 5;
+
+
 
 	int mBoardChangeCounter = 0;
 	const float mBpm = 150;
