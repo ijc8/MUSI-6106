@@ -72,10 +72,13 @@ private:
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
 
+    juce::Label m_FenInput;
     juce::Label m_TurnText;
     juce::TextButton m_pgnButton;
     juce::TextButton m_NextButton;
     juce::TextButton m_PrevButton;
+
+    void onFenChanged();
 
     void onPgnButtonClicked();
     std::unique_ptr<juce::FileChooser> m_FileChooser;

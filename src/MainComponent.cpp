@@ -55,6 +55,11 @@ MainComponent::MainComponent()
     m_GameModeSelector.addItem("PGN", 3);
     m_GameModeSelector.setSelectedId(1);
 
+    addAndMakeVisible(m_FenInput);
+    m_FenInput.setText("Enter FEN string here...", juce::dontSendNotification);
+    m_FenInput.setEditable(true);
+    m_FenInput.onTextChange = [this]() { onFenChanged(); };
+
     addAndMakeVisible(m_TurnText);
     m_TurnText.setText("White's turn", juce::NotificationType::dontSendNotification);
     m_TurnText.setFont(juce::Font(15));
@@ -120,7 +125,7 @@ void MainComponent::paint(juce::Graphics& g)
 void MainComponent::resized()
 {
     auto area = getBounds().reduced(10);
-    auto footer = area.removeFromBottom(getHeight() / 10);
+    auto footer = area.removeFromBottom(getHeight() / 20);
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
@@ -143,6 +148,8 @@ void MainComponent::resized()
 
     m_PrevButton.setBounds(rightThird.removeFromLeft(rightThird.getWidth() / 2).reduced(20));
     m_NextButton.setBounds(rightThird.reduced(20));
+
+    m_FenInput.setBounds(footer);
 }
 
 void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
@@ -175,8 +182,13 @@ void MainComponent::setSonifier(int sonifierIndex)
     mCurrentSonifier->setGain(m_VolumeSlider.getValue());
 }
 
-void MainComponent::onPgnButtonClicked()
-{
+void MainComponent::onFenChanged() {
+    std::string fenString = m_FenInput.getText().toStdString();
+    AppState::getInstance().getGame().setFen(fenString);
+    m_BroadcastManager.sendChangeMessage();
+}
+
+void MainComponent::onPgnButtonClicked() {
     m_FileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
         juce::File::getSpecialLocation(juce::File::userHomeDirectory),
             "*.pgn");
