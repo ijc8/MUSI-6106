@@ -14,7 +14,7 @@ public:
 
 	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
-	void onMove(Chess::Game &board) override;
+	void onMove(Chess::Game &game) override;
 
 private:
 
@@ -47,20 +47,20 @@ private:
 	};
 
 	std::shared_ptr<CInstrument> mPieceMelodies[kNumPieceMelodies]{};
-	std::map<std::string, PieceMelody> toPieceMelodyIdx
+	std::map<char, PieceMelody> toPieceMelodyIdx
 	{
-		{"K", kKingWhite},
-		{"k", kKingBlack},
-		{"Q", kQueenWhite},
-		{"q", kQueenBlack},
-		{"N", kKnightWhite},
-		{"n", kKnightBlack},
-		{"B", kBishopWhite},
-		{"b", kBishopBlack},
-		{"R", kRookWhite},
-		{"r", kRookBlack},
-		{"P", kPawnWhite},
-		{"p", kPawnBlack}
+		{'K', kKingWhite},
+		{'k', kKingBlack},
+		{'Q', kQueenWhite},
+        {'q', kQueenBlack},
+		{'N', kKnightWhite},
+		{'n', kKnightBlack},
+		{'B', kBishopWhite},
+		{'b', kBishopBlack},
+		{'R', kRookWhite},
+		{'r', kRookBlack},
+		{'P', kPawnWhite},
+		{'p', kPawnBlack}
 	};
 
 	std::shared_ptr<CLooper> mBass;

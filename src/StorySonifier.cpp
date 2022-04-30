@@ -18,7 +18,18 @@ void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
 	initializeMemberInstruments(fSampleRate);
 }
 
-void StorySonifier::onMove(Chess::Game& board) {
+void StorySonifier::onMove(Chess::Game& game) {
+
+	std::optional<Chess::Move> lastMove = game.peek();
+    if (lastMove) {
+           std::optional<Chess::Piece> movedPiece = game.getPieceAt(lastMove.value().dst);    
+		   if (movedPiece) {
+               auto it = toPieceMelodyIdx.find(movedPiece.value().toChar());
+               if (it != toPieceMelodyIdx.end()) {
+                   mPieceMelodies[it->second]->noteOn();
+               }
+		   }
+	}
 }
 
 void StorySonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece)
@@ -28,6 +39,7 @@ void StorySonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
 
 void StorySonifier::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
+    onMove(AppState::getInstance().getGame());
 	mBoardChangeCounter++;
 	switch (mBoardChangeCounter)
 	{
@@ -48,32 +60,24 @@ void StorySonifier::changeListenerCallback(juce::ChangeBroadcaster* source)
 
 void StorySonifier::actionListenerCallback(const juce::String& message)
 {
-	if (message.contains("Select"))
-	{
-		std::string pieceString = message.substring(7, 8).toStdString();
-		auto it = toPieceMelodyIdx.find(pieceString);
-		if (it != toPieceMelodyIdx.end())
-		{
-			mPieceMelodies[it->second]->noteOn();
-		}
-	}
-	else if (message.contains("Deselect"))
-	{
-		std::string pieceString = message.substring(9, 10).toStdString();
-		auto it = toPieceMelodyIdx.find(pieceString);
-		if (it != toPieceMelodyIdx.end())
-		{
-			mPieceMelodies[it->second]->noteOff();
-		}
-	}
-	else if (message.contains("Warn"))
-	{
-		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSquare, 555, 0.25, mSampleRate), 0, 1);
-	}
-	else if (message.contains("Encourage"))
-	{
-		mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(mSine, 555, 0.25, mSampleRate), 0, 1);
-	}
+	//if (message.contains("Select"))
+	//{
+	//	std::string pieceString = message.substring(7, 8).toStdString();
+	//	auto it = toPieceMelodyIdx.find(pieceString);
+	//	if (it != toPieceMelodyIdx.end())
+	//	{
+	//		mPieceMelodies[it->second]->noteOn();
+	//	}
+	//}
+	//else if (message.contains("Deselect"))
+	//{
+	//	std::string pieceString = message.substring(9, 10).toStdString();
+	//	auto it = toPieceMelodyIdx.find(pieceString);
+	//	if (it != toPieceMelodyIdx.end())
+	//	{
+	//		mPieceMelodies[it->second]->noteOff();
+	//	}
+	//}
 }
 
 void StorySonifier::initializeMemberInstruments(float fSampleRate)
