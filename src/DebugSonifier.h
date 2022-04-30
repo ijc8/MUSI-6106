@@ -4,7 +4,6 @@
 #include <cassert>
 #include "ErrorDef.h"
 #include "GameState.h"
-#include "Wavetable.h"
 #include "MainProcessor.h"
 #include <vector>
 #include <list>
@@ -13,11 +12,9 @@
 
 class DebugSonifier : public Sonifier {
 public:
-        DebugSonifier();
+        DebugSonifier(float sampleRate);
 
         virtual ~DebugSonifier();
-
-        void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
 protected:
 
@@ -26,10 +23,6 @@ protected:
     void onMove(Chess::Game &board) override;
 
     std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
-
-    CSineWavetable sine;
-
-
 };
 
 

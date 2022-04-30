@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Wavetable.h"
 #include "MainProcessor.h"
 #include "GameState.h"
 #include "Util.h"
@@ -8,17 +7,11 @@
 class Sonifier : public juce::ChangeListener, public juce::ActionListener
 {
 public:
-	Sonifier() {};
-	~Sonifier() {};
-
-	virtual void prepareToPlay(int iExpectedBlockSize, float fSampleRate)
-	{
-		mSampleRate = fSampleRate;
-		mBlockSize = iExpectedBlockSize;
-
+	Sonifier(float sampleRate) : mSampleRate(sampleRate) {
 		mMainProcessor.setSampleRate(mSampleRate);
 		mMainProcessor.setADSRParameters(1, 0, 1, 1);
 	}
+	~Sonifier() {}
 
 	void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
 	{
@@ -55,7 +48,5 @@ public:
 protected:
 
 	CMainProcessor mMainProcessor;
-	float mSampleRate = 48000;
-	int mBlockSize = 0;
-
+	float mSampleRate;
 };

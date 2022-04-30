@@ -141,9 +141,8 @@ MainComponent::~MainComponent()
     shutdownAudio();
 }
 
-void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
-{
-    this->samplesPerBlockExpected = samplesPerBlockExpected;
+void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
+    (void)samplesPerBlockExpected;
     this->sampleRate = sampleRate;
     setSonifier(0);
 }
@@ -156,7 +155,9 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
             mOldSonifier.reset();
         }
     }
-    mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    if (mCurrentSonifier) {
+        mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    }
 }
 
 //==============================================================================
@@ -221,13 +222,12 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
 void MainComponent::setSonifier(int sonifierIndex)
 {
     mOldSonifier = std::move(mCurrentSonifier);
-    mCurrentSonifier = sonifiers[sonifierIndex].create();
+    mCurrentSonifier = sonifiers[sonifierIndex].create(sampleRate);
     if (mOldSonifier) {
         mOldSonifier->setEnabled(false);
         m_BroadcastManager.removeChangeListener(mOldSonifier.get());
         m_BroadcastManager.removeActionListener(mOldSonifier.get());
     }
-    mCurrentSonifier->prepareToPlay(samplesPerBlockExpected, sampleRate);
     mCurrentSonifier->setEnabled(true);
     m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
     m_BroadcastManager.addActionListener(mCurrentSonifier.get());

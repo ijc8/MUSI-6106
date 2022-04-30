@@ -3,9 +3,11 @@
 //
 
 #include "ThreatsSonifier.h"
+#include "Waveform.h"
 
-ThreatsSonifier::ThreatsSonifier (){
+ThreatsSonifier::ThreatsSonifier(float sampleRate) : Sonifier(sampleRate) {
     srand(static_cast<unsigned>(time(0)));
+    mMainProcessor.setGain(0.25);
 }
 
 ThreatsSonifier::~ThreatsSonifier() {
@@ -22,19 +24,19 @@ void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::
 
     std::shared_ptr<CInstrument> inst;
     if (preyPiece->type == Chess::Piece::Type::Pawn) {
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[0], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Bishop || preyPiece->type == Chess::Piece::Type::Knight || preyPiece->type == Chess::Piece::Type::Rook){
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[1], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::Queen){
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[2], gains[gainIdx], 44100);
     }
 
     else if (preyPiece->type == Chess::Piece::Type::King){
-        inst = std::make_shared<CWavetableOscillator>(saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
+        inst = std::make_shared<CWavetableOscillator>(Waveform::saw, hitchcockFrequencies[3], gains[gainIdx], 44100);
     }
 
     inst->noteOn();
@@ -44,14 +46,6 @@ void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::
     oscillatorPtrs.push_back(inst);
 
 }
-
-
-void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
-{
-    Sonifier::prepareToPlay(iExpectedBlockSize, fSampleRate);
-    mMainProcessor.setGain(0.25);
-
-};
 
 void ThreatsSonifier::onMove(Chess::Game &gameState) {
     auto it = oscillatorPtrs.begin();

@@ -1,9 +1,10 @@
 #if !defined(__SoundProcessor_hdr__)
 #define __SoundProcessor_hdr__
 
+#include <juce_audio_processors/juce_audio_processors.h>
+
 #include <cassert>
 #include "ErrorDef.h"
-#include "Wavetable.h"
 
 class CSoundProcessor
 {
@@ -90,7 +91,7 @@ private:
 class CWavetableOscillator : public CInstrument
 {
 public:
-	CWavetableOscillator(const CWavetable& wavetableToUse, float fFrequencyInHz = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
+	CWavetableOscillator(const juce::AudioSampleBuffer &wavetableToUse, float fFrequencyInHz = 0.0f, float fGain = 0.0f, float fSampleRate = 48000.0f);
 	CWavetableOscillator(const CWavetableOscillator& other);
 	virtual ~CWavetableOscillator() = default;
 
@@ -115,7 +116,7 @@ protected:
 	float m_fFrequencyInHz = 0.0f;
 	float m_fCurrentIndex = 0.0f;
 	float m_fTableDelta = 0.0f;
-	const CWavetable& m_Wavetable;
+	const juce::AudioSampleBuffer &wavetable;
 	int m_iTableSize;
 
 };

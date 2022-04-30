@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Wavetable.h"
 #include "MainProcessor.h"
 #include "GameState.h"
 #include "Util.h"
@@ -9,10 +8,8 @@
 class StorySonifier : public Sonifier
 {
 public:
-	StorySonifier();
+	StorySonifier(float sampleRate);
 	~StorySonifier();
-
-	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
 	void onMove(Chess::Game &board) override;
 
@@ -23,10 +20,6 @@ private:
 
 	void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 	void actionListenerCallback(const juce::String& message) override;
-
-	CSineWavetable mSine;
-	CSawWavetable mSaw;
-	CSqrWavetable mSquare;
 
 	enum PieceMelody {
 		kKingWhite,
