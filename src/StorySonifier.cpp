@@ -127,6 +127,13 @@ void StorySonifier::initializeMemberInstruments(float fSampleRate)
 		mPieceMelodies[kPawnWhite] = PawnWhiteMelody;
 		mPieceMelodies[kPawnBlack] = PawnBlackMelody;
 
+		for (int i = 0; i < kNumPieceMelodies; i++)
+		{
+			mMainProcessor.addInst(mPieceMelodies[i]);
+			mPieceMelodies[i]->setGain(0.75);
+		}
+
+
 		/////////////////////////////////////////////////////////////////////
 		//// Bass
 		mBass = std::make_shared<CLooper>(fSampleRate);
