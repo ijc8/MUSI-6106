@@ -54,6 +54,7 @@ void CMainProcessor::checkQueues()
 {
 	// Places event and instrument pointer into appropriate container
 	std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>> instToAdd;
+    int insertMax = 32;
 	while (m_InsertQueue.pop(instToAdd))
 	{
 		std::shared_ptr<CInstrument> pInstToAdd = instToAdd.first;
@@ -73,6 +74,7 @@ void CMainProcessor::checkQueues()
 	}
 
 	std::shared_ptr<CInstrument> instToRemove = 0;
+    int removeMax = 32;
 	while (m_RemoveQueue.pop(instToRemove))
 	{
 		m_ActiveInsts.erase(instToRemove);
