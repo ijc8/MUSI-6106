@@ -65,7 +65,6 @@ private:
 	std::shared_ptr<CLooper> mAccomp;
 	std::shared_ptr<CLooper> mMelodyL;
 	std::shared_ptr<CLooper> mMelodyR;
-	std::shared_ptr<CInstrument> mCheckAlarm;
 
 	int mBoardChangeCounter = 0;
 	const float mBpm = 150;
