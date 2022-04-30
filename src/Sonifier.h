@@ -20,7 +20,7 @@ public:
 		mMainProcessor.setADSRParameters(1, 0, 1, 1);
 	}
 
-	void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
+	virtual void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
 	{
 		mMainProcessor.process(ppfOutputBuffer, iNumChannels, iNumFrames);
 	}

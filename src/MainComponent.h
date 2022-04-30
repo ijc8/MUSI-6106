@@ -10,7 +10,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include "BoardComponent.h"
-#include "DebugSonifier.h"
+#include "ZenSonifier.h"
 #include "ThreatsSonifier.h"
 #include "StorySonifier.h"
 #include "GameState.h"
@@ -58,7 +58,7 @@ private:
     };
 
     std::vector<SonifierType> sonifiers = {
-        {"Debug", [](){ return std::make_unique<DebugSonifier>(); }},
+        {"Zen", [](){ return std::make_unique<ZenSonifier>(); }},
         {"Threat", [](){ return std::make_unique<ThreatsSonifier>(); }},
         {"Story", [](){ return std::make_unique<StorySonifier>(); }},
     };

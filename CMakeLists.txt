@@ -90,7 +90,7 @@ target_sources(MusicalChess
         src/SoundProcessor.cpp
         src/Scheduler.cpp
         src/MainProcessor.cpp
-	    src/DebugSonifier.cpp
+	    src/ZenSonifier.cpp
 	    src/ThreatsSonifier.cpp
         src/EngineBridge.cpp
         src/StorySonifier.cpp)
@@ -124,7 +124,7 @@ target_sources(SonifierTest
         src/MainProcessor.cpp
         src/Scheduler.cpp
         src/SoundProcessor.cpp
-		src/DebugSonifier.cpp
+		src/ZenSonifier.cpp
 		tests/SonifierTest.cpp)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer

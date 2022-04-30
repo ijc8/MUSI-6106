@@ -6,7 +6,6 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 #include "GameState.h"
-#include "DebugSonifier.h"
 #include "BoardComponent.h"
 #include "EngineBridge.h"
 
