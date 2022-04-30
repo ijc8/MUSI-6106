@@ -18,11 +18,9 @@ public:
 
 private:
 
-	void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
 	void initializeMemberInstruments(float fSampleRate);
 
 	void changeListenerCallback(juce::ChangeBroadcaster* source) override;
-	void actionListenerCallback(const juce::String& message) override;
 
 	CSineWavetable mSine;
 	CSawWavetable mSaw;

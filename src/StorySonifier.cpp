@@ -32,57 +32,31 @@ void StorySonifier::onMove(Chess::Game& game) {
 	}
 }
 
-void StorySonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const& piece)
-{
-
-}
-
 void StorySonifier::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
-    onMove(AppState::getInstance().getGame());
+    Sonifier::changeListenerCallback(source);
+
 	mBoardChangeCounter++;
 	switch (mBoardChangeCounter)
 	{
-	case 2:
+	case 1:
 		mBass->noteOn(false);
 		break;
-	case 6:
+	case 4:
 		mAccomp->noteOn(false);
 		break;
-	case 7:
+	case 8:
 		mMelodyL->noteOn(false);
 		break;
-	case 8:
+	case 12:
 		mMelodyR->noteOn(false);
 		break;
 	}
 }
 
-void StorySonifier::actionListenerCallback(const juce::String& message)
-{
-	//if (message.contains("Select"))
-	//{
-	//	std::string pieceString = message.substring(7, 8).toStdString();
-	//	auto it = toPieceMelodyIdx.find(pieceString);
-	//	if (it != toPieceMelodyIdx.end())
-	//	{
-	//		mPieceMelodies[it->second]->noteOn();
-	//	}
-	//}
-	//else if (message.contains("Deselect"))
-	//{
-	//	std::string pieceString = message.substring(9, 10).toStdString();
-	//	auto it = toPieceMelodyIdx.find(pieceString);
-	//	if (it != toPieceMelodyIdx.end())
-	//	{
-	//		mPieceMelodies[it->second]->noteOff();
-	//	}
-	//}
-}
-
 void StorySonifier::initializeMemberInstruments(float fSampleRate)
 {
-	mPieceMelodies[kKingWhite] = std::make_shared<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 1, fSampleRate); // White King
+	mPieceMelodies[kKingWhite] = std::make_shared<CWavetableOscillator>(mSine, FREQ::noteToFreq("A4"), 1, fSampleRate);
 	mPieceMelodies[kKingBlack] = std::make_shared<CWavetableOscillator>(mSaw, FREQ::noteToFreq("A4"), 1, fSampleRate);
 
 	auto QueenWhiteChord = std::make_shared<CScheduler>(fSampleRate);

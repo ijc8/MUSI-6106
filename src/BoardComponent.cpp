@@ -175,14 +175,6 @@ void BoardComponent::setMode(BoardComponent::Mode newMode) {
 }
 
 void BoardComponent::select(std::optional<Chess::Square> square) {
-    Chess::Game &game = AppState::getInstance().getGame();
-    if (selected && !(square && *selected == *square)) {
-        sendActionMessage("Deselect " + std::string({game.getPieceAt(*selected)->toChar()}));
-    }
-    if (square) {
-        //sendActionMessage("Preview " + square->toString());
-        sendActionMessage("Select " + std::string({game.getPieceAt(*square)->toChar()}));
-    }
     selected = square;
     repaint();
 }

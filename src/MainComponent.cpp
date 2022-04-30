@@ -136,7 +136,6 @@ MainComponent::MainComponent()
 MainComponent::~MainComponent()
 {
     m_BroadcastManager.removeAllChangeListeners();
-    m_BroadcastManager.removeAllActionListeners();
     m_ChessboardGUI.removeAllActionListeners();
     shutdownAudio();
 }
@@ -225,12 +224,10 @@ void MainComponent::setSonifier(int sonifierIndex)
     if (mOldSonifier) {
         mOldSonifier->setEnabled(false);
         m_BroadcastManager.removeChangeListener(mOldSonifier.get());
-        m_BroadcastManager.removeActionListener(mOldSonifier.get());
     }
     mCurrentSonifier->prepareToPlay(samplesPerBlockExpected, sampleRate);
     mCurrentSonifier->setEnabled(true);
     m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
-    m_BroadcastManager.addActionListener(mCurrentSonifier.get());
     mCurrentSonifier->onMove(AppState::getInstance().getGame());
     mCurrentSonifier->setGain(m_VolumeSlider.getValue());
 }
