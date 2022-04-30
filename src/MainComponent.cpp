@@ -63,7 +63,7 @@ MainComponent::MainComponent()
     m_FenInput.onTextChange = [this]() { onFenChanged(); };
 
     addAndMakeVisible(m_FenLabel);
-    m_FenLabel.setText("Enter FEN string here...", juce::dontSendNotification);
+    m_FenLabel.setText("Enter FEN string: ", juce::dontSendNotification);
     m_FenLabel.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
     m_FenLabel.setColour(juce::Label::textColourId, juce::Colours::white);
 
@@ -156,7 +156,7 @@ void MainComponent::resized()
     m_PrevButton.setBounds(rightThird.removeFromLeft(rightThird.getWidth() / 2).reduced(20));
     m_NextButton.setBounds(rightThird.reduced(20));
 
-    m_FenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 6));
+    m_FenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 8));
     m_FenInput.setBounds(footer);
 }
 
