@@ -8,10 +8,8 @@
 class StorySonifier : public Sonifier
 {
 public:
-	StorySonifier();
+	StorySonifier(float sampleRate);
 	~StorySonifier();
-
-	void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
 	void onMove(Chess::Game &board) override;
 

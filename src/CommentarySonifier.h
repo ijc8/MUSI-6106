@@ -5,8 +5,7 @@
 
 class CommentarySonifier: public Sonifier {
   public:
-    CommentarySonifier();
-    void prepareToPlay(int expectedBlockSize, float sampleRate) override;
+    CommentarySonifier(float sampleRate);
   protected:
     void onMove(Chess::Game &board) override;
 

@@ -47,7 +47,6 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
-    int samplesPerBlockExpected;
     double sampleRate;
 
     GameMode m_GameMode = PVP;
@@ -55,14 +54,14 @@ private:
 
     struct SonifierType {
         std::string name;
-        std::function<std::unique_ptr<Sonifier>()> create;
+        std::function<std::unique_ptr<Sonifier>(float)> create;
     };
 
     std::vector<SonifierType> sonifiers = {
-        {"Debug", [](){ return std::make_unique<DebugSonifier>(); }},
-        {"Threat", [](){ return std::make_unique<ThreatsSonifier>(); }},
-        {"Story", [](){ return std::make_unique<StorySonifier>(); }},
-        {"Commentary", [](){ return std::make_unique<CommentarySonifier>(); }},
+        {"Debug", [](float sr){ return std::make_unique<DebugSonifier>(sr); }},
+        {"Threat", [](float sr){ return std::make_unique<ThreatsSonifier>(sr); }},
+        {"Story", [](float sr){ return std::make_unique<StorySonifier>(sr); }},
+        {"Commentary", [](float sr){ return std::make_unique<CommentarySonifier>(sr); }},
     };
 
     BroadcastManager m_BroadcastManager;

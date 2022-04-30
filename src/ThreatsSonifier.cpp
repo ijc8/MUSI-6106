@@ -5,8 +5,9 @@
 #include "ThreatsSonifier.h"
 #include "Waveform.h"
 
-ThreatsSonifier::ThreatsSonifier (){
+ThreatsSonifier::ThreatsSonifier(float sampleRate) : Sonifier(sampleRate) {
     srand(static_cast<unsigned>(time(0)));
+    mMainProcessor.setGain(0.25);
 }
 
 ThreatsSonifier::~ThreatsSonifier() {
@@ -45,14 +46,6 @@ void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::
     oscillatorPtrs.push_back(inst);
 
 }
-
-
-void ThreatsSonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
-{
-    Sonifier::prepareToPlay(iExpectedBlockSize, fSampleRate);
-    mMainProcessor.setGain(0.25);
-
-};
 
 void ThreatsSonifier::onMove(Chess::Game &gameState) {
     auto it = oscillatorPtrs.begin();

@@ -5,8 +5,9 @@
 #include "DebugSonifier.h"
 #include "Waveform.h"
 
-DebugSonifier::DebugSonifier (){
+DebugSonifier::DebugSonifier(float sampleRate) : Sonifier(sampleRate) {
     srand(static_cast<unsigned>(time(0)));
+    mMainProcessor.setGain(0.25);
 }
 
 DebugSonifier::~DebugSonifier() {
@@ -28,14 +29,6 @@ void DebugSonifier::sonifyPiece(Chess::Square const& square, Chess::Piece const&
     mMainProcessor.addInst(inst);
     oscillatorPtrs.push_back(inst);
 }
-
-
-void DebugSonifier::prepareToPlay(int iExpectedBlockSize, float fsampleRate)
-{
-    Sonifier::prepareToPlay(iExpectedBlockSize, fsampleRate);
-    mMainProcessor.setGain(0.25);
-
-};
 
 void DebugSonifier::onMove(Chess::Game &board) {
     auto it = oscillatorPtrs.begin();

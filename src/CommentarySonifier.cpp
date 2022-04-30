@@ -3,13 +3,9 @@
 #include "CommentarySonifier.h"
 #include "Waveform.h"
 
-CommentarySonifier::CommentarySonifier() {
-}
-
-void CommentarySonifier::prepareToPlay(int expectedBlockSize, float sampleRate) {
-    (void)expectedBlockSize;
-    (void)sampleRate;
-
+CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) {
+    // Example: here's how to play an audio file from a sonifier.
+    // Feel free to build on this for e.g. a stem-mixing sonifier.
     juce::AudioFormatManager formatManager;
     formatManager.registerBasicFormats();
 

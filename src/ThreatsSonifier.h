@@ -17,11 +17,9 @@ using namespace Chess;
 class ThreatsSonifier : public Sonifier 
 {
 public:
-    ThreatsSonifier();
+    ThreatsSonifier(float sampleRate);
 
     virtual ~ThreatsSonifier();
-
-    void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
 protected:
 

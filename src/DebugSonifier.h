@@ -12,11 +12,9 @@
 
 class DebugSonifier : public Sonifier {
 public:
-        DebugSonifier();
+        DebugSonifier(float sampleRate);
 
         virtual ~DebugSonifier();
-
-        void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
 
 protected:
 

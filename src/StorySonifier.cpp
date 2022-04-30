@@ -1,22 +1,13 @@
 #include "StorySonifier.h"
 #include "Waveform.h"
 
-StorySonifier::StorySonifier()
-{
-
+StorySonifier::StorySonifier(float sampleRate) : Sonifier(sampleRate) {
+	mMainProcessor.setGain(1);
+	initializeMemberInstruments(sampleRate);
 }
  
 StorySonifier::~StorySonifier()
 {
-}
-
-
-void StorySonifier::prepareToPlay(int iExpectedBlockSize, float fSampleRate)
-{
-	Sonifier::prepareToPlay(iExpectedBlockSize, fSampleRate);
-	mMainProcessor.setGain(1);
-
-	initializeMemberInstruments(fSampleRate);
 }
 
 void StorySonifier::onMove(Chess::Game& board) {
