@@ -56,9 +56,16 @@ MainComponent::MainComponent()
     m_GameModeSelector.setSelectedId(1);
 
     addAndMakeVisible(m_FenInput);
-    m_FenInput.setText("Enter FEN string here...", juce::dontSendNotification);
+
     m_FenInput.setEditable(true);
+    m_FenInput.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
+    m_FenInput.setColour(juce::Label::textColourId, juce::Colours::white);
     m_FenInput.onTextChange = [this]() { onFenChanged(); };
+
+    addAndMakeVisible(m_FenLabel);
+    m_FenLabel.setText("Enter FEN string here...", juce::dontSendNotification);
+    m_FenLabel.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
+    m_FenLabel.setColour(juce::Label::textColourId, juce::Colours::white);
 
     addAndMakeVisible(m_TurnText);
     m_TurnText.setText("White's turn", juce::NotificationType::dontSendNotification);
@@ -149,6 +156,7 @@ void MainComponent::resized()
     m_PrevButton.setBounds(rightThird.removeFromLeft(rightThird.getWidth() / 2).reduced(20));
     m_NextButton.setBounds(rightThird.reduced(20));
 
+    m_FenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 6));
     m_FenInput.setBounds(footer);
 }
 

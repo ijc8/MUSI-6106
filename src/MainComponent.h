@@ -72,6 +72,7 @@ private:
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
 
+    juce::Label m_FenLabel;
     juce::Label m_FenInput;
     juce::Label m_TurnText;
     juce::TextButton m_pgnButton;
