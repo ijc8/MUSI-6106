@@ -141,7 +141,7 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
             makeMove(event);
         }
     } else {
-        if (mode == Mode::PVP) {
+        if (mode == Mode::PVP || mode == Mode::PVC) {
             if (piece && turn == piece->color && (mode == Mode::PVP || turn == Chess::Color::White)) {
                 select(target);
                 dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};

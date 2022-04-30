@@ -69,6 +69,8 @@ public:
         }
         else
         {
+            if (engineManager)
+                removeChangeListener(engineManager.get());
             engineManager.reset();
         }
     }
