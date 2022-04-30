@@ -19,16 +19,15 @@ public:
         virtual ~ZenSonifier();
 
         void prepareToPlay(int iExpectedBlockSize, float fSampleRate) override;
-        void process(float **ppfOutputBuffer, int iNumChannels, int iNumFrames) override;
 
 protected:
 
     void sonifyPiece(Chess::Square const& square, Chess::Piece const& piece);
     void onMove(Chess::Game &game) override;
 
-    std::list<std::shared_ptr<CInstrument>> oscillatorPtrs;
+    std::list<std::shared_ptr<CInstrument>> mInstruments;
 
-    CSineWavetable sine;
+    CSineWavetable mSine;
 
     std::string mPawnNotes[8]{"E2", "C4", "D3", "E4", "G6","C5", "A4", "C5" };
     std::string mRoyaltyNotes[8]{"C3", "F2", "A2", "E3", "C4", "G3", "A3", "E4"};
