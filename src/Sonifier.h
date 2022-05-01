@@ -4,7 +4,7 @@
 #include "GameState.h"
 #include "Util.h"
 
-class Sonifier : public juce::ChangeListener, public juce::ActionListener
+class Sonifier : public juce::ChangeListener
 {
 public:
 	Sonifier(float sampleRate) : mSampleRate(sampleRate) {
@@ -37,8 +37,6 @@ public:
 	}
 
 	virtual void onMove(Chess::Game &game) = 0;
-
-	virtual void actionListenerCallback(const juce::String &message) override {}
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override {
         onMove(AppState::getInstance().getGame());

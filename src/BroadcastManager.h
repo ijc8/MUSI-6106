@@ -15,6 +15,8 @@ public:
     : engine(path) {
     }
 
+    ~EngineManager() { removeAllActionListeners(); };
+
     void changeListenerCallback(juce::ChangeBroadcaster* source) override {
         Game &game = AppState::getInstance().getGame();
         if (game.getTurn() == Color::Black) {
@@ -31,17 +33,18 @@ private:
     Chess::Engine engine;
 };
 
-class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadcaster, public juce::ActionBroadcaster
+class BroadcastManager : public juce::ActionListener, public juce::ChangeBroadcaster
 {
 
 public:
-    BroadcastManager() {};
+   BroadcastManager() {};
+  ~BroadcastManager() { removeAllChangeListeners(); };
 
     void toggleStockfish(bool shouldTurnOn)
     {
         if (shouldTurnOn)
         {
-            if (std::filesystem::exists("../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
+            if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
                 engineManager = std::make_unique<EngineManager>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
                 addChangeListener(engineManager.get());
                 engineManager->addActionListener(this);
@@ -65,39 +68,22 @@ public:
         }
         else
         {
+            if (engineManager)
+                removeChangeListener(engineManager.get());
             engineManager.reset();
         }
     }
 
     void actionListenerCallback(const juce::String& message)
     {
-        if (message.contains("Select") || message.contains("Deselect"))
-        {
-            sendActionMessage(message);
-        }
-        else if (message.contains("Preview"))
-        {
-            Chess::Move move = Chess::Move(Chess::Square(message.substring(8, 10).toStdString()), Chess::Square(message.substring(10, 12).toStdString()));
-            if (true)
-                sendActionMessage("Encourage");
-            else
-                sendActionMessage("Warn");
-        }
-        else 
-        {
             Chess::Move move = Chess::Move(message.toStdString());
             if (m_Game.isLegal(move))
             {
                 emptyUndoHistory();
 
-                juce::Logger::outputDebugString("Legal Move");
                 m_Game.push(move);
                 sendChangeMessage();
             }
-            else
-                juce::Logger::outputDebugString("Illegal Move");
-        }
-
     }
 
     void undo()
