@@ -2,6 +2,7 @@
 
 #include "CommentarySonifier.h"
 #include "Waveform.h"
+#include "ChessSoundData.h"
 
 CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) {
     // Example: here's how to play an audio file from a sonifier.
@@ -9,8 +10,9 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
     juce::AudioFormatManager formatManager;
     formatManager.registerBasicFormats();
 
-    juce::File file("/home/ian/GT/MUSI-6106/MUSI-6106/test.wav");
-    std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(file));
+    int size;
+    const char *memory = ChessSoundData::getNamedResource("queen_ogg", size);
+    std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(std::make_unique<juce::MemoryInputStream>(memory, size, false)));
     buffer.setSize(reader->numChannels, reader->lengthInSamples, false, false, false);
     reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
 
