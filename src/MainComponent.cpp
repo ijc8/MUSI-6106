@@ -13,49 +13,6 @@ MainComponent::MainComponent()
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
     m_BroadcastManager.addChangeListener(this);
 
-    // text buttons
-    addAndMakeVisible(buttonPreset1);
-    buttonPreset1.setButtonText("8/8/8/4p1K1/2k1P3/8/8/8");
-    buttonPreset1.onClick = [this, &game]() {
-        game.setBoardFen("8/8/8/4p1K1/2k1P3/8/8/8");
-        m_BroadcastManager.sendChangeMessage();
-    };
-
-    addAndMakeVisible(buttonPreset2);
-    buttonPreset2.setButtonText("4k2r/6r1/8/8/8/8/3R4/R3K3");
-    buttonPreset2.onClick = [this, &game]() {
-        game.setBoardFen("4k2r/6r1/8/8/8/8/3R4/R3K3");
-        m_BroadcastManager.sendChangeMessage();
-    };
-
-    addAndMakeVisible(buttonPreset3);
-    buttonPreset3.setButtonText("8/8/8/8/8/8/8/8");
-    buttonPreset3.onClick = [this, &game]() {
-        game.setBoardFen("8/8/8/8/8/8/8/8");
-        m_BroadcastManager.sendChangeMessage();
-    };
-
-    addAndMakeVisible(buttonPreset4);
-    buttonPreset4.setButtonText("rnbqkb1r/p1pp2pp/3n4/8/P3N3/8/1P1pppPP/R1BQKBNR");
-    buttonPreset4.onClick = [this, &game]() {
-        game.setBoardFen("rnbqkb1r/p1pp2pp/3n4/8/P3N3/8/1P1pppPP/R1BQKBNR");
-        m_BroadcastManager.sendChangeMessage();
-    };
-
-    addAndMakeVisible(buttonPreset5);
-    buttonPreset5.setButtonText("rnbqkbnr/1P2pppp/8/p7/8/8/PPPP1PPP/RNBQKBNR");
-    buttonPreset5.onClick = [this, &game]() {
-        game.setBoardFen("rnbqkbnr/1P2pppp/8/p7/8/8/PPPP1PPP/RNBQKBNR");
-        m_BroadcastManager.sendChangeMessage();
-    };
-
-    addAndMakeVisible(buttonReset);
-    buttonReset.setButtonText("Reset Game");
-    buttonReset.onClick = [this, &game]() {
-        game.setFen(AppState::getInstance().getGame().initialFen);
-        m_BroadcastManager.sendChangeMessage();
-    };
-
     addAndMakeVisible(buttonUndo);
     buttonUndo.setButtonText("Undo");
     buttonUndo.onClick = [this, &game]() {
@@ -98,12 +55,17 @@ MainComponent::MainComponent()
     m_GameModeSelector.addItem("PGN", 3);
     m_GameModeSelector.setSelectedId(1);
 
-    addAndMakeVisible(m_TitleText);
-    m_TitleText.setText("MUSICAL CHESS", juce::NotificationType::dontSendNotification);
-    m_TitleText.setFont(juce::Font(30));
-    m_TitleText.setColour(juce::Label::backgroundColourId, juce::Colours::black);
-    m_TitleText.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
-    m_TitleText.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(m_FenInput);
+
+    m_FenInput.setEditable(true);
+    m_FenInput.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
+    m_FenInput.setColour(juce::Label::textColourId, juce::Colours::white);
+    m_FenInput.onTextChange = [this]() { onFenChanged(); };
+
+    addAndMakeVisible(m_FenLabel);
+    m_FenLabel.setText("Enter FEN string: ", juce::dontSendNotification);
+    m_FenLabel.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
+    m_FenLabel.setColour(juce::Label::textColourId, juce::Colours::white);
 
     addAndMakeVisible(m_TurnText);
     m_TurnText.setText("White's turn", juce::NotificationType::dontSendNotification);
@@ -171,15 +133,12 @@ void MainComponent::paint(juce::Graphics& g)
 void MainComponent::resized()
 {
     auto area = getBounds().reduced(10);
-    auto header = area.removeFromTop(getHeight() / 10);
-    auto footer = area.removeFromBottom(getHeight() / 6);
+    auto footer = area.removeFromBottom(getHeight() / 20);
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
     auto sliderArea = rightThird.removeFromRight(rightThird.getWidth() / 6);
     m_VolumeSlider.setBounds(sliderArea);
-
-    m_TitleText.setBounds(header);
 
     m_TurnText.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
     
@@ -198,12 +157,8 @@ void MainComponent::resized()
     m_PrevButton.setBounds(rightThird.removeFromLeft(rightThird.getWidth() / 2).reduced(20));
     m_NextButton.setBounds(rightThird.reduced(20));
 
-    buttonPreset1.setBounds(footer.removeFromLeft(getWidth() / 6));
-    buttonPreset2.setBounds(footer.removeFromLeft(getWidth() / 6));
-    buttonPreset3.setBounds(footer.removeFromLeft(getWidth() / 6));
-    buttonPreset4.setBounds(footer.removeFromLeft(getWidth() / 6));
-    buttonPreset5.setBounds(footer.removeFromLeft(getWidth() / 6));
-    buttonReset.setBounds(footer.removeFromLeft(getWidth() / 6));
+    m_FenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 8));
+    m_FenInput.setBounds(footer);
 }
 
 void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
@@ -235,8 +190,13 @@ void MainComponent::setSonifier(int sonifierIndex)
     mCurrentSonifier->setGain(m_VolumeSlider.getValue());
 }
 
-void MainComponent::onPgnButtonClicked()
-{
+void MainComponent::onFenChanged() {
+    std::string fenString = m_FenInput.getText().toStdString();
+    AppState::getInstance().getGame().setFen(fenString);
+    m_BroadcastManager.sendChangeMessage();
+}
+
+void MainComponent::onPgnButtonClicked() {
     m_FileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
         juce::File::getSpecialLocation(juce::File::userHomeDirectory),
             "*.pgn");
@@ -281,12 +241,6 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         m_pgnButton.setEnabled(false);
         m_PrevButton.setEnabled(false);
         m_NextButton.setEnabled(false);
-        buttonPreset1.setEnabled(true);
-        buttonPreset2.setEnabled(true);
-        buttonPreset3.setEnabled(true);
-        buttonPreset4.setEnabled(true);
-        buttonPreset5.setEnabled(true);
-        buttonReset.setEnabled(true);
         buttonUndo.setEnabled(true);
         buttonRedo.setEnabled(true);
         break;
@@ -299,12 +253,6 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         m_pgnButton.setEnabled(false);
         m_PrevButton.setEnabled(false);
         m_NextButton.setEnabled(false);
-        buttonPreset1.setEnabled(true);
-        buttonPreset2.setEnabled(true);
-        buttonPreset3.setEnabled(true);
-        buttonPreset4.setEnabled(true);
-        buttonPreset5.setEnabled(true);
-        buttonReset.setEnabled(true);
         buttonUndo.setEnabled(true);
         buttonRedo.setEnabled(true);
         break;
@@ -312,12 +260,6 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
         m_BroadcastManager.toggleStockfish(false);
         m_ChessboardGUI.setMode(BoardComponent::Mode::PGN);
         m_pgnButton.setEnabled(true);
-        buttonPreset1.setEnabled(false);
-        buttonPreset2.setEnabled(false);
-        buttonPreset3.setEnabled(false);
-        buttonPreset4.setEnabled(false);
-        buttonPreset5.setEnabled(false);
-        buttonReset.setEnabled(false);
         buttonUndo.setEnabled(false);
         buttonRedo.setEnabled(false);
     }

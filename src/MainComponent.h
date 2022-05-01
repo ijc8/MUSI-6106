@@ -67,24 +67,20 @@ private:
     BroadcastManager m_BroadcastManager;
     BoardComponent m_ChessboardGUI;
 
-
-    juce::TextButton buttonPreset1;
-    juce::TextButton buttonPreset2;
-    juce::TextButton buttonPreset3;
-    juce::TextButton buttonPreset4;
-    juce::TextButton buttonPreset5;
-    juce::TextButton buttonReset;
     juce::TextButton buttonUndo;
     juce::TextButton buttonRedo;
     juce::ComboBox m_SonifierSelector;
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
 
-    juce::Label m_TitleText;
+    juce::Label m_FenLabel;
+    juce::Label m_FenInput;
     juce::Label m_TurnText;
     juce::TextButton m_pgnButton;
     juce::TextButton m_NextButton;
     juce::TextButton m_PrevButton;
+
+    void onFenChanged();
 
     void onPgnButtonClicked();
     std::unique_ptr<juce::FileChooser> m_FileChooser;
