@@ -10,8 +10,8 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include "BoardComponent.h"
-#include "DebugSonifier.h"
 #include "CommentarySonifier.h"
+#include "ZenSonifier.h"
 #include "ThreatsSonifier.h"
 #include "StorySonifier.h"
 #include "GameState.h"
@@ -58,10 +58,10 @@ private:
     };
 
     std::vector<SonifierType> sonifiers = {
-        {"Debug", [](float sr){ return std::make_unique<DebugSonifier>(sr); }},
-        {"Threat", [](float sr){ return std::make_unique<ThreatsSonifier>(sr); }},
-        {"Story", [](float sr){ return std::make_unique<StorySonifier>(sr); }},
-        {"Commentary", [](float sr){ return std::make_unique<CommentarySonifier>(sr); }},
+        {"Story", [](float sr) { return std::make_unique<StorySonifier>(sr); }},
+        {"Zen", [](float sr) { return std::make_unique<ZenSonifier>(sr); }},
+        {"Threat", [](float sr) { return std::make_unique<ThreatsSonifier>(sr); }},
+        {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}
     };
 
     BroadcastManager m_BroadcastManager;

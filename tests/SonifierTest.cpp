@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-#include "../src/DebugSonifier.h"
 #include "../src/GameState.h"
 
 int main() {

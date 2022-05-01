@@ -13,7 +13,7 @@ public:
 	}
 	~Sonifier() {}
 
-	void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
+	virtual void process(float** ppfOutputBuffer, int iNumChannels, int iNumFrames)
 	{
 		mMainProcessor.process(ppfOutputBuffer, iNumChannels, iNumFrames);
 	}
