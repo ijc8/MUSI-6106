@@ -10,7 +10,10 @@ class CommentarySonifier: public Sonifier {
     void onMove(Chess::Game &board) override;
 
   private:
-    juce::AudioSampleBuffer buffer;
+    double audioSampleRate;
+    juce::AudioSampleBuffer ranks[8];
+    juce::AudioSampleBuffer files[8];
+    std::unordered_map<Chess::Piece::Type, std::unique_ptr<juce::AudioSampleBuffer>> pieces;
 };
 
 #endif // COMMENTARY_SONIFIER_H
