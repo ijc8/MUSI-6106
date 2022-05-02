@@ -67,44 +67,55 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
 }
 
 void CommentarySonifier::onMove(Chess::Game &game) {
-    if (game.peek()) {
-        auto [move, state] = game.getHistory().top();
-        Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : game.getPieceAt(move.dst)->type;
-        std::cout << "Last move: " << move.toString() << std::endl;
-        std::vector<juce::AudioSampleBuffer *> buffers;
-        // TODO: Handle castling.
+    if (!game.peek()) return;
+
+    // Announce last move.
+    auto [move, state] = game.getHistory().top();
+    Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : game.getPieceAt(move.dst)->type;
+    std::cout << "Last move: " << move.toString() << std::endl;
+    std::vector<juce::AudioSampleBuffer *> buffers;
+    // Did we castle?
+    if (piece == Chess::Piece::Type::King && abs(move.src.file - move.dst.file) > 1) {
+        // Yes: announce the kind of castling.
+        buffers.push_back(move.dst.file < 4 ? &castleLong : &castleShort);
+    } else {
+        // No: announce piece, start square, and destination square.
+        // (This is the long algebraic notation.)
         if (piece != Chess::Piece::Type::Pawn) {
             buffers.push_back(pieces[piece].get());
         }
         buffers.push_back(squares[move.src].get());
         if (state.getPieceAt(move.dst)) {
-            // A piece was captured.
+            // Announce capture.
             buffers.push_back(&takes);
         }
         buffers.push_back(squares[move.dst].get());
-        if (move.promotion) {
-            buffers.push_back(&equals);
-            buffers.push_back(pieces[*move.promotion].get());
+    }
+    // Announce promotion.
+    if (move.promotion) {
+        buffers.push_back(&equals);
+        buffers.push_back(pieces[*move.promotion].get());
+    }
+    // Announce outcome.
+    auto outcome = game.getOutcome();
+    if (outcome) {
+        auto winner = *outcome;
+        if (winner) {
+            buffers.push_back(&checkmate);
+            buffers.push_back(colors[*winner].get());
+            buffers.push_back(&wins);
+        } else {
+            buffers.push_back(&stalemate);
         }
-        auto outcome = game.getOutcome();
-        if (outcome) {
-            auto winner = *outcome;
-            if (winner) {
-                buffers.push_back(&checkmate);
-                buffers.push_back(colors[*winner].get());
-                buffers.push_back(&wins);
-            } else {
-                buffers.push_back(&stalemate);
-            }
-        } else if (game.isInCheck(game.getTurn())) {
-            buffers.push_back(&check);
-        }
-        double start = 0;
-        for (auto buffer : buffers) {
-            double duration = (double)buffer->getNumSamples() / audioSampleRate;
-            double rate = 1.0 / duration;
-            mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(*buffer, rate, 1.0, mSampleRate), start, duration);
-            start += duration;
-        }
+    } else if (game.isInCheck(game.getTurn())) {
+        buffers.push_back(&check);
+    }
+    // Play clips in sequence.
+    double start = 0;
+    for (auto buffer : buffers) {
+        double duration = (double)buffer->getNumSamples() / audioSampleRate;
+        double rate = 1.0 / duration;
+        mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(*buffer, rate, 1.0, mSampleRate), start, duration);
+        start += duration;
     }
 }
