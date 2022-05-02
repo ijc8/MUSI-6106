@@ -43,24 +43,37 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
         }
     }
 
-    audioSampleRate = loadSound(formatManager, "equals_ogg", equals);
+    std::pair<const char *, juce::AudioSampleBuffer *> misc[] = {
+        {"equals_ogg", &equals},
+        {"takes_ogg", &takes},
+        {"OO_ogg", &castleShort},
+        {"OOO_ogg", &castleLong},
+    };
+    for (auto [name, buffer] : misc) {
+        audioSampleRate = loadSound(formatManager, name, *buffer);
+    }
 }
 
 void CommentarySonifier::onMove(Chess::Game &board) {
     (void)board;
-    std::optional<Chess::Move> last = board.peek();
-    if (last) {
-        Chess::Piece::Type piece = last->promotion ? Chess::Piece::Type::Pawn : board.getPieceAt(last->dst)->type;
-        std::cout << "Last move: " << last->toString() << std::endl;
+    if (board.peek()) {
+        auto [move, state] = board.getHistory().top();
+        Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : board.getPieceAt(move.dst)->type;
+        std::cout << "Last move: " << move.toString() << std::endl;
         std::vector<juce::AudioSampleBuffer *> buffers;
+        // TODO: Handle castling, check, checkmate, stalemate.
         if (piece != Chess::Piece::Type::Pawn) {
             buffers.push_back(pieces[piece].get());
         }
-        buffers.push_back(squares[last->src].get());
-        buffers.push_back(squares[last->dst].get());
-        if (last->promotion) {
+        buffers.push_back(squares[move.src].get());
+        if (state.getPieceAt(move.dst)) {
+            // A piece was captured.
+            buffers.push_back(&takes);
+        }
+        buffers.push_back(squares[move.dst].get());
+        if (move.promotion) {
             buffers.push_back(&equals);
-            buffers.push_back(pieces[*last->promotion].get());
+            buffers.push_back(pieces[*move.promotion].get());
         }
         double start = 0;
         for (auto buffer : buffers) {
