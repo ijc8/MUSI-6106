@@ -52,7 +52,8 @@ juce_add_gui_app(MusicalChess
     # ICON_SMALL ...
     # DOCUMENT_EXTENSIONS ...           # Specify file extensions that should be associated with this app
     # COMPANY_NAME ...                  # Specify the name of the app's author
-    PRODUCT_NAME "MusicalChess")     # The name of the final executable, which can differ from the target name
+    PRODUCT_NAME "MusicalChess"
+    NEEDS_CURL TRUE)
 
 juce_add_console_app(Tests
     PRODUCT_NAME "Tests")
@@ -87,18 +88,19 @@ add_library(Common OBJECT src/GameState.cpp src/Util.cpp)
 
 target_sources(MusicalChess
     PRIVATE
+        src/BoardComponent.cpp
+        src/CommentarySonifier.cpp
+        src/EngineBridge.cpp
+        src/GameStream.cpp
         src/Main.cpp
         src/MainComponent.cpp
-        src/BoardComponent.cpp
-        src/SoundProcessor.cpp
-        src/Scheduler.cpp
         src/MainProcessor.cpp
-        src/CommentarySonifier.cpp
-	    src/ZenSonifier.cpp
-	    src/ThreatsSonifier.cpp
-        src/EngineBridge.cpp
+        src/Scheduler.cpp
+        src/SoundProcessor.cpp
         src/StorySonifier.cpp
-        src/Waveform.cpp)
+        src/ThreatsSonifier.cpp
+        src/Waveform.cpp
+        src/ZenSonifier.cpp)
 
 target_sources(Tests
     PRIVATE
@@ -145,7 +147,7 @@ target_compile_definitions(MusicalChess
     PRIVATE
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
-        JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
+        JUCE_USE_CURL=1     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
 	JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_PRODUCT_NAME>"
 	JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:MusicalChess,JUCE_VERSION>")
 

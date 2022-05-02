@@ -11,6 +11,7 @@
 #include "BroadcastManager.h"
 #include "CommentarySonifier.h"
 #include "GameState.h"
+#include "GameStream.h"
 #include "StorySonifier.h"
 #include "ThreatsSonifier.h"
 #include "ZenSonifier.h"
@@ -65,6 +66,10 @@ private:
 
     juce::Label streamInputLabel;
     juce::TextEditor streamInput;
+    juce::TextButton streamToggle;
+    std::vector<std::shared_ptr<GameStream>> streams;
+    std::shared_ptr<GameStream> stream;
+    std::future<void> task;
 
     juce::Label m_FenLabel;
     juce::Label m_FenInput;

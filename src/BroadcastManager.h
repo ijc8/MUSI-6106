@@ -77,13 +77,9 @@ public:
     void actionListenerCallback(const juce::String& message)
     {
             Chess::Move move = Chess::Move(message.toStdString());
-            if (m_Game.isLegal(move))
-            {
-                emptyUndoHistory();
-
-                m_Game.push(move);
-                sendChangeMessage();
-            }
+            emptyUndoHistory();
+            m_Game.push(move);
+            sendChangeMessage();
     }
 
     void undo()

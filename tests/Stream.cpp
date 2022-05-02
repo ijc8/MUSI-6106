@@ -10,15 +10,16 @@ int main() {
     std::string id;
     std::cin >> id;
     Chess::GameState game;
-    GameStream stream(id);
-    while (!stream.finished()) {
-        std::optional<Chess::Move> move;
-        while (move = stream.pollMove()) {
-            std::cout << "Got move: " << move->toString() << std::endl;
-            game.execute(*move);
-            game.print();
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+    std::cout << "Press any key to stop streaming." << std::endl;
+    GameStream stream(id, [&game](std::optional<Chess::Move> move) {
+        if (!move) return;
+        std::cout << "Got move: " << move->toString() << std::endl;
+        game.execute(*move);
+        game.print();
+    });
+    std::string line;
+    std::getline(std::cin, line);
+    std::getline(std::cin, line);
+    if (!stream.finished()) stream.cancel();
+    std::cout << "Exiting gracefully." << std::endl;
 }
