@@ -11,21 +11,19 @@ MainComponent::MainComponent() {
     broadcastManager.addChangeListener(&board);
     broadcastManager.addChangeListener(this);
 
-    addAndMakeVisible(undo);
-    undo.setButtonText("Undo");
-    undo.onClick = [this, &game]() {
-        broadcastManager.undo();
-        if (mode == GameMode::PVC)
-            broadcastManager.undo();
-    };
+    // prevButton.setButtonText("Undo");
+    // prevButton.onClick = [this, &game]() {
+    //     broadcastManager.undo();
+    //     if (mode == GameMode::PVC)
+    //         broadcastManager.undo();
+    // };
 
-    addAndMakeVisible(redo);
-    redo.setButtonText("Redo");
-    redo.onClick = [this, &game]() {
-        broadcastManager.redo();
-        if (mode == GameMode::PVC)
-            broadcastManager.redo();
-    };
+    // nextButton.setButtonText("Redo");
+    // nextButton.onClick = [this, &game]() {
+    //     broadcastManager.redo();
+    //     if (mode == GameMode::PVC)
+    //         broadcastManager.redo();
+    // };
 
     addAndMakeVisible(sonifierMenu);
     sonifierMenu.onChange = [this]() {
@@ -87,12 +85,6 @@ MainComponent::MainComponent() {
     openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
     openPGN.onClick = [this]() { onPgnButtonClicked(); };
 
-    addAndMakeVisible(prevButton);
-    prevButton.setButtonText("Previous");
-
-    addAndMakeVisible(nextButton);
-    nextButton.setButtonText("Next");
-
     addAndMakeVisible(volumeSlider);
     volumeSlider.setRange(0, 0.25);
     volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
@@ -133,6 +125,32 @@ MainComponent::MainComponent() {
     };
 
     addAndMakeVisible(gameSetup);
+    addAndMakeVisible(moveLabel);
+    moveLabel.setText("25/26", juce::dontSendNotification);
+    moveLabel.setJustificationType(juce::Justification::centred);
+
+    std::initializer_list<std::pair<const char *, juce::ImageButton *>> pairs = {
+        {"fastbackwardsolid_png", &skipBackward},
+        {"stepbackwardsolid_png", &stepBackward},
+        {"stepforwardsolid_png", &stepForward},
+        {"fastforwardsolid_png", &skipForward},
+    };
+    for (auto [name, button] : pairs) {
+        int size;
+        const char *data = ChessImageData::getNamedResource(name, size);
+        juce::Image image = juce::ImageFileFormat::loadFrom(data, size);
+        button->setImages(
+            false, false, true,
+            image, 0.6, juce::Colours::transparentBlack,
+            image, 0.8, juce::Colours::transparentBlack,
+            image, 1.0, juce::Colours::transparentBlack
+        );
+        addAndMakeVisible(*button);
+    }
+
+    skipBackward.onClick = []() {
+        std::cout << "Skip backward" << std::endl;
+    };
 }
 
 MainComponent::~MainComponent() {
@@ -175,9 +193,6 @@ void MainComponent::resized() {
 
     turnLabel.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
 
-    auto areaAboveChessboard = area.removeFromTop(area.getHeight() / 12);
-    undo.setBounds(areaAboveChessboard.removeFromLeft(areaAboveChessboard.getWidth() / 2));
-    redo.setBounds(areaAboveChessboard);
     // Keep chessboard square and centered.
     int size = std::min(area.getWidth(), area.getHeight());
     board.setBounds(area.withSizeKeepingCentre(size, size));
@@ -191,10 +206,13 @@ void MainComponent::resized() {
     fb.items.add(juce::FlexItem(openPGN).withMinHeight(50).withMargin(6));
     fb.items.add(juce::FlexItem(streamInput).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.items.add(juce::FlexItem(streamToggle).withMinHeight(30).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
-    juce::FlexBox pgnNavigation;
-    pgnNavigation.items.add(juce::FlexItem(prevButton).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
-    pgnNavigation.items.add(juce::FlexItem(nextButton).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
-    fb.items.add(juce::FlexItem(pgnNavigation).withMinHeight(50).withMargin(6));
+    juce::FlexBox navigation;
+    navigation.items.add(juce::FlexItem(skipBackward).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
+    navigation.items.add(juce::FlexItem(stepBackward).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
+    navigation.items.add(juce::FlexItem(moveLabel).withFlex(1));
+    navigation.items.add(juce::FlexItem(stepForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
+    navigation.items.add(juce::FlexItem(skipForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
+    fb.items.add(juce::FlexItem(navigation).withMinHeight(50).withMargin(6));
     fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.items.add(juce::FlexItem(modeMenu).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.performLayout(rightThird);
@@ -235,8 +253,8 @@ void MainComponent::onFenChanged() {
 
 void MainComponent::onPgnButtonClicked() {
     fileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
-                                                        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
-                                                        "*.pgn");
+                                                      juce::File::getSpecialLocation(juce::File::userHomeDirectory),
+                                                      "*.pgn");
 
     auto folderChooserFlags = juce::FileBrowserComponent::openMode;
 
@@ -246,14 +264,14 @@ void MainComponent::onPgnButtonClicked() {
             openPGN.setButtonText("PGN Loaded!");
             openPGN.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
             pgnData = chooser.getResult().loadFileAsString();
-            nextButton.setEnabled(true);
-            prevButton.setEnabled(true);
+            // nextButton.setEnabled(true);
+            // prevButton.setEnabled(true);
         } else {
             if (pgnData.isEmpty()) {
                 openPGN.setButtonText("Load PGN");
                 openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-                nextButton.setEnabled(false);
-                prevButton.setEnabled(false);
+                // nextButton.setEnabled(false);
+                // prevButton.setEnabled(false);
             }
         }
     });
@@ -268,10 +286,8 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
         openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         pgnData.clear();
         openPGN.setEnabled(false);
-        prevButton.setEnabled(false);
-        nextButton.setEnabled(false);
-        undo.setEnabled(true);
-        redo.setEnabled(true);
+        // prevButton.setEnabled(true);
+        // nextButton.setEnabled(true);
         break;
     case GameMode::PVP:
         broadcastManager.toggleStockfish(false);
@@ -280,17 +296,15 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
         openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         pgnData.clear();
         openPGN.setEnabled(false);
-        prevButton.setEnabled(false);
-        nextButton.setEnabled(false);
-        undo.setEnabled(true);
-        redo.setEnabled(true);
+        // prevButton.setEnabled(true);
+        // nextButton.setEnabled(true);
         break;
     default:
         broadcastManager.toggleStockfish(false);
         board.setMode(BoardComponent::Mode::PGN);
         openPGN.setEnabled(true);
-        undo.setEnabled(false);
-        redo.setEnabled(false);
+        // prevButton.setEnabled(false);
+        // nextButton.setEnabled(false);
     }
     mode = nextGameMode;
     broadcastManager.emptyUndoHistory();

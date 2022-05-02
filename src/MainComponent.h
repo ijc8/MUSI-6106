@@ -94,8 +94,9 @@ private:
 
     GameSetup gameSetup;
 
-    juce::TextButton undo;
-    juce::TextButton redo;
+    juce::Label moveLabel;
+    juce::Image skipBackwardImage, stepBackwardImage, stepForwardImage, skipForwardImage;
+    juce::ImageButton skipBackward, stepBackward, stepForward, skipForward;
 
     juce::Label sonifierLabel;
     juce::ComboBox sonifierMenu;
@@ -117,8 +118,6 @@ private:
     juce::Label turnLabel;
 
     juce::TextButton openPGN;
-    juce::TextButton nextButton;
-    juce::TextButton prevButton;
 
     void onFenChanged();
 
