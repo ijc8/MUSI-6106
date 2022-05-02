@@ -131,6 +131,8 @@ MainComponent::MainComponent() {
             streamToggle.setButtonText("Stop Stream");
         }
     };
+
+    addAndMakeVisible(gameSetup);
 }
 
 MainComponent::~MainComponent() {
@@ -185,6 +187,7 @@ void MainComponent::resized() {
     fb.flexDirection = juce::FlexBox::Direction::column;
     fb.justifyContent = juce::FlexBox::JustifyContent::center;
     fb.alignContent = juce::FlexBox::AlignContent::center;
+    fb.items.add(juce::FlexItem(gameSetup).withMinHeight(150).withMargin(6));
     fb.items.add(juce::FlexItem(openPGN).withMinHeight(50).withMargin(6));
     fb.items.add(juce::FlexItem(streamInput).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.items.add(juce::FlexItem(streamToggle).withMinHeight(30).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));

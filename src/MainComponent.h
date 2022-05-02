@@ -39,6 +39,42 @@ public:
 private:
     double sampleRate;
 
+    class GameSetup: public juce::GroupComponent {
+    public:
+        GameSetup() {
+            setText("Game Setup");
+            whiteLabel.setText("White", juce::dontSendNotification);
+            blackLabel.setText("Black", juce::dontSendNotification);
+            addAndMakeVisible(whiteLabel);
+            whiteLabel.attachToComponent(&whiteMenu, false);
+            addAndMakeVisible(blackLabel);
+            blackLabel.attachToComponent(&blackMenu, false);
+
+            for (auto menu : {&whiteMenu, &blackMenu}) {
+                addAndMakeVisible(*menu);
+                menu->addItem("Human", 1);
+                menu->addItem("Computer (Easy)", 2);
+                menu->addItem("Computer (Medium)", 3);
+                menu->addItem("Computer (Hard)", 4);
+                menu->setSelectedId(1, juce::dontSendNotification);
+            }
+        }
+
+        void resized() override {
+            juce::FlexBox fb;
+            fb.flexDirection = juce::FlexBox::Direction::column;
+            fb.justifyContent = juce::FlexBox::JustifyContent::center;
+            fb.alignContent = juce::FlexBox::AlignContent::center;
+            // Order matches board orientation.
+            fb.items.add(juce::FlexItem(blackMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+            fb.items.add(juce::FlexItem(whiteMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+            fb.performLayout(getLocalBounds());
+        }
+
+        juce::Label whiteLabel, blackLabel;
+        juce::ComboBox whiteMenu, blackMenu;
+    };
+
     GameMode mode = PVP;
     std::unique_ptr<Sonifier> oldSonifier, currentSonifier;
 
@@ -55,6 +91,8 @@ private:
 
     BroadcastManager broadcastManager;
     BoardComponent board;
+
+    GameSetup gameSetup;
 
     juce::TextButton undo;
     juce::TextButton redo;
