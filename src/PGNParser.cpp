@@ -100,6 +100,10 @@ std::vector<std::string> PGNParser::getMovesAlgebraic() {
             startIdx = 0;
             endIdx = line.find(std::to_string(moveNumber + 1) + ".");
 
+            if(line.back() == '.') {
+
+            }
+
             move = move + " " + line.substr(startIdx, endIdx - startIdx);
             moves.push_back(move);
             startIdx = line.find(" ", endIdx);

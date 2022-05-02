@@ -19,9 +19,13 @@
 
 using namespace Chess;
 
-enum file
-{
-    a, b, c, d, e, f, g, h
+struct PGNMove {
+    Piece piece;
+    Square moveTo;
+    Square moveFrom;
+    bool isCastling;
+    bool isCapture;
+    bool isEndOfGame;
 };
 
 //static const std::unordered_map<char, Piece> PGNCharToPiece;
@@ -37,6 +41,8 @@ public:
     std::vector<std::string> getMovesAlgebraic();
     std::unordered_map<int,std::string> getComments();
     std::vector<Chess::Move> getMoves(std::vector<std::string> moves);
+    bool placeMovesOnBoard(std::vector<std::string> moves);
+
 
 
 
