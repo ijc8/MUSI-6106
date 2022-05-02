@@ -112,9 +112,10 @@ MainComponent::MainComponent() {
     streamToggle.setButtonText("Play Stream");
     streamToggle.onClick = [this]() {
         std::string id = streamInput.getText().toStdString();
-        stream = std::make_unique<GameStream>(id, [](std::optional<Chess::Move> move) {
+        stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
             if (move) {
                 std::cout << "Got move: " << move->toString() << std::endl;
+                m_BroadcastManager.actionListenerCallback(juce::String(move->toString()));
             } else {
                 std::cout << "Done streaming." << std::endl;
             }

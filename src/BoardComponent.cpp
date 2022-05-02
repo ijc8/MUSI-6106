@@ -74,6 +74,22 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
     Chess::Piece selectedPiece = *game.getPieceAt(*selected);
     Chess::Color turn = game.getTurn();
 
+    // Don't show promotions menu or make move unless it is to a candidate square.
+    Chess::Move move(*selected, target);
+    std::unordered_set<Chess::Move> moves = game.generateMoves(*selected);
+    bool valid = false;
+    for (auto candidate : moves) {
+        if (move.src == candidate.src && move.dst == candidate.dst) {
+            valid = true;
+            break;
+        }
+    }
+
+    if (!valid) {
+        selected.reset();
+        return;
+    }
+
     if (selectedPiece.type == Chess::Piece::Type::Pawn &&
         target.rank == (turn == Chess::Color::White ? 7 : 0)) {
         // Pawn promotion - need to prompt the user to select which piece they want.
@@ -101,8 +117,7 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
             }
         });
     } else {
-        juce::String intent = Chess::Move(*selected, target).toString();
-        sendActionMessage(intent);
+        sendActionMessage(juce::String(move.toString()));
         selected.reset();
     }
 }
