@@ -63,16 +63,52 @@ private:
         void resized() override {
             juce::FlexBox fb;
             fb.flexDirection = juce::FlexBox::Direction::column;
-            fb.justifyContent = juce::FlexBox::JustifyContent::center;
+            fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
             fb.alignContent = juce::FlexBox::AlignContent::center;
             // Order matches board orientation.
-            fb.items.add(juce::FlexItem(blackMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+            fb.items.add(juce::FlexItem(blackMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
             fb.items.add(juce::FlexItem(whiteMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
             fb.performLayout(getLocalBounds());
         }
 
         juce::Label whiteLabel, blackLabel;
         juce::ComboBox whiteMenu, blackMenu;
+    };
+
+    class SoundOptions: public juce::GroupComponent {
+        public:
+        SoundOptions() {
+            setText("Sound");
+            sonifierLabel.setText("Sonifier", juce::dontSendNotification);
+            volumeLabel.setText("Volume", juce::dontSendNotification);
+            addAndMakeVisible(volumeLabel);
+            sonifierLabel.attachToComponent(&sonifierMenu, false);
+            addAndMakeVisible(sonifierLabel);
+            volumeLabel.attachToComponent(&volumeSlider, false);
+
+            addAndMakeVisible(sonifierMenu);
+            sonifierMenu.addItem("Zen", 1);
+            sonifierMenu.addItem("Explosions", 2);
+            sonifierMenu.setSelectedId(1);
+
+            addAndMakeVisible(volumeSlider);
+            volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+        }
+
+        void resized() override {
+            juce::FlexBox fb;
+            fb.flexDirection = juce::FlexBox::Direction::column;
+            fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+            fb.alignContent = juce::FlexBox::AlignContent::center;
+            // Order matches board orientation.
+            fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+            fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+            fb.performLayout(getLocalBounds());
+        }
+
+        juce::Label sonifierLabel, volumeLabel;
+        juce::ComboBox sonifierMenu;
+        juce::Slider volumeSlider;
     };
 
     GameMode mode = PVP;
@@ -93,18 +129,14 @@ private:
     BoardComponent board;
 
     GameSetup gameSetup;
+    SoundOptions soundOptions;
 
     juce::Label moveLabel;
     juce::Image skipBackwardImage, stepBackwardImage, stepForwardImage, skipForwardImage;
     juce::ImageButton skipBackward, stepBackward, stepForward, skipForward;
 
-    juce::Label sonifierLabel;
-    juce::ComboBox sonifierMenu;
-
     juce::Label modeLabel;
     juce::ComboBox modeMenu;
-
-    juce::Slider volumeSlider;
 
     juce::Label streamInputLabel;
     juce::TextEditor streamInput;

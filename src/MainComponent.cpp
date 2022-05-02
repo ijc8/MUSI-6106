@@ -25,19 +25,19 @@ MainComponent::MainComponent() {
     //         broadcastManager.redo();
     // };
 
-    addAndMakeVisible(sonifierMenu);
-    sonifierMenu.onChange = [this]() {
-        setSonifier(sonifierMenu.getSelectedItemIndex());
-    };
-    for (int i = 0; i < sonifiers.size(); i++) {
-        sonifierMenu.addItem(sonifiers[i].name, i + 1);
-    }
-    sonifierMenu.setSelectedId(1, juce::dontSendNotification);
-    currentSonifier->setEnabled(true);
+    // addAndMakeVisible(sonifierMenu);
+    // sonifierMenu.onChange = [this]() {
+    //     setSonifier(sonifierMenu.getSelectedItemIndex());
+    // };
+    // for (int i = 0; i < sonifiers.size(); i++) {
+    //     sonifierMenu.addItem(sonifiers[i].name, i + 1);
+    // }
+    // sonifierMenu.setSelectedId(1, juce::dontSendNotification);
+    // currentSonifier->setEnabled(true);
 
-    addAndMakeVisible(sonifierLabel);
-    sonifierLabel.setText("Sonifier", juce::dontSendNotification);
-    sonifierLabel.attachToComponent(&sonifierMenu, false);
+    // addAndMakeVisible(sonifierLabel);
+    // sonifierLabel.setText("Sonifier", juce::dontSendNotification);
+    // sonifierLabel.attachToComponent(&sonifierMenu, false);
 
     addAndMakeVisible(modeMenu);
     modeMenu.onChange = [this]() {
@@ -85,15 +85,13 @@ MainComponent::MainComponent() {
     openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
     openPGN.onClick = [this]() { onPgnButtonClicked(); };
 
-    addAndMakeVisible(volumeSlider);
-    volumeSlider.setRange(0, 0.25);
-    volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
-    volumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-    volumeSlider.onValueChange = [this]() {
-        // TODO: Logarithmic scaling! (i.e. set gain in dB)
-        currentSonifier->setGain(volumeSlider.getValue());
-    };
-    volumeSlider.setValue(0.25);
+    // volumeSlider.setRange(0, 0.25);
+    // volumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    // volumeSlider.onValueChange = [this]() {
+    //     // TODO: Logarithmic scaling! (i.e. set gain in dB)
+    //     currentSonifier->setGain(volumeSlider.getValue());
+    // };
+    // volumeSlider.setValue(0.25);
 
     // TODO: Hook up this input so it actually does something.
     addAndMakeVisible(streamInput);
@@ -125,6 +123,7 @@ MainComponent::MainComponent() {
     };
 
     addAndMakeVisible(gameSetup);
+
     addAndMakeVisible(moveLabel);
     moveLabel.setText("25/26", juce::dontSendNotification);
     moveLabel.setJustificationType(juce::Justification::centred);
@@ -151,6 +150,8 @@ MainComponent::MainComponent() {
     skipBackward.onClick = []() {
         std::cout << "Skip backward" << std::endl;
     };
+
+    addAndMakeVisible(soundOptions);
 }
 
 MainComponent::~MainComponent() {
@@ -188,9 +189,6 @@ void MainComponent::resized() {
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
-    auto sliderArea = rightThird.removeFromRight(rightThird.getWidth() / 6);
-    volumeSlider.setBounds(sliderArea);
-
     turnLabel.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
 
     // Keep chessboard square and centered.
@@ -213,8 +211,7 @@ void MainComponent::resized() {
     navigation.items.add(juce::FlexItem(stepForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
     navigation.items.add(juce::FlexItem(skipForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
     fb.items.add(juce::FlexItem(navigation).withMinHeight(50).withMargin(6));
-    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
-    fb.items.add(juce::FlexItem(modeMenu).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
+    fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.performLayout(rightThird);
 
     fenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 8));
@@ -242,7 +239,7 @@ void MainComponent::setSonifier(int sonifierIndex) {
     currentSonifier->setEnabled(true);
     broadcastManager.addChangeListener(currentSonifier.get());
     currentSonifier->onMove(AppState::getInstance().getGame());
-    currentSonifier->setGain(volumeSlider.getValue());
+    // currentSonifier->setGain(volumeSlider.getValue());
 }
 
 void MainComponent::onFenChanged() {
