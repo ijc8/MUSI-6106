@@ -4,12 +4,13 @@
 #include "Sonifier.h"
 
 class CommentarySonifier: public Sonifier {
-  public:
+public:
     CommentarySonifier(float sampleRate);
-  protected:
+
+protected:
     void onMove(Chess::Game &game) override;
 
-  private:
+private:
     double audioSampleRate;
     std::unordered_map<Chess::Color, std::unique_ptr<juce::AudioSampleBuffer>> colors;
     std::unordered_map<Chess::Piece::Type, std::unique_ptr<juce::AudioSampleBuffer>> pieces;

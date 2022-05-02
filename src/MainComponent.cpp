@@ -1,14 +1,12 @@
 #include "MainComponent.h"
 
-//==============================================================================
-MainComponent::MainComponent()
-{
+MainComponent::MainComponent() {
     setSize(1000, 800);
 
     setAudioChannels(0, 2);
 
     addAndMakeVisible(m_ChessboardGUI);
-    Chess::Game& game = AppState::getInstance().getGame();
+    Chess::Game &game = AppState::getInstance().getGame();
     m_ChessboardGUI.addActionListener(&m_BroadcastManager);
     m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
     m_BroadcastManager.addChangeListener(this);
@@ -30,8 +28,7 @@ MainComponent::MainComponent()
     };
 
     addAndMakeVisible(m_SonifierSelector);
-    m_SonifierSelector.onChange = [this]() 
-    {
+    m_SonifierSelector.onChange = [this]() {
         setSonifier(m_SonifierSelector.getSelectedItemIndex());
     };
     for (int i = 0; i < sonifiers.size(); i++) {
@@ -45,13 +42,16 @@ MainComponent::MainComponent()
     sonifierLabel.attachToComponent(&m_SonifierSelector, false);
 
     addAndMakeVisible(m_GameModeSelector);
-    m_GameModeSelector.onChange = [this]()
-    {
-        switch (m_GameModeSelector.getSelectedId())
-        {
-        case 1: onGameModeChange(GameMode::PVP); break;
-        case 2: onGameModeChange(GameMode::PVC); break;
-        default: onGameModeChange(GameMode::PGN);
+    m_GameModeSelector.onChange = [this]() {
+        switch (m_GameModeSelector.getSelectedId()) {
+        case 1:
+            onGameModeChange(GameMode::PVP);
+            break;
+        case 2:
+            onGameModeChange(GameMode::PVC);
+            break;
+        default:
+            onGameModeChange(GameMode::PGN);
         }
     };
     m_GameModeSelector.addItem("Player vs. Player", 1);
@@ -98,13 +98,19 @@ MainComponent::MainComponent()
     m_VolumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     m_VolumeSlider.onValueChange = [this]() {
+        // TODO: Logarithmic scaling! (i.e. set gain in dB)
         mCurrentSonifier->setGain(m_VolumeSlider.getValue());
     };
     m_VolumeSlider.setValue(0.25);
+
+    // TODO: Hook up this input so it actually does something.
+    addAndMakeVisible(streamInput);
+    addAndMakeVisible(streamInputLabel);
+    streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
+    streamInputLabel.attachToComponent(&streamInput, false);
 }
 
-MainComponent::~MainComponent()
-{
+MainComponent::~MainComponent() {
     m_BroadcastManager.removeAllChangeListeners();
     m_ChessboardGUI.removeAllActionListeners();
     shutdownAudio();
@@ -116,7 +122,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     setSonifier(0);
 }
 
-void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
+void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) {
     if (mOldSonifier) {
         mOldSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
         if (mOldSonifier->isIdle()) {
@@ -129,16 +135,11 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     }
 }
 
-//==============================================================================
-void MainComponent::paint(juce::Graphics& g)
-{
-
+void MainComponent::paint(juce::Graphics &g) {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-
 }
 
-void MainComponent::resized()
-{
+void MainComponent::resized() {
     auto area = getBounds().reduced(10);
     auto footer = area.removeFromBottom(getHeight() / 20);
     auto rightThird = area.removeFromRight(getWidth() / 3);
@@ -148,7 +149,7 @@ void MainComponent::resized()
     m_VolumeSlider.setBounds(sliderArea);
 
     m_TurnText.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
-    
+
     auto areaAboveChessboard = area.removeFromTop(area.getHeight() / 12);
     buttonUndo.setBounds(areaAboveChessboard.removeFromLeft(areaAboveChessboard.getWidth() / 2));
     buttonRedo.setBounds(areaAboveChessboard);
@@ -156,11 +157,13 @@ void MainComponent::resized()
     int size = std::min(area.getWidth(), area.getHeight());
     m_ChessboardGUI.setBounds(area.withSizeKeepingCentre(size, size));
 
+    // TODO: Group various inputs into related sections with titles.
     juce::FlexBox fb;
     fb.flexDirection = juce::FlexBox::Direction::column;
     fb.justifyContent = juce::FlexBox::JustifyContent::center;
     fb.alignContent = juce::FlexBox::AlignContent::center;
     fb.items.add(juce::FlexItem(m_pgnButton).withMinHeight(50).withMargin(6));
+    fb.items.add(juce::FlexItem(streamInput).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     juce::FlexBox pgnNavigation;
     pgnNavigation.items.add(juce::FlexItem(m_PrevButton).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
     pgnNavigation.items.add(juce::FlexItem(m_NextButton).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
@@ -173,11 +176,9 @@ void MainComponent::resized()
     m_FenInput.setBounds(footer);
 }
 
-void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
-{
-    Chess::Game& game = AppState::getInstance().getGame();
-    switch (game.getTurn())
-    {
+void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
+    Chess::Game &game = AppState::getInstance().getGame();
+    switch (game.getTurn()) {
     case Chess::Color::White:
         m_TurnText.setText("White's Turn", juce::dontSendNotification);
         break;
@@ -186,8 +187,7 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
     }
 }
 
-void MainComponent::setSonifier(int sonifierIndex)
-{
+void MainComponent::setSonifier(int sonifierIndex) {
     mOldSonifier = std::move(mCurrentSonifier);
     mCurrentSonifier = sonifiers[sonifierIndex].create(sampleRate);
     if (mOldSonifier) {
@@ -208,40 +208,32 @@ void MainComponent::onFenChanged() {
 
 void MainComponent::onPgnButtonClicked() {
     m_FileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
-        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
-            "*.pgn");
+                                                        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
+                                                        "*.pgn");
 
     auto folderChooserFlags = juce::FileBrowserComponent::openMode;
 
-    m_FileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser& chooser)
-        {
-            juce::File file = chooser.getResult();
-            if (file.exists())
-            {
-                m_pgnButton.setButtonText("PGN Loaded!");
-                m_pgnButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
-                m_PgnString = chooser.getResult().loadFileAsString();
-                m_NextButton.setEnabled(true);
-                m_PrevButton.setEnabled(true);
+    m_FileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
+        juce::File file = chooser.getResult();
+        if (file.exists()) {
+            m_pgnButton.setButtonText("PGN Loaded!");
+            m_pgnButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
+            m_PgnString = chooser.getResult().loadFileAsString();
+            m_NextButton.setEnabled(true);
+            m_PrevButton.setEnabled(true);
+        } else {
+            if (m_PgnString.isEmpty()) {
+                m_pgnButton.setButtonText("Load PGN");
+                m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
+                m_NextButton.setEnabled(false);
+                m_PrevButton.setEnabled(false);
             }
-            else {
-                if (m_PgnString.isEmpty())
-                {
-                    m_pgnButton.setButtonText("Load PGN");
-                    m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-                    m_NextButton.setEnabled(false);
-                    m_PrevButton.setEnabled(false);
-                }
-            }
-        });
-
-
+        }
+    });
 }
 
-void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode)
-{
-    switch (nextGameMode)
-    {
+void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
+    switch (nextGameMode) {
     case GameMode::PVC:
         m_BroadcastManager.toggleStockfish(true);
         m_ChessboardGUI.setMode(BoardComponent::Mode::PVC);

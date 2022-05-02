@@ -18,8 +18,8 @@ public:
     ~EngineManager() { removeAllActionListeners(); };
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override {
-        Game &game = AppState::getInstance().getGame();
-        if (game.getTurn() == Color::Black) {
+        Chess::Game &game = AppState::getInstance().getGame();
+        if (game.getTurn() == Chess::Color::Black) {
             // Wait for engine to pick a move in a separate thread,
             // to avoid blocking the UI.
             task = std::async(std::launch::async, [this, game]{
@@ -88,7 +88,7 @@ public:
 
     void undo()
     {
-        std::optional<Move> move = m_Game.pop();
+        std::optional<Chess::Move> move = m_Game.pop();
         if (move) {
             mUndoHistory.push(*move);
             sendChangeMessage();
@@ -99,7 +99,7 @@ public:
     {
         if (!mUndoHistory.empty())
         {
-            Move lastMove = mUndoHistory.top();
+            Chess::Move lastMove = mUndoHistory.top();
             m_Game.push(lastMove);
             mUndoHistory.pop();
             sendChangeMessage();

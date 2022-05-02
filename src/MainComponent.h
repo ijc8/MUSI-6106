@@ -2,49 +2,38 @@
 
 #include <functional>
 
-// CMake builds don't use an AppConfig.h, so it's safe to include juce module headers
-// directly. If you need to remain compatible with Projucer-generated builds, and
-// have called `juce_generate_juce_header(<thisTarget>)` in your CMakeLists.txt,
-// you could `#include <JuceHeader.h>` here instead, to make all your module headers visible.
-#include <juce_gui_extra/juce_gui_extra.h>
+// We're using CMake, so we include JUCE module headers directly
+// (as opposed using Projucer to generate one big JuceHeader.h).
 #include <juce_audio_utils/juce_audio_utils.h>
+#include <juce_gui_extra/juce_gui_extra.h>
 
 #include "BoardComponent.h"
-#include "CommentarySonifier.h"
-#include "ZenSonifier.h"
-#include "ThreatsSonifier.h"
-#include "StorySonifier.h"
-#include "GameState.h"
 #include "BroadcastManager.h"
+#include "CommentarySonifier.h"
+#include "GameState.h"
+#include "StorySonifier.h"
+#include "ThreatsSonifier.h"
+#include "ZenSonifier.h"
 
-//==============================================================================
-/*
-    This component lives inside our window, and this is where you should put all
-    your controls and content.
-*/
-class MainComponent : public juce::AudioAppComponent, public juce::ChangeListener
-{
+class MainComponent: public juce::AudioAppComponent, public juce::ChangeListener {
 public:
-
     enum GameMode {
         PVP,
         PVC,
         PGN
     };
 
-    //==============================================================================
     MainComponent();
     ~MainComponent();
 
-    //==============================================================================
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
-    void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
-    void releaseResources() override {};
+    void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override;
+    void releaseResources() override{};
 
-    void paint(juce::Graphics& g) override;
+    void paint(juce::Graphics &g) override;
     void resized() override;
 
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+    void changeListenerCallback(juce::ChangeBroadcaster *source) override;
 
 private:
     double sampleRate;
@@ -61,8 +50,7 @@ private:
         {"Zen", [](float sr) { return std::make_unique<ZenSonifier>(sr); }},
         {"Story", [](float sr) { return std::make_unique<StorySonifier>(sr); }},
         {"Threat", [](float sr) { return std::make_unique<ThreatsSonifier>(sr); }},
-        {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}
-    };
+        {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}};
 
     BroadcastManager m_BroadcastManager;
     BoardComponent m_ChessboardGUI;
@@ -74,6 +62,9 @@ private:
     juce::Label modeLabel;
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
+
+    juce::Label streamInputLabel;
+    juce::TextEditor streamInput;
 
     juce::Label m_FenLabel;
     juce::Label m_FenInput;

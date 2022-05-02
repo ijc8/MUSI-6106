@@ -10,10 +10,6 @@
 #include <optional>
 #include "Sonifier.h"
 
-
-using namespace Chess;
-
-
 class ThreatsSonifier : public Sonifier 
 {
 public:
@@ -23,7 +19,7 @@ public:
 
 protected:
 
-    void sonifyThreats(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece);
+    void sonifyThreats(Chess::Square const& preySquare, const std::optional<Chess::Piece>& preyPiece);
 
     void onMove(Chess::Game& gameState) override;
 

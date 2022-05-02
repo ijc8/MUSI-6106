@@ -13,7 +13,7 @@ ThreatsSonifier::ThreatsSonifier(float sampleRate) : Sonifier(sampleRate) {
 ThreatsSonifier::~ThreatsSonifier() {
 }
 
-void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::optional<Piece>& preyPiece)
+void ThreatsSonifier::sonifyThreats(Chess::Square const& preySquare, const std::optional<Chess::Piece>& preyPiece)
 
 {
     pan = preySquare.rank + 1 * 0.1f;
