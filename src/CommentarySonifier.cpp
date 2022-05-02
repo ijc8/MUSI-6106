@@ -28,6 +28,13 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
         audioSampleRate = loadSound(formatManager, name.c_str(), files[file]);
     }
 
+    std::pair<Chess::Color, std::string> colorNames[] = {{Chess::Color::White, "white"}, {Chess::Color::Black, "black"}};
+    for (auto &[color, name] : colorNames) {
+        std::string resourceName = name + "_ogg";
+        juce::AudioSampleBuffer &buffer = *colors.emplace(color, std::make_unique<juce::AudioSampleBuffer>()).first->second;
+        audioSampleRate = loadSound(formatManager, resourceName.c_str(), buffer);
+    }
+
     for (auto &[type, typeName] : Chess::Piece::ToChar) {
         juce::AudioSampleBuffer &buffer = *pieces.emplace(type, std::make_unique<juce::AudioSampleBuffer>()).first->second;
         std::string name = std::string({typeName}) + "_ogg";
@@ -46,7 +53,10 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
     std::pair<std::string, juce::AudioSampleBuffer *> misc[] = {
         {"equals", &equals},
         {"takes", &takes},
+        {"wins", &wins},
         {"check", &check},
+        {"checkmate", &checkmate},
+        {"stalemate", &stalemate},
         {"OO", &castleShort},
         {"OOO", &castleLong},
     };
@@ -62,7 +72,7 @@ void CommentarySonifier::onMove(Chess::Game &game) {
         Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : game.getPieceAt(move.dst)->type;
         std::cout << "Last move: " << move.toString() << std::endl;
         std::vector<juce::AudioSampleBuffer *> buffers;
-        // TODO: Handle castling, checkmate, stalemate.
+        // TODO: Handle castling.
         if (piece != Chess::Piece::Type::Pawn) {
             buffers.push_back(pieces[piece].get());
         }
@@ -76,7 +86,17 @@ void CommentarySonifier::onMove(Chess::Game &game) {
             buffers.push_back(&equals);
             buffers.push_back(pieces[*move.promotion].get());
         }
-        if (game.isInCheck(game.getTurn())) {
+        auto outcome = game.getOutcome();
+        if (outcome) {
+            auto winner = *outcome;
+            if (winner) {
+                buffers.push_back(&checkmate);
+                buffers.push_back(colors[*winner].get());
+                buffers.push_back(&wins);
+            } else {
+                buffers.push_back(&stalemate);
+            }
+        } else if (game.isInCheck(game.getTurn())) {
             buffers.push_back(&check);
         }
         double start = 0;
