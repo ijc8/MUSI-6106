@@ -106,8 +106,20 @@ MainComponent::MainComponent() {
     // TODO: Hook up this input so it actually does something.
     addAndMakeVisible(streamInput);
     addAndMakeVisible(streamInputLabel);
+    addAndMakeVisible(streamToggle);
     streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
     streamInputLabel.attachToComponent(&streamInput, false);
+    streamToggle.setButtonText("Play Stream");
+    streamToggle.onClick = [this]() {
+        std::string id = streamInput.getText().toStdString();
+        stream = std::make_unique<GameStream>(id, [](std::optional<Chess::Move> move) {
+            if (move) {
+                std::cout << "Got move: " << move->toString() << std::endl;
+            } else {
+                std::cout << "Done streaming." << std::endl;
+            }
+        });
+    };
 }
 
 MainComponent::~MainComponent() {
@@ -164,6 +176,7 @@ void MainComponent::resized() {
     fb.alignContent = juce::FlexBox::AlignContent::center;
     fb.items.add(juce::FlexItem(m_pgnButton).withMinHeight(50).withMargin(6));
     fb.items.add(juce::FlexItem(streamInput).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
+    fb.items.add(juce::FlexItem(streamToggle).withMinHeight(30).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
     juce::FlexBox pgnNavigation;
     pgnNavigation.items.add(juce::FlexItem(m_PrevButton).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
     pgnNavigation.items.add(juce::FlexItem(m_NextButton).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
