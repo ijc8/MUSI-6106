@@ -111,15 +111,25 @@ MainComponent::MainComponent() {
     streamInputLabel.attachToComponent(&streamInput, false);
     streamToggle.setButtonText("Play Stream");
     streamToggle.onClick = [this]() {
-        std::string id = streamInput.getText().toStdString();
-        stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
-            if (move) {
-                std::cout << "Got move: " << move->toString() << std::endl;
-                m_BroadcastManager.actionListenerCallback(juce::String(move->toString()));
-            } else {
-                std::cout << "Done streaming." << std::endl;
-            }
-        });
+        if (stream) {
+            // Hack to avoid thread-killing issues.
+            stream->cancel();
+            streams.push_back(stream);
+            stream.reset();
+            streamToggle.setButtonText("Play Stream");
+        } else {
+            // TODO: Reset game first.
+            std::string id = streamInput.getText().toStdString();
+            stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
+                if (move) {
+                    std::cout << "Streamed move: " << move->toString() << std::endl;
+                    m_BroadcastManager.actionListenerCallback(juce::String(move->toString()));
+                } else {
+                    std::cout << "Done streaming." << std::endl;
+                }
+            });
+            streamToggle.setButtonText("Stop Stream");
+        }
     };
 }
 

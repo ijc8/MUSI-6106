@@ -26,13 +26,12 @@ GameStream::GameStream(const std::string &gameID, std::function<void (std::optio
 
 GameStream::~GameStream() {
     cancel();
+    thread->stopThread(100);
 }
 
 void GameStream::cancel() {
-    if (stream) stream->cancel();
-    if (thread) thread->stopThread(100);
-    stream.reset();
-    thread.reset();
+    stream->cancel();
+    thread->signalThreadShouldExit();
 }
 
 bool GameStream::finished() {

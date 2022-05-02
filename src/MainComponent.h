@@ -67,7 +67,8 @@ private:
     juce::Label streamInputLabel;
     juce::TextEditor streamInput;
     juce::TextButton streamToggle;
-    std::unique_ptr<GameStream> stream;
+    std::vector<std::shared_ptr<GameStream>> streams;
+    std::shared_ptr<GameStream> stream;
     std::future<void> task;
 
     juce::Label m_FenLabel;
