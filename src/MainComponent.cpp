@@ -122,35 +122,8 @@ MainComponent::MainComponent() {
         }
     };
 
+    addAndMakeVisible(controls);
     addAndMakeVisible(playerOptions);
-
-    addAndMakeVisible(moveLabel);
-    moveLabel.setText("25/26", juce::dontSendNotification);
-    moveLabel.setJustificationType(juce::Justification::centred);
-
-    std::initializer_list<std::pair<const char *, juce::ImageButton *>> pairs = {
-        {"fastbackwardsolid_png", &skipBackward},
-        {"stepbackwardsolid_png", &stepBackward},
-        {"stepforwardsolid_png", &stepForward},
-        {"fastforwardsolid_png", &skipForward},
-    };
-    for (auto [name, button] : pairs) {
-        int size;
-        const char *data = ChessImageData::getNamedResource(name, size);
-        juce::Image image = juce::ImageFileFormat::loadFrom(data, size);
-        button->setImages(
-            false, false, true,
-            image, 0.6, juce::Colours::transparentBlack,
-            image, 0.8, juce::Colours::transparentBlack,
-            image, 1.0, juce::Colours::transparentBlack
-        );
-        addAndMakeVisible(*button);
-    }
-
-    skipBackward.onClick = []() {
-        std::cout << "Skip backward" << std::endl;
-    };
-
     addAndMakeVisible(soundOptions);
     addAndMakeVisible(analysisOptions);
 }
@@ -201,16 +174,11 @@ void MainComponent::resized() {
     fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
     fb.alignContent = juce::FlexBox::AlignContent::center;
 
-    juce::FlexBox navigation;
-    navigation.items.add(juce::FlexItem(skipBackward).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
-    navigation.items.add(juce::FlexItem(stepBackward).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
-    navigation.items.add(juce::FlexItem(moveLabel).withFlex(1));
-    navigation.items.add(juce::FlexItem(stepForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
-    navigation.items.add(juce::FlexItem(skipForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
-    fb.items.add(juce::FlexItem(navigation).withMinHeight(50).withMargin(6));
-    fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(6));
-    fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
-    fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
+    juce::FlexItem::Margin margin(24, 6, 6, 6);
+    fb.items.add(juce::FlexItem(controls).withMinHeight(170).withMargin(6));
+    fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(margin));
+    fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(margin));
+    fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(margin));
     fb.performLayout(rightThird);
 }
 
