@@ -43,25 +43,26 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
         }
     }
 
-    std::pair<const char *, juce::AudioSampleBuffer *> misc[] = {
-        {"equals_ogg", &equals},
-        {"takes_ogg", &takes},
-        {"OO_ogg", &castleShort},
-        {"OOO_ogg", &castleLong},
+    std::pair<std::string, juce::AudioSampleBuffer *> misc[] = {
+        {"equals", &equals},
+        {"takes", &takes},
+        {"check", &check},
+        {"OO", &castleShort},
+        {"OOO", &castleLong},
     };
-    for (auto [name, buffer] : misc) {
-        audioSampleRate = loadSound(formatManager, name, *buffer);
+    for (auto &[name, buffer] : misc) {
+        std::string resourceName = name + "_ogg";
+        audioSampleRate = loadSound(formatManager, resourceName.c_str(), *buffer);
     }
 }
 
-void CommentarySonifier::onMove(Chess::Game &board) {
-    (void)board;
-    if (board.peek()) {
-        auto [move, state] = board.getHistory().top();
-        Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : board.getPieceAt(move.dst)->type;
+void CommentarySonifier::onMove(Chess::Game &game) {
+    if (game.peek()) {
+        auto [move, state] = game.getHistory().top();
+        Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : game.getPieceAt(move.dst)->type;
         std::cout << "Last move: " << move.toString() << std::endl;
         std::vector<juce::AudioSampleBuffer *> buffers;
-        // TODO: Handle castling, check, checkmate, stalemate.
+        // TODO: Handle castling, checkmate, stalemate.
         if (piece != Chess::Piece::Type::Pawn) {
             buffers.push_back(pieces[piece].get());
         }
@@ -74,6 +75,9 @@ void CommentarySonifier::onMove(Chess::Game &board) {
         if (move.promotion) {
             buffers.push_back(&equals);
             buffers.push_back(pieces[*move.promotion].get());
+        }
+        if (game.isInCheck(game.getTurn())) {
+            buffers.push_back(&check);
         }
         double start = 0;
         for (auto buffer : buffers) {
