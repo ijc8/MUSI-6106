@@ -35,10 +35,14 @@ MainComponent::MainComponent()
         setSonifier(m_SonifierSelector.getSelectedItemIndex());
     };
     for (int i = 0; i < sonifiers.size(); i++) {
-        m_SonifierSelector.addItem(sonifiers[i].name + " Sonifier", i + 1);
+        m_SonifierSelector.addItem(sonifiers[i].name, i + 1);
     }
     m_SonifierSelector.setSelectedId(1, juce::dontSendNotification);
     mCurrentSonifier->setEnabled(true);
+
+    addAndMakeVisible(sonifierLabel);
+    sonifierLabel.setText("Sonifier", juce::dontSendNotification);
+    sonifierLabel.attachToComponent(&m_SonifierSelector, false);
 
     addAndMakeVisible(m_GameModeSelector);
     m_GameModeSelector.onChange = [this]()
@@ -50,10 +54,14 @@ MainComponent::MainComponent()
         default: onGameModeChange(GameMode::PGN);
         }
     };
-    m_GameModeSelector.addItem("PVP", 1);
-    m_GameModeSelector.addItem("PVC", 2);
-    m_GameModeSelector.addItem("PGN", 3);
+    m_GameModeSelector.addItem("Player vs. Player", 1);
+    m_GameModeSelector.addItem("Player vs. Computer", 2);
+    m_GameModeSelector.addItem("View Replay", 3);
     m_GameModeSelector.setSelectedId(1);
+
+    addAndMakeVisible(modeLabel);
+    modeLabel.setText("Game Mode", juce::dontSendNotification);
+    modeLabel.attachToComponent(&m_GameModeSelector, false);
 
     addAndMakeVisible(m_FenInput);
 
@@ -148,13 +156,18 @@ void MainComponent::resized()
     int size = std::min(area.getWidth(), area.getHeight());
     m_ChessboardGUI.setBounds(area.withSizeKeepingCentre(size, size));
 
-    auto rightBottomThird = rightThird.removeFromBottom(rightThird.getHeight() / 3).reduced(20);
-    m_SonifierSelector.setBounds(rightBottomThird.removeFromLeft(rightBottomThird.getWidth() / 2));
-    m_GameModeSelector.setBounds(rightBottomThird);
-    m_pgnButton.setBounds(rightThird.removeFromTop(rightThird.getHeight() / 2).reduced(20));
-
-    m_PrevButton.setBounds(rightThird.removeFromLeft(rightThird.getWidth() / 2).reduced(20));
-    m_NextButton.setBounds(rightThird.reduced(20));
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::center;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+    fb.items.add(juce::FlexItem(m_pgnButton).withMinHeight(50).withMargin(6));
+    juce::FlexBox pgnNavigation;
+    pgnNavigation.items.add(juce::FlexItem(m_PrevButton).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
+    pgnNavigation.items.add(juce::FlexItem(m_NextButton).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
+    fb.items.add(juce::FlexItem(pgnNavigation).withMinHeight(50).withMargin(6));
+    fb.items.add(juce::FlexItem(m_SonifierSelector).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
+    fb.items.add(juce::FlexItem(m_GameModeSelector).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
+    fb.performLayout(rightThird);
 
     m_FenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 8));
     m_FenInput.setBounds(footer);

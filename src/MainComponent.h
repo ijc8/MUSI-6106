@@ -58,8 +58,8 @@ private:
     };
 
     std::vector<SonifierType> sonifiers = {
-        {"Story", [](float sr) { return std::make_unique<StorySonifier>(sr); }},
         {"Zen", [](float sr) { return std::make_unique<ZenSonifier>(sr); }},
+        {"Story", [](float sr) { return std::make_unique<StorySonifier>(sr); }},
         {"Threat", [](float sr) { return std::make_unique<ThreatsSonifier>(sr); }},
         {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}
     };
@@ -69,7 +69,9 @@ private:
 
     juce::TextButton buttonUndo;
     juce::TextButton buttonRedo;
+    juce::Label sonifierLabel;
     juce::ComboBox m_SonifierSelector;
+    juce::Label modeLabel;
     juce::ComboBox m_GameModeSelector;
     juce::Slider m_VolumeSlider;
 
