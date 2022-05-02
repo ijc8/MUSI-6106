@@ -162,11 +162,12 @@ void MainComponent::resized() {
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
-    turnLabel.setBounds(area.removeFromBottom(30));
-
     // Keep chessboard square and centered.
-    int size = std::min(area.getWidth(), area.getHeight());
-    board.setBounds(area.withSizeKeepingCentre(size, size));
+    int turnHeight = 30;
+    int size = std::min(area.getWidth(), area.getHeight() - turnHeight);
+    area = area.withSizeKeepingCentre(size, size + turnHeight);
+    turnLabel.setBounds(area.removeFromBottom(turnHeight));
+    board.setBounds(area);
 
     // TODO: Group various inputs into related sections with titles.
     juce::FlexBox fb;
