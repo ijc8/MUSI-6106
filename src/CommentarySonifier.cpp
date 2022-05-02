@@ -5,7 +5,6 @@
 #include "ChessSoundData.h"
 
 double loadSound(juce::AudioFormatManager &formatManager, const char *name, juce::AudioSampleBuffer &buffer) {
-    std::cout << "Loading " << name << std::endl;
     int size;
     const char *memory = ChessSoundData::getNamedResource(name, size);
     std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(std::make_unique<juce::MemoryInputStream>(memory, size, false)));
@@ -15,18 +14,9 @@ double loadSound(juce::AudioFormatManager &formatManager, const char *name, juce
 }
 
 CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) {
+    // Load bundled audio clips.
     juce::AudioFormatManager formatManager;
     formatManager.registerBasicFormats();
-
-    for (int rank = 0; rank < 8; rank++) {
-        std::string name = "_" + std::to_string(rank + 1) + "_ogg";
-        audioSampleRate = loadSound(formatManager, name.c_str(), ranks[rank]);
-    }
-
-    for (int file = 0; file < 8; file++) {
-        std::string name = std::string({(char)(file + 'a')}) + "_ogg";
-        audioSampleRate = loadSound(formatManager, name.c_str(), files[file]);
-    }
 
     std::pair<Chess::Color, std::string> colorNames[] = {{Chess::Color::White, "white"}, {Chess::Color::Black, "black"}};
     for (auto &[color, name] : colorNames) {
@@ -35,10 +25,10 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
         audioSampleRate = loadSound(formatManager, resourceName.c_str(), buffer);
     }
 
-    for (auto &[type, typeName] : Chess::Piece::ToChar) {
+    for (auto &[type, name] : Chess::Piece::ToChar) {
         juce::AudioSampleBuffer &buffer = *pieces.emplace(type, std::make_unique<juce::AudioSampleBuffer>()).first->second;
-        std::string name = std::string({typeName}) + "_ogg";
-        audioSampleRate = loadSound(formatManager, name.c_str(), buffer);
+        std::string resourceName = std::string({name}) + "_ogg";
+        audioSampleRate = loadSound(formatManager, resourceName.c_str(), buffer);
     }
 
     for (int rank = 0; rank < 8; rank++) {
@@ -69,10 +59,9 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
 void CommentarySonifier::onMove(Chess::Game &game) {
     if (!game.peek()) return;
 
-    // Announce last move.
+    // Announce last move by concatenating recorded clips.
     auto [move, state] = game.getHistory().top();
     Chess::Piece::Type piece = move.promotion ? Chess::Piece::Type::Pawn : game.getPieceAt(move.dst)->type;
-    std::cout << "Last move: " << move.toString() << std::endl;
     std::vector<juce::AudioSampleBuffer *> buffers;
     // Did we castle?
     if (piece == Chess::Piece::Type::King && abs(move.src.file - move.dst.file) > 1) {
