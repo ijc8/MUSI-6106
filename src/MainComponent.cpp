@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 
 MainComponent::MainComponent() {
-    setSize(1000, 800);
+    setSize(1000, 740);
 
     setAudioChannels(0, 2);
 
@@ -136,20 +136,20 @@ void MainComponent::paint(juce::Graphics &g) {
 
 void MainComponent::resized() {
     auto area = getBounds().reduced(10);
-    auto rightThird = area.removeFromRight(getWidth() / 3);
-    rightThird.reduce(10, 10);
 
     // Keep chessboard square and centered.
+    int menuWidth = 300;
     int turnHeight = 30;
-    int size = std::min(area.getWidth(), area.getHeight() - turnHeight);
-    area = area.withSizeKeepingCentre(size, size + turnHeight);
+    int size = std::min(area.getWidth() - menuWidth, area.getHeight() - turnHeight);
+    area = area.withSizeKeepingCentre(size + menuWidth, size + turnHeight);
+    auto menuArea = area.removeFromRight(menuWidth);
     turnLabel.setBounds(area.removeFromBottom(turnHeight));
     board.setBounds(area);
 
-    // TODO: Group various inputs into related sections with titles.
+    // Lay out menu sections.
     juce::FlexBox fb;
     fb.flexDirection = juce::FlexBox::Direction::column;
-    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.justifyContent = juce::FlexBox::JustifyContent::center;
     fb.alignContent = juce::FlexBox::AlignContent::center;
 
     juce::FlexItem::Margin margin(24, 6, 6, 6);
@@ -157,7 +157,7 @@ void MainComponent::resized() {
     fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(margin));
     fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(margin));
     fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(margin));
-    fb.performLayout(rightThird);
+    fb.performLayout(menuArea);
 }
 
 void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
