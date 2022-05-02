@@ -43,7 +43,7 @@ add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory
 file(GLOB IMAGES assets/images/*.png)
 juce_add_binary_data(ChessImageData NAMESPACE ChessImageData HEADER_NAME ChessImageData.h SOURCES ${IMAGES})
 
-file(GLOB SOUNDS assets/sounds/*/*.ogg)
+file(GLOB SOUNDS assets/sounds/*.ogg)
 juce_add_binary_data(ChessSoundData NAMESPACE ChessSoundData HEADER_NAME ChessSoundData.h SOURCES ${SOUNDS})
 
 juce_add_gui_app(MusicalChess
