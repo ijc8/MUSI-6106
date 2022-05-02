@@ -162,7 +162,7 @@ void MainComponent::resized() {
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
-    turnLabel.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
+    turnLabel.setBounds(area.removeFromBottom(30));
 
     // Keep chessboard square and centered.
     int size = std::min(area.getWidth(), area.getHeight());
@@ -186,10 +186,14 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
     Chess::Game &game = AppState::getInstance().getGame();
     switch (game.getTurn()) {
     case Chess::Color::White:
-        turnLabel.setText("White's Turn", juce::dontSendNotification);
+        turnLabel.setText("White to move", juce::dontSendNotification);
+        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::white);
+        turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
         break;
     default:
-        turnLabel.setText("Black's Turn", juce::dontSendNotification);
+        turnLabel.setText("Black to move", juce::dontSendNotification);
+        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
+        turnLabel.setColour(turnLabel.textColourId, juce::Colours::white);
     }
 }
 
