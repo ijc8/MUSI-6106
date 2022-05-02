@@ -262,25 +262,13 @@ private:
     SoundOptions soundOptions;
     AnalysisOptions analysisOptions;
 
-    juce::Label modeLabel;
-    juce::ComboBox modeMenu;
-
-    juce::Label streamInputLabel;
-    juce::TextEditor streamInput;
-    juce::TextButton streamToggle;
+    juce::Label turnLabel;
     std::vector<std::shared_ptr<GameStream>> streams;
     std::shared_ptr<GameStream> stream;
-    std::future<void> task;
 
-    juce::Label fenLabel;
-    juce::Label fenInput;
-    juce::Label turnLabel;
+    void setFEN();
+    void loadSavedGame();
 
-    juce::TextButton openPGN;
-
-    void onFenChanged();
-
-    void onPgnButtonClicked();
     std::unique_ptr<juce::FileChooser> fileChooser;
     juce::String pgnData;
 

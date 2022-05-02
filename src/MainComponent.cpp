@@ -39,52 +39,32 @@ MainComponent::MainComponent() {
     // sonifierLabel.setText("Sonifier", juce::dontSendNotification);
     // sonifierLabel.attachToComponent(&sonifierMenu, false);
 
-    addAndMakeVisible(modeMenu);
-    modeMenu.onChange = [this]() {
-        switch (modeMenu.getSelectedId()) {
-        case 1:
-            onGameModeChange(GameMode::PVP);
-            break;
-        case 2:
-            onGameModeChange(GameMode::PVC);
-            break;
-        default:
-            onGameModeChange(GameMode::PGN);
-        }
-    };
-    modeMenu.addItem("Player vs. Player", 1);
-    modeMenu.addItem("Player vs. Computer", 2);
-    modeMenu.addItem("View Replay", 3);
-    modeMenu.setSelectedId(1);
+    // TODO
+    // modeMenu.onChange = [this]() {
+    //     switch (modeMenu.getSelectedId()) {
+    //     case 1:
+    //         onGameModeChange(GameMode::PVP);
+    //         break;
+    //     case 2:
+    //         onGameModeChange(GameMode::PVC);
+    //         break;
+    //     default:
+    //         onGameModeChange(GameMode::PGN);
+    //     }
+    // };
 
-    addAndMakeVisible(modeLabel);
-    modeLabel.setText("Game Mode", juce::dontSendNotification);
-    modeLabel.attachToComponent(&modeMenu, false);
-
-    addAndMakeVisible(fenInput);
-
-    fenInput.setEditable(true);
-    fenInput.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
-    fenInput.setColour(juce::Label::textColourId, juce::Colours::white);
-    fenInput.onTextChange = [this]() { onFenChanged(); };
-
-    addAndMakeVisible(fenLabel);
-    fenLabel.setText("Enter FEN string: ", juce::dontSendNotification);
-    fenLabel.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
-    fenLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    // TODO
+    // fenInput.onTextChange = [this]() { onFenChanged(); };
 
     addAndMakeVisible(turnLabel);
-    turnLabel.setText("White's turn", juce::NotificationType::dontSendNotification);
     turnLabel.setFont(juce::Font(15));
-    turnLabel.setColour(juce::Label::backgroundColourId, juce::Colours::black);
-    turnLabel.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
     turnLabel.setJustificationType(juce::Justification::centred);
+    changeListenerCallback(nullptr);
 
-    addAndMakeVisible(openPGN);
-    openPGN.setButtonText("Load PGN");
-    openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-    openPGN.onClick = [this]() { onPgnButtonClicked(); };
+    // TODO
+    // openPGN.onClick = [this]() { loadSavedGame(); };
 
+    // TODO
     // volumeSlider.setRange(0, 0.25);
     // volumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     // volumeSlider.onValueChange = [this]() {
@@ -93,34 +73,31 @@ MainComponent::MainComponent() {
     // };
     // volumeSlider.setValue(0.25);
 
-    // TODO: Hook up this input so it actually does something.
-    addAndMakeVisible(streamInput);
-    addAndMakeVisible(streamInputLabel);
-    addAndMakeVisible(streamToggle);
-    streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
-    streamInputLabel.attachToComponent(&streamInput, false);
-    streamToggle.setButtonText("Play Stream");
-    streamToggle.onClick = [this]() {
-        if (stream) {
-            // Hack to avoid thread-killing issues.
-            stream->cancel();
-            streams.push_back(stream);
-            stream.reset();
-            streamToggle.setButtonText("Play Stream");
-        } else {
-            // TODO: Reset game first.
-            std::string id = streamInput.getText().toStdString();
-            stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
-                if (move) {
-                    std::cout << "Streamed move: " << move->toString() << std::endl;
-                    broadcastManager.actionListenerCallback(juce::String(move->toString()));
-                } else {
-                    std::cout << "Done streaming." << std::endl;
-                }
-            });
-            streamToggle.setButtonText("Stop Stream");
-        }
-    };
+    // TODO
+    // streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
+    // streamInputLabel.attachToComponent(&streamInput, false);
+    // streamToggle.setButtonText("Play Stream");
+    // streamToggle.onClick = [this]() {
+    //     if (stream) {
+    //         // Hack to avoid thread-killing issues.
+    //         stream->cancel();
+    //         streams.push_back(stream);
+    //         stream.reset();
+    //         streamToggle.setButtonText("Play Stream");
+    //     } else {
+    //         // TODO: Reset game first.
+    //         std::string id = streamInput.getText().toStdString();
+    //         stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
+    //             if (move) {
+    //                 std::cout << "Streamed move: " << move->toString() << std::endl;
+    //                 broadcastManager.actionListenerCallback(juce::String(move->toString()));
+    //             } else {
+    //                 std::cout << "Done streaming." << std::endl;
+    //             }
+    //         });
+    //         streamToggle.setButtonText("Stop Stream");
+    //     }
+    // };
 
     addAndMakeVisible(controls);
     addAndMakeVisible(playerOptions);
@@ -188,13 +165,13 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
     switch (game.getTurn()) {
     case Chess::Color::White:
         turnLabel.setText("White to move", juce::dontSendNotification);
-        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::white);
+        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
         break;
     default:
         turnLabel.setText("Black to move", juce::dontSendNotification);
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
-        turnLabel.setColour(turnLabel.textColourId, juce::Colours::white);
+        turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
     }
 }
 
@@ -211,13 +188,14 @@ void MainComponent::setSonifier(int sonifierIndex) {
     // currentSonifier->setGain(volumeSlider.getValue());
 }
 
-void MainComponent::onFenChanged() {
-    std::string fenString = fenInput.getText().toStdString();
-    AppState::getInstance().getGame().setFen(fenString);
-    broadcastManager.sendChangeMessage();
+void MainComponent::setFEN() {
+    // TODO
+    // std::string fenString = fenInput.getText().toStdString();
+    // AppState::getInstance().getGame().setFen(fenString);
+    // broadcastManager.sendChangeMessage();
 }
 
-void MainComponent::onPgnButtonClicked() {
+void MainComponent::loadSavedGame() {
     fileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
                                                       juce::File::getSpecialLocation(juce::File::userHomeDirectory),
                                                       "*.pgn");
@@ -227,18 +205,7 @@ void MainComponent::onPgnButtonClicked() {
     fileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
         juce::File file = chooser.getResult();
         if (file.exists()) {
-            openPGN.setButtonText("PGN Loaded!");
-            openPGN.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
-            pgnData = chooser.getResult().loadFileAsString();
-            // nextButton.setEnabled(true);
-            // prevButton.setEnabled(true);
-        } else {
-            if (pgnData.isEmpty()) {
-                openPGN.setButtonText("Load PGN");
-                openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-                // nextButton.setEnabled(false);
-                // prevButton.setEnabled(false);
-            }
+            // pgnData = chooser.getResult().loadFileAsString();
         }
     });
 }
@@ -248,29 +215,17 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
     case GameMode::PVC:
         broadcastManager.toggleStockfish(true);
         board.setMode(BoardComponent::Mode::PVC);
-        openPGN.setButtonText("Load PGN");
-        openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         pgnData.clear();
-        openPGN.setEnabled(false);
-        // prevButton.setEnabled(true);
-        // nextButton.setEnabled(true);
+        // openPGN.setEnabled(false);
         break;
     case GameMode::PVP:
         broadcastManager.toggleStockfish(false);
         board.setMode(BoardComponent::Mode::PVP);
-        openPGN.setButtonText("Load PGN");
-        openPGN.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
         pgnData.clear();
-        openPGN.setEnabled(false);
-        // prevButton.setEnabled(true);
-        // nextButton.setEnabled(true);
         break;
     default:
         broadcastManager.toggleStockfish(false);
         board.setMode(BoardComponent::Mode::PGN);
-        openPGN.setEnabled(true);
-        // prevButton.setEnabled(false);
-        // nextButton.setEnabled(false);
     }
     mode = nextGameMode;
     broadcastManager.emptyUndoHistory();
