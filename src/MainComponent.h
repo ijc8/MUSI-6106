@@ -39,8 +39,8 @@ public:
 private:
     double sampleRate;
 
-    GameMode m_GameMode = PVP;
-    std::unique_ptr<Sonifier> mOldSonifier, mCurrentSonifier;
+    GameMode mode = PVP;
+    std::unique_ptr<Sonifier> oldSonifier, currentSonifier;
 
     struct SonifierType {
         std::string name;
@@ -53,16 +53,19 @@ private:
         {"Threat", [](float sr) { return std::make_unique<ThreatsSonifier>(sr); }},
         {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}};
 
-    BroadcastManager m_BroadcastManager;
-    BoardComponent m_ChessboardGUI;
+    BroadcastManager broadcastManager;
+    BoardComponent board;
 
-    juce::TextButton buttonUndo;
-    juce::TextButton buttonRedo;
+    juce::TextButton undo;
+    juce::TextButton redo;
+
     juce::Label sonifierLabel;
-    juce::ComboBox m_SonifierSelector;
+    juce::ComboBox sonifierMenu;
+
     juce::Label modeLabel;
-    juce::ComboBox m_GameModeSelector;
-    juce::Slider m_VolumeSlider;
+    juce::ComboBox modeMenu;
+
+    juce::Slider volumeSlider;
 
     juce::Label streamInputLabel;
     juce::TextEditor streamInput;
@@ -71,22 +74,22 @@ private:
     std::shared_ptr<GameStream> stream;
     std::future<void> task;
 
-    juce::Label m_FenLabel;
-    juce::Label m_FenInput;
-    juce::Label m_TurnText;
-    juce::TextButton m_pgnButton;
-    juce::TextButton m_NextButton;
-    juce::TextButton m_PrevButton;
+    juce::Label fenLabel;
+    juce::Label fenInput;
+    juce::Label turnLabel;
+
+    juce::TextButton openPGN;
+    juce::TextButton nextButton;
+    juce::TextButton prevButton;
 
     void onFenChanged();
 
     void onPgnButtonClicked();
-    std::unique_ptr<juce::FileChooser> m_FileChooser;
-    juce::String m_PgnString;
+    std::unique_ptr<juce::FileChooser> fileChooser;
+    juce::String pgnData;
 
     void onGameModeChange(MainComponent::GameMode nextGameMode);
     void setSonifier(int sonifierIndex);
-    std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
