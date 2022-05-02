@@ -476,6 +476,10 @@ std::optional<Move> Game::pop() {
     return move;
 }
 
+const std::stack<std::tuple<Move, GameState>> Game::getHistory() const {
+    return history;
+}
+
 std::unordered_map<Square, std::optional<Piece>> GameState::getThreats() {
     GameState copy(*this);
     auto pieceMap = copy.getPieceMap();

@@ -40,8 +40,11 @@ add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory
 # up by default. This function accepts many optional arguments. Check the readme at
 # `docs/CMake API.md` in the JUCE repo for the full list.
 
-file(GLOB IMAGES chessImages/*.png)
+file(GLOB IMAGES assets/images/*.png)
 juce_add_binary_data(ChessImageData NAMESPACE ChessImageData HEADER_NAME ChessImageData.h SOURCES ${IMAGES})
+
+file(GLOB SOUNDS assets/sounds/*.ogg)
+juce_add_binary_data(ChessSoundData NAMESPACE ChessSoundData HEADER_NAME ChessSoundData.h SOURCES ${SOUNDS})
 
 juce_add_gui_app(MusicalChess
     # VERSION ...                       # Set this if the app version is different to the project version
@@ -184,6 +187,7 @@ target_compile_definitions(SonifierTest
 target_link_libraries(MusicalChess
     PRIVATE
         ChessImageData
+        ChessSoundData
         Common
         juce::juce_gui_extra
         juce::juce_audio_utils

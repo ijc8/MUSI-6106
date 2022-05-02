@@ -180,6 +180,7 @@ namespace Chess {
         void push(Move move);
         std::optional<Move> peek() const;
         std::optional<Move> pop();
+        const std::stack<std::tuple<Move, GameState>> getHistory() const;
 
     private:
         std::stack<std::tuple<Move, GameState>> history;

@@ -1,20 +1,12 @@
 #include "BoardComponent.h"
 
 BoardComponent::BoardComponent() {
-    std::pair<Chess::Piece::Type, std::string> types[] = {
-        {Chess::Piece::Type::Pawn, "Pawn"},
-        {Chess::Piece::Type::Knight, "Knight"},
-        {Chess::Piece::Type::Bishop, "Bishop"},
-        {Chess::Piece::Type::Rook, "Rook"},
-        {Chess::Piece::Type::Queen, "Queen"},
-        {Chess::Piece::Type::King, "King"},
-    };
-    std::pair<Chess::Color, std::string> colors[] = {{Chess::Color::White, "W"}, {Chess::Color::Black, "B"}};
+    std::pair<Chess::Color, std::string> colors[] = {{Chess::Color::White, "w"}, {Chess::Color::Black, "b"}};
     // Load chess piece images.
-    for (auto &[type, typeName] : types) {
+    for (auto &[type, typeName] : Chess::Piece::ToChar) {
         for (auto &[color, colorName] : colors) {
             int size;
-            std::string resourceName = colorName + "_" + typeName + "_png";
+            std::string resourceName = colorName + typeName + "_png";
             const char *data = ChessImageData::getNamedResource(resourceName.c_str(), size);
             pieceImages.emplace(Chess::Piece(type, color), juce::ImageFileFormat::loadFrom(data, size));
         }
@@ -44,25 +36,19 @@ void BoardComponent::paint(juce::Graphics &g) {
     }
 
     // Draw pieces.
-    float pieceHeight = squareSize * .8;
-    float topMargin = (squareSize - pieceHeight) / 2.0;
     for (auto [square, piece] : AppState::getInstance().getGame().getPieceMap()) {
         float x = squareSize * square.file;
         float y = squareSize * (7 - square.rank);
         juce::Image &image = pieceImages[piece];
-        float pieceWidth = pieceHeight * image.getWidth() / image.getHeight();
-        float leftMargin = (squareSize - pieceWidth) / 2.0;
-        g.drawImage(image, juce::Rectangle<float>(x + leftMargin, y + topMargin, pieceWidth, pieceHeight));
+        g.drawImage(image, juce::Rectangle<float>(x, y, squareSize, squareSize));
     }
 
     if (dragging) {
         juce::Image &image = pieceImages[dragging->piece];
-        float pieceWidth = pieceHeight * image.getWidth() / image.getHeight();
-        float leftMargin = (squareSize - pieceWidth) / 2.0;
         juce::Point<int> mousePos = getMouseXYRelative();
-        float x = mousePos.x - dragging->offset.x + leftMargin;
-        float y = mousePos.y - dragging->offset.y + topMargin;
-        g.drawImage(image, juce::Rectangle<float>(x, y, pieceWidth, pieceHeight));
+        float x = mousePos.x - dragging->offset.x;
+        float y = mousePos.y - dragging->offset.y;
+        g.drawImage(image, juce::Rectangle<float>(x, y, squareSize, squareSize));
     }
 }
 
