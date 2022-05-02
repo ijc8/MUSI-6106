@@ -42,7 +42,7 @@ private:
     class GameSetup: public juce::GroupComponent {
     public:
         GameSetup() {
-            setText("Game Setup");
+            setText("Players");
             whiteLabel.setText("White", juce::dontSendNotification);
             blackLabel.setText("Black", juce::dontSendNotification);
             addAndMakeVisible(whiteLabel);
@@ -100,7 +100,7 @@ private:
             fb.flexDirection = juce::FlexBox::Direction::column;
             fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
             fb.alignContent = juce::FlexBox::AlignContent::center;
-            // Order matches board orientation.
+
             fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
             fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
             fb.performLayout(getLocalBounds());
@@ -109,6 +109,38 @@ private:
         juce::Label sonifierLabel, volumeLabel;
         juce::ComboBox sonifierMenu;
         juce::Slider volumeSlider;
+    };
+
+    class AnalysisOptions: public juce::GroupComponent {
+        public:
+        AnalysisOptions() {
+            setText("Analysis");
+            loadGame.setButtonText("Load saved game (PGN)");
+            streamGame.setButtonText("Stream live game (Lichess)");
+            fenLabel.setText("FEN", juce::dontSendNotification);
+            fenLabel.attachToComponent(&fen, false);
+
+            addAndMakeVisible(loadGame);
+            addAndMakeVisible(streamGame);
+            addAndMakeVisible(fenLabel);
+            addAndMakeVisible(fen);
+        }
+
+        void resized() override {
+            juce::FlexBox fb;
+            fb.flexDirection = juce::FlexBox::Direction::column;
+            fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+            fb.alignContent = juce::FlexBox::AlignContent::center;
+
+            fb.items.add(juce::FlexItem(loadGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+            fb.items.add(juce::FlexItem(streamGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+            fb.items.add(juce::FlexItem(fen).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+            fb.performLayout(getLocalBounds());
+        }
+
+        juce::TextButton loadGame, streamGame;
+        juce::Label fenLabel;
+        juce::TextEditor fen;
     };
 
     GameMode mode = PVP;
@@ -128,8 +160,9 @@ private:
     BroadcastManager broadcastManager;
     BoardComponent board;
 
-    GameSetup gameSetup;
+    GameSetup playerOptions;
     SoundOptions soundOptions;
+    AnalysisOptions analysisOptions;
 
     juce::Label moveLabel;
     juce::Image skipBackwardImage, stepBackwardImage, stepForwardImage, skipForwardImage;

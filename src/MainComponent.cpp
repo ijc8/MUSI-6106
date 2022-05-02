@@ -122,7 +122,7 @@ MainComponent::MainComponent() {
         }
     };
 
-    addAndMakeVisible(gameSetup);
+    addAndMakeVisible(playerOptions);
 
     addAndMakeVisible(moveLabel);
     moveLabel.setText("25/26", juce::dontSendNotification);
@@ -152,6 +152,7 @@ MainComponent::MainComponent() {
     };
 
     addAndMakeVisible(soundOptions);
+    addAndMakeVisible(analysisOptions);
 }
 
 MainComponent::~MainComponent() {
@@ -185,7 +186,6 @@ void MainComponent::paint(juce::Graphics &g) {
 
 void MainComponent::resized() {
     auto area = getBounds().reduced(10);
-    auto footer = area.removeFromBottom(getHeight() / 20);
     auto rightThird = area.removeFromRight(getWidth() / 3);
     rightThird.reduce(10, 10);
 
@@ -198,12 +198,9 @@ void MainComponent::resized() {
     // TODO: Group various inputs into related sections with titles.
     juce::FlexBox fb;
     fb.flexDirection = juce::FlexBox::Direction::column;
-    fb.justifyContent = juce::FlexBox::JustifyContent::center;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
     fb.alignContent = juce::FlexBox::AlignContent::center;
-    fb.items.add(juce::FlexItem(gameSetup).withMinHeight(150).withMargin(6));
-    fb.items.add(juce::FlexItem(openPGN).withMinHeight(50).withMargin(6));
-    fb.items.add(juce::FlexItem(streamInput).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
-    fb.items.add(juce::FlexItem(streamToggle).withMinHeight(30).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
+
     juce::FlexBox navigation;
     navigation.items.add(juce::FlexItem(skipBackward).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
     navigation.items.add(juce::FlexItem(stepBackward).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
@@ -211,11 +208,10 @@ void MainComponent::resized() {
     navigation.items.add(juce::FlexItem(stepForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
     navigation.items.add(juce::FlexItem(skipForward).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
     fb.items.add(juce::FlexItem(navigation).withMinHeight(50).withMargin(6));
+    fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(6));
+    fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
     fb.performLayout(rightThird);
-
-    fenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 8));
-    fenInput.setBounds(footer);
 }
 
 void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
