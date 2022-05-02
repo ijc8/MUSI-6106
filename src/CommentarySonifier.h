@@ -15,6 +15,7 @@ class CommentarySonifier: public Sonifier {
     juce::AudioSampleBuffer files[8];
     std::unordered_map<Chess::Piece::Type, std::unique_ptr<juce::AudioSampleBuffer>> pieces;
     std::unordered_map<Chess::Square, std::unique_ptr<juce::AudioSampleBuffer>> squares;
+    juce::AudioSampleBuffer equals;
 };
 
 #endif // COMMENTARY_SONIFIER_H

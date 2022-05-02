@@ -42,13 +42,15 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
             audioSampleRate = loadSound(formatManager, name.c_str(), buffer);
         }
     }
+
+    audioSampleRate = loadSound(formatManager, "equals_ogg", equals);
 }
 
 void CommentarySonifier::onMove(Chess::Game &board) {
     (void)board;
     std::optional<Chess::Move> last = board.peek();
     if (last) {
-        Chess::Piece::Type piece = board.getPieceAt(last->dst)->type;
+        Chess::Piece::Type piece = last->promotion ? Chess::Piece::Type::Pawn : board.getPieceAt(last->dst)->type;
         std::cout << "Last move: " << last->toString() << std::endl;
         std::vector<juce::AudioSampleBuffer *> buffers;
         if (piece != Chess::Piece::Type::Pawn) {
@@ -56,6 +58,10 @@ void CommentarySonifier::onMove(Chess::Game &board) {
         }
         buffers.push_back(squares[last->src].get());
         buffers.push_back(squares[last->dst].get());
+        if (last->promotion) {
+            buffers.push_back(&equals);
+            buffers.push_back(pieces[*last->promotion].get());
+        }
         double start = 0;
         for (auto buffer : buffers) {
             double duration = (double)buffer->getNumSamples() / audioSampleRate;
