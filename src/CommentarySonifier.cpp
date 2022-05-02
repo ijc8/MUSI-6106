@@ -33,6 +33,15 @@ CommentarySonifier::CommentarySonifier(float sampleRate) : Sonifier(sampleRate) 
         std::string name = std::string({typeName}) + "_ogg";
         audioSampleRate = loadSound(formatManager, name.c_str(), buffer);
     }
+
+    for (int rank = 0; rank < 8; rank++) {
+        for (int file = 0; file < 8; file++) {
+            Chess::Square square(rank, file);
+            juce::AudioSampleBuffer &buffer = *squares.emplace(square, std::make_unique<juce::AudioSampleBuffer>()).first->second;
+            std::string name = square.toString() + "_ogg";
+            audioSampleRate = loadSound(formatManager, name.c_str(), buffer);
+        }
+    }
 }
 
 void CommentarySonifier::onMove(Chess::Game &board) {
@@ -41,13 +50,17 @@ void CommentarySonifier::onMove(Chess::Game &board) {
     if (last) {
         Chess::Piece::Type piece = board.getPieceAt(last->dst)->type;
         std::cout << "Last move: " << last->toString() << std::endl;
-        juce::AudioSampleBuffer *buffers[] = {pieces[piece].get(), &files[last->src.file], &ranks[last->src.rank]};
+        std::vector<juce::AudioSampleBuffer *> buffers;
+        if (piece != Chess::Piece::Type::Pawn) {
+            buffers.push_back(pieces[piece].get());
+        }
+        buffers.push_back(squares[last->src].get());
+        buffers.push_back(squares[last->dst].get());
         double start = 0;
-        for (int i = 0; i < 3; i++) {
-            juce::AudioSampleBuffer &buffer = *buffers[i];
-            double duration = (double)buffer.getNumSamples() / audioSampleRate;
+        for (auto buffer : buffers) {
+            double duration = (double)buffer->getNumSamples() / audioSampleRate;
             double rate = 1.0 / duration;
-            mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(buffer, rate, 1.0, mSampleRate), start, duration);
+            mMainProcessor.scheduleInst(std::make_unique<CWavetableOscillator>(*buffer, rate, 1.0, mSampleRate), start, duration);
             start += duration;
         }
     }
