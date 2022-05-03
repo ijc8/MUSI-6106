@@ -251,23 +251,11 @@ MainComponent::MainComponent() {
     addAndMakeVisible(controls);
 
     // Player options
-    // TODO: Maybe implement support for multiple difficulties.
     playerOptions.blackMenu.onChange = [this]() {
-        int id = playerOptions.blackMenu.getSelectedId();
-        board.enableInput(Chess::Color::Black, id == 1);
-        players[(int)Chess::Color::Black] = (PlayerType)(id - 1);
-        if (id > 1) {
-            enableStockfish(true);
-        }
+        setPlayerType(Chess::Color::Black, (PlayerType)(playerOptions.blackMenu.getSelectedId() - 1));
     };
-    // TODO: Reduce duplication here.
     playerOptions.whiteMenu.onChange = [this]() {
-        int id = playerOptions.whiteMenu.getSelectedId();
-        board.enableInput(Chess::Color::White, id == 1);
-        players[(int)Chess::Color::White] = (PlayerType)(id - 1);
-        if (id > 1) {
-            enableStockfish(true);
-        }
+        setPlayerType(Chess::Color::White, (PlayerType)(playerOptions.whiteMenu.getSelectedId() - 1));
     };
     addAndMakeVisible(playerOptions);
 
@@ -385,6 +373,16 @@ void MainComponent::timerCallback() {
     } else {
         controls.playPause.setToggleState(false, juce::dontSendNotification);
         stopTimer();
+    }
+}
+
+void MainComponent::setPlayerType(Chess::Color color, PlayerType type) {
+    board.enableInput(color, type == PlayerType::Human);
+    players[(int)color] = type;
+    if (type != PlayerType::Human) {
+        enableStockfish(true);
+    } else if (players[!(int)color] == PlayerType::Human) {
+        enableStockfish(false);
     }
 }
 
@@ -518,11 +516,8 @@ void MainComponent::enableStockfish(bool enable) {
             } else {
                 // User canceled the file chooser.
                 // Reset both players to "Human" since we don't have a valid engine.
-                players[0] = players[1] = PlayerType::Human;
-                playerOptions.whiteMenu.setSelectedId(1, juce::dontSendNotification);
-                playerOptions.blackMenu.setSelectedId(1, juce::dontSendNotification);
-                board.enableInput(Chess::Color::White, true);
-                board.enableInput(Chess::Color::Black, true);
+                playerOptions.whiteMenu.setSelectedId(1, juce::sendNotification);
+                playerOptions.blackMenu.setSelectedId(1, juce::sendNotification);
             }
         });
     }

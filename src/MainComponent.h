@@ -91,6 +91,7 @@ private:
     bool undo();
     bool redo();
     void clearRedoStack();
+    void setPlayerType(Chess::Color color, PlayerType type);
     void enableStockfish(bool shouldTurnOn);
 
     std::unique_ptr<Chess::Engine> engine;
