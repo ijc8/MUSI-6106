@@ -98,14 +98,23 @@ MainComponent::MainComponent() {
     //     }
     // };
 
+    // TODO: Debug case where both players are computers.
     playerOptions.blackMenu.onChange = [this]() {
         int id = playerOptions.blackMenu.getSelectedId();
         board.enableInput(Chess::Color::Black, id == 1);
+        players[(int)Chess::Color::Black] = (PlayerType)(id - 1);
+        if (id > 1) {
+            toggleStockfish(true);
+        }
     };
 
     playerOptions.whiteMenu.onChange = [this]() {
         int id = playerOptions.whiteMenu.getSelectedId();
         board.enableInput(Chess::Color::White, id == 1);
+        players[(int)Chess::Color::White] = (PlayerType)(id - 1);
+        if (id > 1) {
+            toggleStockfish(true);
+        }
     };
 
     addAndMakeVisible(controls);
@@ -169,16 +178,22 @@ void MainComponent::resized() {
 
 void MainComponent::updateGame() {
     Chess::Game &game = AppState::getInstance().getGame();
-    switch (game.getTurn()) {
-    case Chess::Color::White:
+    if (game.getTurn() == Chess::Color::White) {
         turnLabel.setText("White to move", juce::dontSendNotification);
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
-        break;
-    default:
+
+        if (players[(int)Chess::Color::White] != PlayerType::Human) {
+            engineManager->generateMove();
+        }
+    } else {
         turnLabel.setText("Black to move", juce::dontSendNotification);
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
+
+        if (players[(int)Chess::Color::Black] != PlayerType::Human) {
+            engineManager->generateMove();
+        }
     }
 
     sendChangeMessage();
@@ -246,14 +261,14 @@ void MainComponent::loadSavedGame() {
 void MainComponent::makeMove(Chess::Move move) {
     clearRedoStack();
     game.push(move);
-    sendChangeMessage();
+    updateGame();
 }
 
 void MainComponent::undo() {
     std::optional<Chess::Move> move = game.pop();
     if (move) {
         redoStack.push(*move);
-        sendChangeMessage();
+        updateGame();
     }
 }
 
@@ -262,7 +277,7 @@ void MainComponent::redo() {
         Chess::Move lastMove = redoStack.top();
         game.push(lastMove);
         redoStack.pop();
-        sendChangeMessage();
+        updateGame();
     }
 }
 
@@ -273,10 +288,13 @@ void MainComponent::clearRedoStack() {
 
 void MainComponent::toggleStockfish(bool shouldTurnOn) {
     if (shouldTurnOn) {
-        if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
+        if (engineManager) {
+            // Already started.
+            updateGame();
+        } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
             engineManager = std::make_unique<EngineManager>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
-            addChangeListener(engineManager.get());
             engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
+            updateGame();
         } else {
             // Allow user to tell us where their engine binary is.
             // TODO: Remember their selected engine and allow them to change it later.
@@ -289,14 +307,18 @@ void MainComponent::toggleStockfish(bool shouldTurnOn) {
                 juce::File file = chooser.getResult();
                 if (file.exists()) {
                     engineManager = std::make_unique<EngineManager>(file.getFullPathName().toStdString());
-                    addChangeListener(engineManager.get());
-                    engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
+                    engineManager->onMove = [this](Chess::Move move) {
+                        const juce::MessageManagerLock lock;
+                        makeMove(move);
+                    };
+                    updateGame();
+                } else {
+                    // User canceled.
+                    // TODO: Reset triggering player to "Human".
                 }
             });
         }
     } else {
-        if (engineManager)
-            removeChangeListener(engineManager.get());
         engineManager.reset();
     }
 }
