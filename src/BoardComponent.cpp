@@ -112,6 +112,7 @@ void BoardComponent::paint(juce::Graphics &g) {
     }
 
     Chess::Game &game = AppState::getInstance().getGame();
+    const auto &pieces = game.getPieceMap();
     if (game.peek()) {
         // Highlight last move.
         g.setColour(juce::Colours::yellow.withAlpha(0.3f));
@@ -121,19 +122,32 @@ void BoardComponent::paint(juce::Graphics &g) {
     }
 
     if (selected) {
-        g.setColour(juce::Colours::red.withAlpha(0.5f));
+        g.setColour(juce::Colours::darkgreen.withAlpha(0.5f));
         g.fillRect(squareToRect(*selected));
-        // TODO: Maybe cache this.
         auto candidates = game.generateMoves(*selected);
-        g.setColour(juce::Colours::yellow.withAlpha(0.5f));
+        // Show candidate moves.
         for (auto move : candidates) {
-            g.fillRect(squareToRect(move.dst));
+            g.setColour(juce::Colours::darkgreen.withAlpha(0.5f));
+            if (pieces.count(move.dst)) {
+                g.fillRect(squareToRect(move.dst).withSizeKeepingCentre(squareSize, squareSize));
+                g.setColour(move.dst.rank + move.dst.file % 2 ? lightSquare : darkSquare);
+                g.fillEllipse(squareToRect(move.dst).withSizeKeepingCentre(squareSize, squareSize));
+            } else {
+                g.fillEllipse(squareToRect(move.dst).withSizeKeepingCentre(squareSize/4, squareSize/4));
+            }
         }
         g.setColour(juce::Colours::black);
     }
 
+    if (game.isInCheck(game.getTurn())) {
+        // Uh oh, we're in check! Show the king in danger.
+        g.setColour(juce::Colours::red.withAlpha(0.5f));
+        g.fillEllipse(squareToRect(*game.getPieces(Chess::Piece(Chess::Piece::Type::King, game.getTurn())).begin()));
+        g.setColour(juce::Colours::black);
+    }
+
     // Draw pieces.
-    for (auto [square, piece] : game.getPieceMap()) {
+    for (auto [square, piece] : pieces) {
         float x = squareSize * square.file;
         float y = squareSize * (7 - square.rank);
         juce::Image &image = pieceImages[piece];
