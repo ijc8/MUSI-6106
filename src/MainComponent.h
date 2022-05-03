@@ -45,6 +45,7 @@ class SoundOptions: public juce::GroupComponent {
 public:
     SoundOptions();
     void resized() override;
+    double getGain() const;
 
     juce::Label sonifierLabel, volumeLabel;
     juce::ComboBox sonifierMenu;

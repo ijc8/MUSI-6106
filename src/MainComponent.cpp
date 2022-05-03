@@ -120,10 +120,17 @@ SoundOptions::SoundOptions() {
     addAndMakeVisible(sonifierMenu);
 
     volumeLabel.setText("Volume", juce::dontSendNotification);
+    volumeLabel.attachToComponent(&volumeSlider, false);
     addAndMakeVisible(volumeLabel);
     volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+    volumeSlider.setRange(-60, 0);
     addAndMakeVisible(volumeSlider);
-    volumeLabel.attachToComponent(&volumeSlider, false);
+}
+
+double SoundOptions::getGain() const {
+    double db = volumeSlider.getValue();
+    double min = volumeSlider.getMinimum();
+    return juce::Decibels::decibelsToGain(db, min);
 }
 
 AnalysisOptions::AnalysisOptions() {
@@ -199,15 +206,6 @@ MainComponent::MainComponent() {
     // openPGN.onClick = [this]() { loadSavedGame(); };
 
     // TODO
-    // volumeSlider.setRange(0, 0.25);
-    // volumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-    // volumeSlider.onValueChange = [this]() {
-    //     // TODO: Logarithmic scaling! (i.e. set gain in dB)
-    //     currentSonifier->setGain(volumeSlider.getValue());
-    // };
-    // volumeSlider.setValue(0.25);
-
-    // TODO
     // streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
     // streamInputLabel.attachToComponent(&streamInput, false);
     // streamToggle.setButtonText("Play Stream");
@@ -266,6 +264,11 @@ MainComponent::MainComponent() {
     }
     soundOptions.sonifierMenu.setSelectedId(1, juce::dontSendNotification);
     currentSonifier->setEnabled(true);
+
+    soundOptions.volumeSlider.onValueChange = [this]() {
+        currentSonifier->setGain(soundOptions.getGain());
+    };
+    soundOptions.volumeSlider.setValue(-20);
     addAndMakeVisible(soundOptions);
 }
 
@@ -361,7 +364,7 @@ void MainComponent::setSonifier(int sonifierIndex) {
     currentSonifier->setEnabled(true);
     addChangeListener(currentSonifier.get());
     currentSonifier->onMove(AppState::getInstance().getGame());
-    // currentSonifier->setGain(volumeSlider.getValue());
+    currentSonifier->setGain(soundOptions.getGain());
 }
 
 void MainComponent::setFEN() {
