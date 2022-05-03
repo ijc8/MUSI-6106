@@ -1,141 +1,290 @@
+#include <filesystem>
+
 #include "MainComponent.h"
 
+Controls::Controls() {
+    setText("Controls");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    addAndMakeVisible(move);
+    move.setJustificationType(juce::Justification::centred);
+
+    std::initializer_list<std::pair<const char *, juce::ImageButton *>> pairs = {
+        {"fastbackwardsolid_png", &skipBackward},
+        {"stepbackwardsolid_png", &stepBackward},
+        {"stepforwardsolid_png", &stepForward},
+        {"fastforwardsolid_png", &skipForward},
+    };
+    for (auto [name, button] : pairs) {
+        int size;
+        const char *data = ChessImageData::getNamedResource(name, size);
+        juce::Image image = juce::ImageFileFormat::loadFrom(data, size);
+        button->setImages(
+            false, false, true,
+            image, 0.6, juce::Colours::transparentBlack,
+            image, 0.8, juce::Colours::transparentBlack,
+            image, 1.0, juce::Colours::transparentBlack);
+        addAndMakeVisible(*button);
+    }
+
+    juce::Image playImage = juce::ImageFileFormat::loadFrom(ChessImageData::playsolid_png, ChessImageData::playsolid_pngSize);
+    juce::Image pauseImage = juce::ImageFileFormat::loadFrom(ChessImageData::pausesolid_png, ChessImageData::pausesolid_pngSize);
+    playPause.setImages(
+        false, false, true,
+        playImage, 0.6, juce::Colours::transparentBlack,
+        playImage, 0.8, juce::Colours::transparentBlack,
+        pauseImage, 1.0, juce::Colours::transparentBlack);
+    addAndMakeVisible(playPause);
+
+    addAndMakeVisible(autoAdvance);
+    autoAdvancePeriod.setJustification(juce::Justification::centredRight);
+    autoAdvancePeriod.setText("5");
+    autoAdvancePeriod.setInputRestrictions(0, "0123456789");
+    addAndMakeVisible(autoAdvancePeriod);
+    seconds.setText("secs", juce::dontSendNotification);
+    addAndMakeVisible(seconds);
+
+    addAndMakeVisible(pgnAdvance);
+
+    resized();
+}
+
+void Controls::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(move).withMinHeight(16).withMargin(juce::FlexItem::Margin(18, 6, 0, 6)));
+
+    juce::FlexBox buttons;
+    buttons.items.add(juce::FlexItem(skipBackward).withFlex(1));
+    buttons.items.add(juce::FlexItem(stepBackward).withFlex(1));
+    buttons.items.add(juce::FlexItem(playPause).withFlex(1));
+    buttons.items.add(juce::FlexItem(stepForward).withFlex(1));
+    buttons.items.add(juce::FlexItem(skipForward).withFlex(1));
+
+    fb.items.add(juce::FlexItem(buttons).withMinHeight(50).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
+
+    juce::FlexBox autoBox;
+    autoAdvance.changeWidthToFitText();
+    autoBox.items.add(juce::FlexItem(autoAdvance).withMinWidth(autoAdvance.getWidth()));
+    autoBox.items.add(juce::FlexItem(autoAdvancePeriod).withMinWidth(30).withMaxHeight(25));
+    autoBox.items.add(juce::FlexItem(seconds).withMinWidth(50));
+
+    fb.items.add(juce::FlexItem(autoBox).withMinHeight(25).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
+PlayerOptions::PlayerOptions() {
+    setText("Players");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    whiteLabel.setText("White", juce::dontSendNotification);
+    blackLabel.setText("Black", juce::dontSendNotification);
+    addAndMakeVisible(whiteLabel);
+    whiteLabel.attachToComponent(&whiteMenu, false);
+    addAndMakeVisible(blackLabel);
+    blackLabel.attachToComponent(&blackMenu, false);
+
+    for (auto menu : {&whiteMenu, &blackMenu}) {
+        addAndMakeVisible(*menu);
+        menu->addItem("Human", 1);
+        menu->addItem("Computer (Easy)", 2);
+        menu->addItem("Computer (Medium)", 3);
+        menu->addItem("Computer (Hard)", 4);
+        menu->setSelectedId(1, juce::dontSendNotification);
+    }
+}
+
+void PlayerOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+    // Order matches board orientation.
+    fb.items.add(juce::FlexItem(blackMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(whiteMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
+SoundOptions::SoundOptions() {
+    setText("Sound");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    sonifierLabel.setText("Sonifier", juce::dontSendNotification);
+    sonifierLabel.attachToComponent(&sonifierMenu, false);
+    addAndMakeVisible(sonifierLabel);
+    addAndMakeVisible(sonifierMenu);
+
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    volumeLabel.attachToComponent(&volumeSlider, false);
+    addAndMakeVisible(volumeLabel);
+    volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+    volumeSlider.setRange(-60, 0);
+    addAndMakeVisible(volumeSlider);
+}
+
+double SoundOptions::getGain() const {
+    double db = volumeSlider.getValue();
+    double min = volumeSlider.getMinimum();
+    return juce::Decibels::decibelsToGain(db, min);
+}
+
+AnalysisOptions::AnalysisOptions() {
+    setText("Analysis");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    loadGame.setButtonText("Load saved game (PGN)");
+    streamGame.setButtonText("Stream live game (Lichess)");
+    fenLabel.setText("FEN", juce::dontSendNotification);
+    fenLabel.attachToComponent(&fen, false);
+    fen.setText(Chess::Game::initialFen, false);
+
+    addAndMakeVisible(loadGame);
+    addAndMakeVisible(streamGame);
+    addAndMakeVisible(fenLabel);
+    addAndMakeVisible(fen);
+}
+
+void AnalysisOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(loadGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(streamGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(fen).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
+void SoundOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
 MainComponent::MainComponent() {
-    setSize(1000, 800);
+    setSize(1000, 740);
 
     setAudioChannels(0, 2);
 
-    addAndMakeVisible(m_ChessboardGUI);
-    Chess::Game &game = AppState::getInstance().getGame();
-    m_ChessboardGUI.addActionListener(&m_BroadcastManager);
-    m_BroadcastManager.addChangeListener(&m_ChessboardGUI);
-    m_BroadcastManager.addChangeListener(this);
+    addAndMakeVisible(board);
+    board.onMove = [this](Chess::Move move) { makeMove(move); };
+    addChangeListener(&board);
 
-    addAndMakeVisible(buttonUndo);
-    buttonUndo.setButtonText("Undo");
-    buttonUndo.onClick = [this, &game]() {
-        m_BroadcastManager.undo();
-        if (m_GameMode == GameMode::PVC)
-            m_BroadcastManager.undo();
+    addAndMakeVisible(turnLabel);
+    turnLabel.setFont(juce::Font(15));
+    turnLabel.setJustificationType(juce::Justification::centred);
+    updateGame();
+
+    // Controls
+    // TODO: Implement auto-advance, play/pause, and maybe PGN comment timing.
+    controls.skipBackward.onClick = [this]() {
+        while (undo());
+        updateGame();
     };
 
-    addAndMakeVisible(buttonRedo);
-    buttonRedo.setButtonText("Redo");
-    buttonRedo.onClick = [this, &game]() {
-        m_BroadcastManager.redo();
-        if (m_GameMode == GameMode::PVC)
-            m_BroadcastManager.redo();
+    controls.stepBackward.onClick = [this]() {
+        if (undo()) updateGame();
+        // TODO: Maybe add a special case for computer-made moves.
+        // Or, perhaps add another button to go back one "full" move (two plies).
     };
 
-    addAndMakeVisible(m_SonifierSelector);
-    m_SonifierSelector.onChange = [this]() {
-        setSonifier(m_SonifierSelector.getSelectedItemIndex());
+    controls.stepForward.onClick = [this]() {
+        if (redo()) updateGame();
+        // TODO: Maybe add a special case for computer-made moves.
+        // Or, perhaps add another button to go back one "full" move (two plies).
+    };
+
+    controls.skipForward.onClick = [this]() {
+        while (redo());
+        updateGame();
+    };
+    addAndMakeVisible(controls);
+
+    // Player options
+    // TODO: Maybe implement support for multiple difficulties.
+    playerOptions.blackMenu.onChange = [this]() {
+        int id = playerOptions.blackMenu.getSelectedId();
+        board.enableInput(Chess::Color::Black, id == 1);
+        players[(int)Chess::Color::Black] = (PlayerType)(id - 1);
+        if (id > 1) {
+            enableStockfish(true);
+        }
+    };
+    // TODO: Reduce duplication here.
+    playerOptions.whiteMenu.onChange = [this]() {
+        int id = playerOptions.whiteMenu.getSelectedId();
+        board.enableInput(Chess::Color::White, id == 1);
+        players[(int)Chess::Color::White] = (PlayerType)(id - 1);
+        if (id > 1) {
+            enableStockfish(true);
+        }
+    };
+    addAndMakeVisible(playerOptions);
+
+    // TODO: load from PGN, lichess stream.
+    // streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
+    // streamInputLabel.attachToComponent(&streamInput, false);
+    // streamToggle.setButtonText("Play Stream");
+    // streamToggle.onClick = [this]() {
+    //     if (stream) {
+    //         // Hack to avoid thread-killing issues.
+    //         stream->cancel();
+    //         streams.push_back(stream);
+    //         stream.reset();
+    //         streamToggle.setButtonText("Play Stream");
+    //     } else {
+    //         // TODO: Reset game first.
+    //         std::string id = streamInput.getText().toStdString();
+    //         stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
+    //             if (move) {
+    //                 std::cout << "Streamed move: " << move->toString() << std::endl;
+    //                 broadcastManager.actionListenerCallback(juce::String(move->toString()));
+    //             } else {
+    //                 std::cout << "Done streaming." << std::endl;
+    //             }
+    //         });
+    //         streamToggle.setButtonText("Stop Stream");
+    //     }
+    // };
+    analysisOptions.fen.onReturnKey = [this]() {
+        // NOTE: We don't clear the undo history here;
+        // it might be annoying for the user is we throw out
+        // their whole game when they just want to experiment.
+        std::stack<Chess::Move> empty;
+        redoStack.swap(empty);
+        game.setFen(analysisOptions.fen.getText().toStdString());
+        updateGame();
+    };
+    addAndMakeVisible(analysisOptions);
+
+    // Sound options
+    soundOptions.sonifierMenu.onChange = [this]() {
+        setSonifier(soundOptions.sonifierMenu.getSelectedItemIndex());
     };
     for (int i = 0; i < sonifiers.size(); i++) {
-        m_SonifierSelector.addItem(sonifiers[i].name, i + 1);
+        soundOptions.sonifierMenu.addItem(sonifiers[i].name, i + 1);
     }
-    m_SonifierSelector.setSelectedId(1, juce::dontSendNotification);
-    mCurrentSonifier->setEnabled(true);
+    soundOptions.sonifierMenu.setSelectedId(1, juce::dontSendNotification);
+    currentSonifier->setEnabled(true);
 
-    addAndMakeVisible(sonifierLabel);
-    sonifierLabel.setText("Sonifier", juce::dontSendNotification);
-    sonifierLabel.attachToComponent(&m_SonifierSelector, false);
-
-    addAndMakeVisible(m_GameModeSelector);
-    m_GameModeSelector.onChange = [this]() {
-        switch (m_GameModeSelector.getSelectedId()) {
-        case 1:
-            onGameModeChange(GameMode::PVP);
-            break;
-        case 2:
-            onGameModeChange(GameMode::PVC);
-            break;
-        default:
-            onGameModeChange(GameMode::PGN);
-        }
+    soundOptions.volumeSlider.onValueChange = [this]() {
+        currentSonifier->setGain(soundOptions.getGain());
     };
-    m_GameModeSelector.addItem("Player vs. Player", 1);
-    m_GameModeSelector.addItem("Player vs. Computer", 2);
-    m_GameModeSelector.addItem("View Replay", 3);
-    m_GameModeSelector.setSelectedId(1);
-
-    addAndMakeVisible(modeLabel);
-    modeLabel.setText("Game Mode", juce::dontSendNotification);
-    modeLabel.attachToComponent(&m_GameModeSelector, false);
-
-    addAndMakeVisible(m_FenInput);
-
-    m_FenInput.setEditable(true);
-    m_FenInput.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
-    m_FenInput.setColour(juce::Label::textColourId, juce::Colours::white);
-    m_FenInput.onTextChange = [this]() { onFenChanged(); };
-
-    addAndMakeVisible(m_FenLabel);
-    m_FenLabel.setText("Enter FEN string: ", juce::dontSendNotification);
-    m_FenLabel.setColour(juce::Label::backgroundColourId, juce::Colours::grey);
-    m_FenLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-
-    addAndMakeVisible(m_TurnText);
-    m_TurnText.setText("White's turn", juce::NotificationType::dontSendNotification);
-    m_TurnText.setFont(juce::Font(15));
-    m_TurnText.setColour(juce::Label::backgroundColourId, juce::Colours::black);
-    m_TurnText.setColour(juce::Label::textColourId, juce::Colours::whitesmoke);
-    m_TurnText.setJustificationType(juce::Justification::centred);
-
-    addAndMakeVisible(m_pgnButton);
-    m_pgnButton.setButtonText("Load PGN");
-    m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-    m_pgnButton.onClick = [this]() { onPgnButtonClicked(); };
-
-    addAndMakeVisible(m_PrevButton);
-    m_PrevButton.setButtonText("Previous");
-
-    addAndMakeVisible(m_NextButton);
-    m_NextButton.setButtonText("Next");
-
-    addAndMakeVisible(m_VolumeSlider);
-    m_VolumeSlider.setRange(0, 0.25);
-    m_VolumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
-    m_VolumeSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-    m_VolumeSlider.onValueChange = [this]() {
-        // TODO: Logarithmic scaling! (i.e. set gain in dB)
-        mCurrentSonifier->setGain(m_VolumeSlider.getValue());
-    };
-    m_VolumeSlider.setValue(0.25);
-
-    // TODO: Hook up this input so it actually does something.
-    addAndMakeVisible(streamInput);
-    addAndMakeVisible(streamInputLabel);
-    addAndMakeVisible(streamToggle);
-    streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
-    streamInputLabel.attachToComponent(&streamInput, false);
-    streamToggle.setButtonText("Play Stream");
-    streamToggle.onClick = [this]() {
-        if (stream) {
-            // Hack to avoid thread-killing issues.
-            stream->cancel();
-            streams.push_back(stream);
-            stream.reset();
-            streamToggle.setButtonText("Play Stream");
-        } else {
-            // TODO: Reset game first.
-            std::string id = streamInput.getText().toStdString();
-            stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
-                if (move) {
-                    std::cout << "Streamed move: " << move->toString() << std::endl;
-                    m_BroadcastManager.actionListenerCallback(juce::String(move->toString()));
-                } else {
-                    std::cout << "Done streaming." << std::endl;
-                }
-            });
-            streamToggle.setButtonText("Stop Stream");
-        }
-    };
+    soundOptions.volumeSlider.setValue(-20);
+    addAndMakeVisible(soundOptions);
 }
 
 MainComponent::~MainComponent() {
-    m_BroadcastManager.removeAllChangeListeners();
-    m_ChessboardGUI.removeAllActionListeners();
     shutdownAudio();
 }
 
@@ -146,15 +295,15 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) {
-    if (mOldSonifier) {
-        mOldSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
-        if (mOldSonifier->isIdle()) {
+    if (oldSonifier) {
+        oldSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+        if (oldSonifier->isIdle()) {
             // TODO: Maybe not in the audio thread.
-            mOldSonifier.reset();
+            oldSonifier.reset();
         }
     }
-    if (mCurrentSonifier) {
-        mCurrentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+    if (currentSonifier) {
+        currentSonifier->process(bufferToFill.buffer->getArrayOfWritePointers(), bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
     }
 }
 
@@ -164,133 +313,147 @@ void MainComponent::paint(juce::Graphics &g) {
 
 void MainComponent::resized() {
     auto area = getBounds().reduced(10);
-    auto footer = area.removeFromBottom(getHeight() / 20);
-    auto rightThird = area.removeFromRight(getWidth() / 3);
-    rightThird.reduce(10, 10);
 
-    auto sliderArea = rightThird.removeFromRight(rightThird.getWidth() / 6);
-    m_VolumeSlider.setBounds(sliderArea);
-
-    m_TurnText.setBounds(area.removeFromBottom(area.getHeight() / 15).reduced(0, 5));
-
-    auto areaAboveChessboard = area.removeFromTop(area.getHeight() / 12);
-    buttonUndo.setBounds(areaAboveChessboard.removeFromLeft(areaAboveChessboard.getWidth() / 2));
-    buttonRedo.setBounds(areaAboveChessboard);
     // Keep chessboard square and centered.
-    int size = std::min(area.getWidth(), area.getHeight());
-    m_ChessboardGUI.setBounds(area.withSizeKeepingCentre(size, size));
+    int menuWidth = 300;
+    int turnHeight = 30;
+    int size = std::min(area.getWidth() - menuWidth, area.getHeight() - turnHeight);
+    area = area.withSizeKeepingCentre(size + menuWidth, size + turnHeight);
+    auto menuArea = area.removeFromRight(menuWidth);
+    turnLabel.setBounds(area.removeFromBottom(turnHeight));
+    board.setBounds(area);
 
-    // TODO: Group various inputs into related sections with titles.
+    // Lay out menu sections.
     juce::FlexBox fb;
     fb.flexDirection = juce::FlexBox::Direction::column;
     fb.justifyContent = juce::FlexBox::JustifyContent::center;
     fb.alignContent = juce::FlexBox::AlignContent::center;
-    fb.items.add(juce::FlexItem(m_pgnButton).withMinHeight(50).withMargin(6));
-    fb.items.add(juce::FlexItem(streamInput).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
-    fb.items.add(juce::FlexItem(streamToggle).withMinHeight(30).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
-    juce::FlexBox pgnNavigation;
-    pgnNavigation.items.add(juce::FlexItem(m_PrevButton).withMargin(juce::FlexItem::Margin(0, 3, 0, 0)).withFlex(1));
-    pgnNavigation.items.add(juce::FlexItem(m_NextButton).withMargin(juce::FlexItem::Margin(0, 0, 0, 3)).withFlex(1));
-    fb.items.add(juce::FlexItem(pgnNavigation).withMinHeight(50).withMargin(6));
-    fb.items.add(juce::FlexItem(m_SonifierSelector).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
-    fb.items.add(juce::FlexItem(m_GameModeSelector).withMinHeight(50).withMargin(juce::FlexItem::Margin(24, 6, 6, 6)));
-    fb.performLayout(rightThird);
 
-    m_FenLabel.setBounds(footer.removeFromLeft(footer.getWidth() / 8));
-    m_FenInput.setBounds(footer);
+    juce::FlexItem::Margin margin(24, 6, 6, 6);
+    fb.items.add(juce::FlexItem(controls).withMinHeight(170).withMargin(6));
+    fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(margin));
+    fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(margin));
+    fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(margin));
+    fb.performLayout(menuArea);
 }
 
-void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
+void MainComponent::updateGame() {
     Chess::Game &game = AppState::getInstance().getGame();
-    switch (game.getTurn()) {
-    case Chess::Color::White:
-        m_TurnText.setText("White's Turn", juce::dontSendNotification);
-        break;
-    default:
-        m_TurnText.setText("Black's Turn", juce::dontSendNotification);
+    if (game.getTurn() == Chess::Color::White) {
+        turnLabel.setText("White to move", juce::dontSendNotification);
+        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
+        turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
+
+        if (players[(int)Chess::Color::White] != PlayerType::Human) {
+            engine->analyzeAsync([this](Chess::Analysis analysis) {
+                Chess::Move move = analysis.bestMove;
+                juce::MessageManager::callAsync([this, move]() { makeMove(move); });
+            }, game);
+        }
+    } else {
+        turnLabel.setText("Black to move", juce::dontSendNotification);
+        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
+        turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
+
+        if (players[(int)Chess::Color::Black] != PlayerType::Human) {
+            engine->analyzeAsync([this](Chess::Analysis analysis) {
+                Chess::Move move = analysis.bestMove;
+                juce::MessageManager::callAsync([this, move]() { makeMove(move); });
+            }, game);
+        }
     }
+
+    int pastMoves = game.getHistory().size();
+    int totalMoves = pastMoves + redoStack.size();
+    controls.skipBackward.setEnabled(pastMoves > 0);
+    controls.stepBackward.setEnabled(pastMoves > 0);
+    controls.stepForward.setEnabled(pastMoves < totalMoves);
+    controls.skipForward.setEnabled(pastMoves < totalMoves);
+    controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
+    analysisOptions.fen.setText(game.getFen(), false);
+    sendChangeMessage();
 }
 
 void MainComponent::setSonifier(int sonifierIndex) {
-    mOldSonifier = std::move(mCurrentSonifier);
-    mCurrentSonifier = sonifiers[sonifierIndex].create(sampleRate);
-    if (mOldSonifier) {
-        mOldSonifier->setEnabled(false);
-        m_BroadcastManager.removeChangeListener(mOldSonifier.get());
+    oldSonifier = std::move(currentSonifier);
+    currentSonifier = sonifiers[sonifierIndex].create(sampleRate);
+    if (oldSonifier) {
+        oldSonifier->setEnabled(false);
+        removeChangeListener(oldSonifier.get());
     }
-    mCurrentSonifier->setEnabled(true);
-    m_BroadcastManager.addChangeListener(mCurrentSonifier.get());
-    mCurrentSonifier->onMove(AppState::getInstance().getGame());
-    mCurrentSonifier->setGain(m_VolumeSlider.getValue());
+    currentSonifier->setEnabled(true);
+    addChangeListener(currentSonifier.get());
+    currentSonifier->onMove(AppState::getInstance().getGame());
+    currentSonifier->setGain(soundOptions.getGain());
 }
 
-void MainComponent::onFenChanged() {
-    std::string fenString = m_FenInput.getText().toStdString();
-    AppState::getInstance().getGame().setFen(fenString);
-    m_BroadcastManager.sendChangeMessage();
-}
-
-void MainComponent::onPgnButtonClicked() {
-    m_FileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
-                                                        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
-                                                        "*.pgn");
+void MainComponent::loadSavedGame() {
+    fileChooser = std::make_unique<juce::FileChooser>("Please select the .pgn file you want to load...",
+                                                      juce::File::getSpecialLocation(juce::File::userHomeDirectory),
+                                                      "*.pgn");
 
     auto folderChooserFlags = juce::FileBrowserComponent::openMode;
 
-    m_FileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
+    fileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
         juce::File file = chooser.getResult();
         if (file.exists()) {
-            m_pgnButton.setButtonText("PGN Loaded!");
-            m_pgnButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
-            m_PgnString = chooser.getResult().loadFileAsString();
-            m_NextButton.setEnabled(true);
-            m_PrevButton.setEnabled(true);
-        } else {
-            if (m_PgnString.isEmpty()) {
-                m_pgnButton.setButtonText("Load PGN");
-                m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-                m_NextButton.setEnabled(false);
-                m_PrevButton.setEnabled(false);
-            }
+            // pgnData = chooser.getResult().loadFileAsString();
         }
     });
 }
 
-void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
-    switch (nextGameMode) {
-    case GameMode::PVC:
-        m_BroadcastManager.toggleStockfish(true);
-        m_ChessboardGUI.setMode(BoardComponent::Mode::PVC);
-        m_pgnButton.setButtonText("Load PGN");
-        m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-        m_PgnString.clear();
-        m_pgnButton.setEnabled(false);
-        m_PrevButton.setEnabled(false);
-        m_NextButton.setEnabled(false);
-        buttonUndo.setEnabled(true);
-        buttonRedo.setEnabled(true);
-        break;
-    case GameMode::PVP:
-        m_BroadcastManager.toggleStockfish(false);
-        m_ChessboardGUI.setMode(BoardComponent::Mode::PVP);
-        m_pgnButton.setButtonText("Load PGN");
-        m_pgnButton.setColour(juce::TextButton::buttonColourId, getLookAndFeel().findColour(juce::TextButton::buttonColourId));
-        m_PgnString.clear();
-        m_pgnButton.setEnabled(false);
-        m_PrevButton.setEnabled(false);
-        m_NextButton.setEnabled(false);
-        buttonUndo.setEnabled(true);
-        buttonRedo.setEnabled(true);
-        break;
-    default:
-        m_BroadcastManager.toggleStockfish(false);
-        m_ChessboardGUI.setMode(BoardComponent::Mode::PGN);
-        m_pgnButton.setEnabled(true);
-        buttonUndo.setEnabled(false);
-        buttonRedo.setEnabled(false);
+void MainComponent::makeMove(Chess::Move move) {
+    clearRedoStack();
+    game.push(move);
+    updateGame();
+}
+
+bool MainComponent::undo() {
+    std::optional<Chess::Move> move = game.pop();
+    if (!move) return false;
+    redoStack.push(*move);
+    return true;
+}
+
+bool MainComponent::redo() {
+    if (redoStack.empty()) return false;
+    Chess::Move lastMove = redoStack.top();
+    game.push(lastMove);
+    redoStack.pop();
+    return true;
+}
+
+void MainComponent::clearRedoStack() {
+    std::stack<Chess::Move> empty;
+    redoStack.swap(empty);
+}
+
+void MainComponent::enableStockfish(bool enable) {
+    if (!enable) {
+        engine.reset();
+    } else if (engine) {
+        // Already started.
+        updateGame();
+    } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
+        engine = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+        updateGame();
+    } else {
+        // Allow user to tell us where their engine binary is.
+        // TODO: Remember their selected engine and allow them to change it later.
+        engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
+                                                            juce::File::getSpecialLocation(juce::File::userHomeDirectory));
+
+        auto chooserFlags = juce::FileBrowserComponent::openMode;
+
+        engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
+            juce::File file = chooser.getResult();
+            if (file.exists()) {
+                engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
+                updateGame();
+            } else {
+                // User canceled.
+                // TODO: Reset triggering player to "Human".
+            }
+        });
     }
-    m_GameMode = nextGameMode;
-    m_BroadcastManager.emptyUndoHistory();
-    AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
-    m_BroadcastManager.sendChangeMessage();
 }

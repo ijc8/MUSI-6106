@@ -8,20 +8,67 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 #include "BoardComponent.h"
-#include "BroadcastManager.h"
 #include "CommentarySonifier.h"
+#include "EngineBridge.h"
 #include "GameState.h"
 #include "GameStream.h"
 #include "StorySonifier.h"
 #include "ThreatsSonifier.h"
 #include "ZenSonifier.h"
 
-class MainComponent: public juce::AudioAppComponent, public juce::ChangeListener {
+// Helper classes to simplify MainComponent.
+class Controls: public juce::GroupComponent {
 public:
-    enum GameMode {
-        PVP,
-        PVC,
-        PGN
+    Controls();
+    void resized() override;
+
+    juce::Label move;
+    juce::ImageButton skipBackward, stepBackward, stepForward, skipForward, playPause;
+
+    juce::ToggleButton autoAdvance{"Auto-advance every"};
+    juce::TextEditor autoAdvancePeriod;
+    juce::Label seconds;
+
+    juce::ToggleButton pgnAdvance{"Use PGN clock times if available"};
+};
+
+class PlayerOptions: public juce::GroupComponent {
+public:
+    PlayerOptions();
+    void resized() override;
+
+    juce::Label whiteLabel, blackLabel;
+    juce::ComboBox whiteMenu, blackMenu;
+};
+
+class SoundOptions: public juce::GroupComponent {
+public:
+    SoundOptions();
+    void resized() override;
+    double getGain() const;
+
+    juce::Label sonifierLabel, volumeLabel;
+    juce::ComboBox sonifierMenu;
+    juce::Slider volumeSlider;
+};
+
+class AnalysisOptions: public juce::GroupComponent {
+public:
+    AnalysisOptions();
+    void resized() override;
+
+    juce::TextButton loadGame, streamGame;
+    juce::Label fenLabel;
+    juce::TextEditor fen;
+};
+
+class MainComponent: public juce::AudioAppComponent, public juce::ChangeBroadcaster {
+public:
+    enum class PlayerType {
+        Human,
+        ComputerEasy,
+        ComputerMedium,
+        ComputerHard,
     };
 
     MainComponent();
@@ -34,13 +81,25 @@ public:
     void paint(juce::Graphics &g) override;
     void resized() override;
 
-    void changeListenerCallback(juce::ChangeBroadcaster *source) override;
+    void updateGame();
 
 private:
+    void makeMove(Chess::Move move);
+    bool undo();
+    bool redo();
+    void clearRedoStack();
+    void enableStockfish(bool shouldTurnOn);
+
+    std::unique_ptr<Chess::Engine> engine;
+    std::unique_ptr<juce::FileChooser> engineChooser;
+    std::stack<Chess::Move> redoStack;
+    Chess::Game &game = AppState::getInstance().getGame();
+
+    PlayerType players[2] = {PlayerType::Human};
+
     double sampleRate;
 
-    GameMode m_GameMode = PVP;
-    std::unique_ptr<Sonifier> mOldSonifier, mCurrentSonifier;
+    std::unique_ptr<Sonifier> oldSonifier, currentSonifier;
 
     struct SonifierType {
         std::string name;
@@ -53,40 +112,23 @@ private:
         {"Threat", [](float sr) { return std::make_unique<ThreatsSonifier>(sr); }},
         {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}};
 
-    BroadcastManager m_BroadcastManager;
-    BoardComponent m_ChessboardGUI;
+    BoardComponent board;
 
-    juce::TextButton buttonUndo;
-    juce::TextButton buttonRedo;
-    juce::Label sonifierLabel;
-    juce::ComboBox m_SonifierSelector;
-    juce::Label modeLabel;
-    juce::ComboBox m_GameModeSelector;
-    juce::Slider m_VolumeSlider;
+    Controls controls;
+    PlayerOptions playerOptions;
+    SoundOptions soundOptions;
+    AnalysisOptions analysisOptions;
 
-    juce::Label streamInputLabel;
-    juce::TextEditor streamInput;
-    juce::TextButton streamToggle;
-    std::vector<std::shared_ptr<GameStream>> streams;
-    std::shared_ptr<GameStream> stream;
-    std::future<void> task;
+    juce::Label turnLabel;
+    // std::vector<std::shared_ptr<GameStream>> streams;
+    // std::shared_ptr<GameStream> stream;
 
-    juce::Label m_FenLabel;
-    juce::Label m_FenInput;
-    juce::Label m_TurnText;
-    juce::TextButton m_pgnButton;
-    juce::TextButton m_NextButton;
-    juce::TextButton m_PrevButton;
+    void loadSavedGame();
 
-    void onFenChanged();
+    std::unique_ptr<juce::FileChooser> fileChooser;
+    // juce::String pgnData;
 
-    void onPgnButtonClicked();
-    std::unique_ptr<juce::FileChooser> m_FileChooser;
-    juce::String m_PgnString;
-
-    void onGameModeChange(MainComponent::GameMode nextGameMode);
     void setSonifier(int sonifierIndex);
-    std::stack<Chess::Move> mUndoHistory;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

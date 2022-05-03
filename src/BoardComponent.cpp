@@ -111,20 +111,17 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
             } else {
                 // Complete move by filling in the promotion.
                 Chess::Piece::Type type = promotions[result - 1].second;
-                juce::String intent = Chess::Move(*selected, target, type).toString();
-                sendActionMessage(intent);
+                if (onMove) onMove(Chess::Move(*selected, target, type));
                 selected.reset();
             }
         });
     } else {
-        sendActionMessage(juce::String(move.toString()));
+        if (onMove) onMove(move);
         selected.reset();
     }
 }
 
 void BoardComponent::mouseDown(const juce::MouseEvent &event) {
-    if (mode == Mode::PGN) return;
-
     Chess::Square target = coordsToSquare(event.x, event.y);
     juce::Rectangle<float> rect = squareToRect(target);
     Chess::Game &game = AppState::getInstance().getGame();
@@ -142,11 +139,9 @@ void BoardComponent::mouseDown(const juce::MouseEvent &event) {
             makeMove(event);
         }
     } else {
-        if (mode == Mode::PVP || mode == Mode::PVC) {
-            if (piece && turn == piece->color && (mode == Mode::PVP || turn == Chess::Color::White)) {
-                select(target);
-                dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
-            }
+        if (inputEnabled[(int)turn] && piece && turn == piece->color) {
+            select(target);
+            dragging = {*piece, juce::Point<float>(event.x - rect.getX(), event.y - rect.getY())};
         }
     }
 }
@@ -171,8 +166,11 @@ void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
     select();
 }
 
-void BoardComponent::setMode(BoardComponent::Mode newMode) {
-    mode = newMode;
+void BoardComponent::enableInput(Chess::Color color, bool enable) {
+    inputEnabled[(int)color] = enable;
+    if (!enable && color == AppState::getInstance().getGame().getTurn()) {
+        select();
+    }
 }
 
 void BoardComponent::select(std::optional<Chess::Square> square) {
