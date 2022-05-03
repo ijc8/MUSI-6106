@@ -7,9 +7,7 @@ MainComponent::MainComponent() {
 
     addAndMakeVisible(board);
     Chess::Game &game = AppState::getInstance().getGame();
-    board.onMove = [this](Chess::Move move) {
-        broadcastManager.actionListenerCallback(move.toString());
-    };
+    board.onMove = [this](Chess::Move move) { broadcastManager.makeMove(move); };
     broadcastManager.addChangeListener(&board);
     broadcastManager.addChangeListener(this);
 
@@ -229,7 +227,7 @@ void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
         board.setMode(BoardComponent::Mode::PGN);
     }
     mode = nextGameMode;
-    broadcastManager.emptyUndoHistory();
+    broadcastManager.clearRedoStack();
     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
     broadcastManager.sendChangeMessage();
 }
