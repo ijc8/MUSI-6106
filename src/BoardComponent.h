@@ -4,15 +4,16 @@
 #include "GameState.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
-class BoardComponent: public juce::Component, public juce::ChangeListener {
+class BoardComponent: public juce::Component {
 public:
     BoardComponent();
+    void select(std::optional<Chess::Square> square = std::nullopt);
+    void enableInput(Chess::Color color, bool enable);
+
     void paint(juce::Graphics &g) override;
     void mouseDown(const juce::MouseEvent &event) override;
     void mouseDrag(const juce::MouseEvent &event) override;
     void mouseUp(const juce::MouseEvent &event) override;
-    void changeListenerCallback(juce::ChangeBroadcaster *source) override;
-    void enableInput(Chess::Color color, bool enable);
 
     std::function<void(Chess::Move)> onMove;
 
@@ -29,9 +30,7 @@ private:
     };
     std::optional<FloatingPiece> dragging;
 
-    float getSquareSize() const;
     Chess::Square coordsToSquare(int x, int y) const;
     juce::Rectangle<float> squareToRect(Chess::Square square) const;
     void makeMove(const juce::MouseEvent &event);
-    void select(std::optional<Chess::Square> square = std::nullopt);
 };

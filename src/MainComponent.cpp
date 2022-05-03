@@ -371,7 +371,7 @@ void MainComponent::updateGame() {
     controls.skipForward.setEnabled(pastMoves < totalMoves);
     controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
-    board.changeListenerCallback(nullptr);
+    board.select();
     currentSonifier->changeListenerCallback(nullptr);
 }
 
