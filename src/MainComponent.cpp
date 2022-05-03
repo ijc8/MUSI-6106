@@ -185,6 +185,8 @@ MainComponent::MainComponent() {
     turnLabel.setJustificationType(juce::Justification::centred);
     updateGame();
 
+    // Controls
+    // TODO: Implement auto-advance, play/pause, and maybe PGN comment timing.
     controls.skipBackward.onClick = [this]() {
         while (undo());
         updateGame();
@@ -209,12 +211,13 @@ MainComponent::MainComponent() {
     addAndMakeVisible(controls);
 
     // Player options
+    // TODO: Maybe implement support for multiple difficulties.
     playerOptions.blackMenu.onChange = [this]() {
         int id = playerOptions.blackMenu.getSelectedId();
         board.enableInput(Chess::Color::Black, id == 1);
         players[(int)Chess::Color::Black] = (PlayerType)(id - 1);
         if (id > 1) {
-            toggleStockfish(true);
+            enableStockfish(true);
         }
     };
     // TODO: Reduce duplication here.
@@ -223,7 +226,7 @@ MainComponent::MainComponent() {
         board.enableInput(Chess::Color::White, id == 1);
         players[(int)Chess::Color::White] = (PlayerType)(id - 1);
         if (id > 1) {
-            toggleStockfish(true);
+            enableStockfish(true);
         }
     };
     addAndMakeVisible(playerOptions);
@@ -425,34 +428,32 @@ void MainComponent::clearRedoStack() {
     redoStack.swap(empty);
 }
 
-void MainComponent::toggleStockfish(bool shouldTurnOn) {
-    if (shouldTurnOn) {
-        if (engine) {
-            // Already started.
-            updateGame();
-        } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
-            engine = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
-            updateGame();
-        } else {
-            // Allow user to tell us where their engine binary is.
-            // TODO: Remember their selected engine and allow them to change it later.
-            engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
-                                                                juce::File::getSpecialLocation(juce::File::userHomeDirectory));
-
-            auto chooserFlags = juce::FileBrowserComponent::openMode;
-
-            engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
-                juce::File file = chooser.getResult();
-                if (file.exists()) {
-                    engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
-                    updateGame();
-                } else {
-                    // User canceled.
-                    // TODO: Reset triggering player to "Human".
-                }
-            });
-        }
-    } else {
+void MainComponent::enableStockfish(bool enable) {
+    if (!enable) {
         engine.reset();
+    } else if (engine) {
+        // Already started.
+        updateGame();
+    } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
+        engine = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+        updateGame();
+    } else {
+        // Allow user to tell us where their engine binary is.
+        // TODO: Remember their selected engine and allow them to change it later.
+        engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
+                                                            juce::File::getSpecialLocation(juce::File::userHomeDirectory));
+
+        auto chooserFlags = juce::FileBrowserComponent::openMode;
+
+        engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
+            juce::File file = chooser.getResult();
+            if (file.exists()) {
+                engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
+                updateGame();
+            } else {
+                // User canceled.
+                // TODO: Reset triggering player to "Human".
+            }
+        });
     }
 }

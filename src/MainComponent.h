@@ -88,7 +88,7 @@ private:
     bool undo();
     bool redo();
     void clearRedoStack();
-    void toggleStockfish(bool shouldTurnOn);
+    void enableStockfish(bool shouldTurnOn);
 
     std::unique_ptr<Chess::Engine> engine;
     std::unique_ptr<juce::FileChooser> engineChooser;
@@ -120,13 +120,13 @@ private:
     AnalysisOptions analysisOptions;
 
     juce::Label turnLabel;
-    std::vector<std::shared_ptr<GameStream>> streams;
-    std::shared_ptr<GameStream> stream;
+    // std::vector<std::shared_ptr<GameStream>> streams;
+    // std::shared_ptr<GameStream> stream;
 
     void loadSavedGame();
 
     std::unique_ptr<juce::FileChooser> fileChooser;
-    juce::String pgnData;
+    // juce::String pgnData;
 
     void setSonifier(int sonifierIndex);
 
