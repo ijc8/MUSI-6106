@@ -8,8 +8,8 @@ MainComponent::MainComponent() {
     addAndMakeVisible(board);
     Chess::Game &game = AppState::getInstance().getGame();
     board.onMove = [this](Chess::Move move) { broadcastManager.makeMove(move); };
-    broadcastManager.addChangeListener(&board);
     broadcastManager.addChangeListener(this);
+    addChangeListener(&board);
 
     // prevButton.setButtonText("Undo");
     // prevButton.onClick = [this, &game]() {
@@ -59,7 +59,7 @@ MainComponent::MainComponent() {
     addAndMakeVisible(turnLabel);
     turnLabel.setFont(juce::Font(15));
     turnLabel.setJustificationType(juce::Justification::centred);
-    changeListenerCallback(nullptr);
+    updateGame();
 
     // TODO
     // openPGN.onClick = [this]() { loadSavedGame(); };
@@ -116,7 +116,6 @@ MainComponent::MainComponent() {
 }
 
 MainComponent::~MainComponent() {
-    broadcastManager.removeAllChangeListeners();
     shutdownAudio();
 }
 
@@ -169,7 +168,7 @@ void MainComponent::resized() {
     fb.performLayout(menuArea);
 }
 
-void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
+void MainComponent::updateGame() {
     Chess::Game &game = AppState::getInstance().getGame();
     switch (game.getTurn()) {
     case Chess::Color::White:
@@ -182,6 +181,8 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
     }
+
+    sendChangeMessage();
 }
 
 void MainComponent::setSonifier(int sonifierIndex) {
@@ -189,10 +190,10 @@ void MainComponent::setSonifier(int sonifierIndex) {
     currentSonifier = sonifiers[sonifierIndex].create(sampleRate);
     if (oldSonifier) {
         oldSonifier->setEnabled(false);
-        broadcastManager.removeChangeListener(oldSonifier.get());
+        removeChangeListener(oldSonifier.get());
     }
     currentSonifier->setEnabled(true);
-    broadcastManager.addChangeListener(currentSonifier.get());
+    addChangeListener(currentSonifier.get());
     currentSonifier->onMove(AppState::getInstance().getGame());
     // currentSonifier->setGain(volumeSlider.getValue());
 }

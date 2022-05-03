@@ -16,7 +16,7 @@
 #include "ThreatsSonifier.h"
 #include "ZenSonifier.h"
 
-class MainComponent: public juce::AudioAppComponent, public juce::ChangeListener {
+class MainComponent: public juce::AudioAppComponent, public juce::ChangeListener, public juce::ChangeBroadcaster {
 public:
     enum GameMode {
         PVP,
@@ -34,7 +34,8 @@ public:
     void paint(juce::Graphics &g) override;
     void resized() override;
 
-    void changeListenerCallback(juce::ChangeBroadcaster *source) override;
+    void updateGame();
+    void changeListenerCallback(juce::ChangeBroadcaster *source) override { updateGame(); }
 
 private:
     double sampleRate;
