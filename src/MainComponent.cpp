@@ -44,7 +44,6 @@ Controls::Controls() {
     autoAdvancePeriod.setText("3");
     autoAdvancePeriod.setInputRestrictions(0, "0123456789.");
     addAndMakeVisible(autoAdvancePeriod);
-    seconds.setText("secs", juce::dontSendNotification);
     addAndMakeVisible(seconds);
 
     addAndMakeVisible(pgnAdvance);
@@ -70,10 +69,11 @@ void Controls::resized() {
     fb.items.add(juce::FlexItem(buttons).withMinHeight(50).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
 
     juce::FlexBox autoBox;
-    autoAdvance.changeWidthToFitText();
-    autoBox.items.add(juce::FlexItem(autoAdvance).withMinWidth(autoAdvance.getWidth()));
+    float autoAdvanceWidth = autoAdvance.getFont().getStringWidthFloat(autoAdvance.getText());
+    autoBox.items.add(juce::FlexItem(autoAdvance).withMinWidth(autoAdvanceWidth + 10));
     autoBox.items.add(juce::FlexItem(autoAdvancePeriod).withMinWidth(30).withMaxHeight(25));
-    autoBox.items.add(juce::FlexItem(seconds).withMinWidth(50));
+    float secondsWidth = seconds.getFont().getStringWidthFloat(seconds.getText());
+    autoBox.items.add(juce::FlexItem(seconds).withMinWidth(secondsWidth + 10));
 
     fb.items.add(juce::FlexItem(autoBox).withMinHeight(25).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
     fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
@@ -187,7 +187,7 @@ MainComponent::MainComponent() {
     turnLabel.setJustificationType(juce::Justification::centred);
 
     // Controls
-    // TODO: Implement auto-advance, play/pause, and maybe PGN comment timing.
+    // TODO: Maybe implement PGN comment timing.
     controls.skipBackward.onClick = [this]() {
         while (undo());
         updateGame();

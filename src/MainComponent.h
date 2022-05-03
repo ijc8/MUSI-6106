@@ -25,9 +25,9 @@ public:
     juce::Label move;
     juce::ImageButton skipBackward, stepBackward, stepForward, skipForward, playPause;
 
-    juce::ToggleButton autoAdvance{"Auto-advance every"};
+    juce::Label autoAdvance{"", "Auto-advance every"};
     juce::TextEditor autoAdvancePeriod;
-    juce::Label seconds;
+    juce::Label seconds{"", "seconds"};
 
     juce::ToggleButton pgnAdvance{"Use PGN clock times if available"};
 };
