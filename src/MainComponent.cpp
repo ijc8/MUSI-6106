@@ -99,6 +99,16 @@ MainComponent::MainComponent() {
     //     }
     // };
 
+    playerOptions.blackMenu.onChange = [this]() {
+        int id = playerOptions.blackMenu.getSelectedId();
+        board.enableInput(Chess::Color::Black, id == 1);
+    };
+
+    playerOptions.whiteMenu.onChange = [this]() {
+        int id = playerOptions.whiteMenu.getSelectedId();
+        board.enableInput(Chess::Color::White, id == 1);
+    };
+
     addAndMakeVisible(controls);
     addAndMakeVisible(playerOptions);
     addAndMakeVisible(soundOptions);
@@ -209,25 +219,25 @@ void MainComponent::loadSavedGame() {
     });
 }
 
-void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
-    switch (nextGameMode) {
-    case GameMode::PVC:
-        broadcastManager.toggleStockfish(true);
-        board.setMode(BoardComponent::Mode::PVC);
-        pgnData.clear();
-        // openPGN.setEnabled(false);
-        break;
-    case GameMode::PVP:
-        broadcastManager.toggleStockfish(false);
-        board.setMode(BoardComponent::Mode::PVP);
-        pgnData.clear();
-        break;
-    default:
-        broadcastManager.toggleStockfish(false);
-        board.setMode(BoardComponent::Mode::PGN);
-    }
-    mode = nextGameMode;
-    broadcastManager.clearRedoStack();
-    AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
-    broadcastManager.sendChangeMessage();
-}
+// void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
+//     switch (nextGameMode) {
+//     case GameMode::PVC:
+//         broadcastManager.toggleStockfish(true);
+//         board.setMode(BoardComponent::Mode::PVC);
+//         pgnData.clear();
+//         // openPGN.setEnabled(false);
+//         break;
+//     case GameMode::PVP:
+//         broadcastManager.toggleStockfish(false);
+//         board.setMode(BoardComponent::Mode::PVP);
+//         pgnData.clear();
+//         break;
+//     default:
+//         broadcastManager.toggleStockfish(false);
+//         board.setMode(BoardComponent::Mode::PGN);
+//     }
+//     mode = nextGameMode;
+//     broadcastManager.clearRedoStack();
+//     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
+//     broadcastManager.sendChangeMessage();
+// }

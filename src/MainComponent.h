@@ -272,7 +272,6 @@ private:
     std::unique_ptr<juce::FileChooser> fileChooser;
     juce::String pgnData;
 
-    void onGameModeChange(MainComponent::GameMode nextGameMode);
     void setSonifier(int sonifierIndex);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
