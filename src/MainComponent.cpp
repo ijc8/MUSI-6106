@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include "MainComponent.h"
 
 Controls::Controls() {
@@ -351,7 +353,10 @@ void MainComponent::updateGame() {
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
 
         if (players[(int)Chess::Color::White] != PlayerType::Human) {
-            engineManager->generateMove();
+            engine->analyzeAsync([this](Chess::Analysis analysis) {
+                Chess::Move move = analysis.bestMove;
+                juce::MessageManager::callAsync([this, move]() { makeMove(move); });
+            }, game);
         }
     } else {
         turnLabel.setText("Black to move", juce::dontSendNotification);
@@ -359,7 +364,10 @@ void MainComponent::updateGame() {
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
 
         if (players[(int)Chess::Color::Black] != PlayerType::Human) {
-            engineManager->generateMove();
+            engine->analyzeAsync([this](Chess::Analysis analysis) {
+                Chess::Move move = analysis.bestMove;
+                juce::MessageManager::callAsync([this, move]() { makeMove(move); });
+            }, game);
         }
     }
 
@@ -431,12 +439,11 @@ void MainComponent::clearRedoStack() {
 
 void MainComponent::toggleStockfish(bool shouldTurnOn) {
     if (shouldTurnOn) {
-        if (engineManager) {
+        if (engine) {
             // Already started.
             updateGame();
         } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
-            engineManager = std::make_unique<EngineManager>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
-            // engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
+            engine = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
             updateGame();
         } else {
             // Allow user to tell us where their engine binary is.
@@ -449,10 +456,7 @@ void MainComponent::toggleStockfish(bool shouldTurnOn) {
             engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
                 juce::File file = chooser.getResult();
                 if (file.exists()) {
-                    engineManager = std::make_unique<EngineManager>(file.getFullPathName().toStdString());
-                    engineManager->onMove = [this](Chess::Move move) {
-                        // juce::MessageManager::callAsync([this, move]() { makeMove(move); });
-                    };
+                    engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
                     updateGame();
                 } else {
                     // User canceled.
@@ -461,6 +465,6 @@ void MainComponent::toggleStockfish(bool shouldTurnOn) {
             });
         }
     } else {
-        engineManager.reset();
+        engine.reset();
     }
 }

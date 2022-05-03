@@ -218,7 +218,8 @@ target_link_libraries(TerminalChess
 
 target_link_libraries(EngineTest
     PRIVATE
-        Common)
+        Common
+        pthread)
 
 target_link_libraries(StreamTest
     PRIVATE

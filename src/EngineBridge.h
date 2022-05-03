@@ -1,6 +1,7 @@
 #ifndef ENGINE_BRIDGE_H
 #define ENGINE_BRIDGE_H
 
+#include <future>
 #include <iostream>
 #include <regex>
 #include <vector>
@@ -38,10 +39,12 @@ namespace Chess {
     class Engine {
     public:
         Engine(const std::string &path);
-        Analysis analyze(const Chess::GameState &state, int time=1000);
+        Analysis analyze(const GameState &state, int time=1000);
+        void analyzeAsync(std::function<void (Analysis)> callback, const GameState &state, int time=1000);
 
     private:
         Subprocess process;
+        std::future<void> task;
     };
 }
 

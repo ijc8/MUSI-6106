@@ -52,7 +52,7 @@ Chess::Engine::Engine(const std::string &path) : process(path) {
     assert(starts_with(process.readline(), "Stockfish"));
 }
 
-Chess::Analysis Chess::Engine::analyze(const Chess::GameState &state, int time) {
+Chess::Analysis Chess::Engine::analyze(const GameState &state, int time) {
     // Set up the position.
     process.write("position fen ");
     process.writeline(state.getFen());
@@ -71,4 +71,11 @@ Chess::Analysis Chess::Engine::analyze(const Chess::GameState &state, int time) 
     auto infoWords = split(infoLine, std::regex(" "));
     auto moveWords = split(moveLine, std::regex(" "));
     return { Chess::Move(moveWords[1]), std::stod(infoWords[9]) };
+}
+
+void Chess::Engine::analyzeAsync(std::function<void (Analysis)> callback, const GameState &state, int time) {
+    // Wait for engine in separate thread. Useful for UI.
+    task = std::async(std::launch::async, [this, callback, &state, time] {
+        callback(analyze(state, time));
+    });
 }

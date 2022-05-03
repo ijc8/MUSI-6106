@@ -9,7 +9,7 @@
 
 #include "BoardComponent.h"
 #include "CommentarySonifier.h"
-#include "EngineManager.h"
+#include "EngineBridge.h"
 #include "GameState.h"
 #include "GameStream.h"
 #include "StorySonifier.h"
@@ -89,7 +89,7 @@ private:
     void clearRedoStack();
     void toggleStockfish(bool shouldTurnOn);
 
-    std::unique_ptr<EngineManager> engineManager;
+    std::unique_ptr<Chess::Engine> engine;
     std::unique_ptr<juce::FileChooser> engineChooser;
     std::stack<Chess::Move> redoStack;
     Chess::Game &game = AppState::getInstance().getGame();
