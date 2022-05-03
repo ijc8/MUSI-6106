@@ -1,5 +1,172 @@
 #include "MainComponent.h"
 
+Controls::Controls() {
+    setText("Controls");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    addAndMakeVisible(move);
+    move.setText("25/26", juce::dontSendNotification);
+    move.setJustificationType(juce::Justification::centred);
+
+    std::initializer_list<std::pair<const char *, juce::ImageButton *>> pairs = {
+        {"fastbackwardsolid_png", &skipBackward},
+        {"stepbackwardsolid_png", &stepBackward},
+        {"stepforwardsolid_png", &stepForward},
+        {"fastforwardsolid_png", &skipForward},
+    };
+    for (auto [name, button] : pairs) {
+        int size;
+        const char *data = ChessImageData::getNamedResource(name, size);
+        juce::Image image = juce::ImageFileFormat::loadFrom(data, size);
+        button->setImages(
+            false, false, true,
+            image, 0.6, juce::Colours::transparentBlack,
+            image, 0.8, juce::Colours::transparentBlack,
+            image, 1.0, juce::Colours::transparentBlack);
+        addAndMakeVisible(*button);
+    }
+
+    juce::Image playImage = juce::ImageFileFormat::loadFrom(ChessImageData::playsolid_png, ChessImageData::playsolid_pngSize);
+    juce::Image pauseImage = juce::ImageFileFormat::loadFrom(ChessImageData::pausesolid_png, ChessImageData::pausesolid_pngSize);
+    playPause.setImages(
+        false, false, true,
+        playImage, 0.6, juce::Colours::transparentBlack,
+        playImage, 0.8, juce::Colours::transparentBlack,
+        pauseImage, 1.0, juce::Colours::transparentBlack);
+    addAndMakeVisible(playPause);
+
+    addAndMakeVisible(autoAdvance);
+    autoAdvancePeriod.setJustification(juce::Justification::centredRight);
+    autoAdvancePeriod.setText("5");
+    autoAdvancePeriod.setInputRestrictions(0, "0123456789");
+    addAndMakeVisible(autoAdvancePeriod);
+    seconds.setText("secs", juce::dontSendNotification);
+    addAndMakeVisible(seconds);
+
+    addAndMakeVisible(pgnAdvance);
+
+    resized();
+}
+
+void Controls::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(move).withMinHeight(16).withMargin(juce::FlexItem::Margin(18, 6, 0, 6)));
+
+    juce::FlexBox buttons;
+    buttons.items.add(juce::FlexItem(skipBackward).withFlex(1));
+    buttons.items.add(juce::FlexItem(stepBackward).withFlex(1));
+    buttons.items.add(juce::FlexItem(playPause).withFlex(1));
+    buttons.items.add(juce::FlexItem(stepForward).withFlex(1));
+    buttons.items.add(juce::FlexItem(skipForward).withFlex(1));
+
+    fb.items.add(juce::FlexItem(buttons).withMinHeight(50).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
+
+    juce::FlexBox autoBox;
+    autoAdvance.changeWidthToFitText();
+    autoBox.items.add(juce::FlexItem(autoAdvance).withMinWidth(autoAdvance.getWidth()));
+    autoBox.items.add(juce::FlexItem(autoAdvancePeriod).withMinWidth(30).withMaxHeight(25));
+    autoBox.items.add(juce::FlexItem(seconds).withMinWidth(50));
+
+    fb.items.add(juce::FlexItem(autoBox).withMinHeight(25).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
+PlayerOptions::PlayerOptions() {
+    setText("Players");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    whiteLabel.setText("White", juce::dontSendNotification);
+    blackLabel.setText("Black", juce::dontSendNotification);
+    addAndMakeVisible(whiteLabel);
+    whiteLabel.attachToComponent(&whiteMenu, false);
+    addAndMakeVisible(blackLabel);
+    blackLabel.attachToComponent(&blackMenu, false);
+
+    for (auto menu : {&whiteMenu, &blackMenu}) {
+        addAndMakeVisible(*menu);
+        menu->addItem("Human", 1);
+        menu->addItem("Computer (Easy)", 2);
+        menu->addItem("Computer (Medium)", 3);
+        menu->addItem("Computer (Hard)", 4);
+        menu->setSelectedId(1, juce::dontSendNotification);
+    }
+}
+
+void PlayerOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+    // Order matches board orientation.
+    fb.items.add(juce::FlexItem(blackMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(whiteMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
+SoundOptions::SoundOptions() {
+    setText("Sound");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    sonifierLabel.setText("Sonifier", juce::dontSendNotification);
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    addAndMakeVisible(volumeLabel);
+    sonifierLabel.attachToComponent(&sonifierMenu, false);
+    addAndMakeVisible(sonifierLabel);
+    volumeLabel.attachToComponent(&volumeSlider, false);
+
+    addAndMakeVisible(sonifierMenu);
+    sonifierMenu.addItem("Zen", 1);
+    sonifierMenu.addItem("Explosions", 2);
+    sonifierMenu.setSelectedId(1);
+
+    addAndMakeVisible(volumeSlider);
+    volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+}
+
+AnalysisOptions::AnalysisOptions() {
+    setText("Analysis");
+    setColour(ColourIds::textColourId, juce::Colours::lightgrey);
+
+    loadGame.setButtonText("Load saved game (PGN)");
+    streamGame.setButtonText("Stream live game (Lichess)");
+    fenLabel.setText("FEN", juce::dontSendNotification);
+    fenLabel.attachToComponent(&fen, false);
+    fen.setText(Chess::Game::initialFen, false);
+
+    addAndMakeVisible(loadGame);
+    addAndMakeVisible(streamGame);
+    addAndMakeVisible(fenLabel);
+    addAndMakeVisible(fen);
+}
+
+void AnalysisOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(loadGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(streamGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(fen).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
+void SoundOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
 MainComponent::MainComponent() {
     setSize(1000, 740);
 
@@ -107,6 +274,7 @@ MainComponent::MainComponent() {
         }
     };
 
+    // TODO: Reduce duplication here.
     playerOptions.whiteMenu.onChange = [this]() {
         int id = playerOptions.whiteMenu.getSelectedId();
         board.enableInput(Chess::Color::White, id == 1);
@@ -233,30 +401,6 @@ void MainComponent::loadSavedGame() {
     });
 }
 
-// void MainComponent::onGameModeChange(MainComponent::GameMode nextGameMode) {
-//     switch (nextGameMode) {
-//     case GameMode::PVC:
-//         broadcastManager.toggleStockfish(true);
-//         board.setMode(BoardComponent::Mode::PVC);
-//         pgnData.clear();
-//         // openPGN.setEnabled(false);
-//         break;
-//     case GameMode::PVP:
-//         broadcastManager.toggleStockfish(false);
-//         board.setMode(BoardComponent::Mode::PVP);
-//         pgnData.clear();
-//         break;
-//     default:
-//         broadcastManager.toggleStockfish(false);
-//         board.setMode(BoardComponent::Mode::PGN);
-//     }
-//     mode = nextGameMode;
-//     broadcastManager.clearRedoStack();
-//     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
-//     broadcastManager.sendChangeMessage();
-// }
-
-
 void MainComponent::makeMove(Chess::Move move) {
     clearRedoStack();
     game.push(move);
@@ -292,7 +436,7 @@ void MainComponent::toggleStockfish(bool shouldTurnOn) {
             updateGame();
         } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
             engineManager = std::make_unique<EngineManager>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
-            engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
+            // engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
             updateGame();
         } else {
             // Allow user to tell us where their engine binary is.
@@ -307,7 +451,7 @@ void MainComponent::toggleStockfish(bool shouldTurnOn) {
                 if (file.exists()) {
                     engineManager = std::make_unique<EngineManager>(file.getFullPathName().toStdString());
                     engineManager->onMove = [this](Chess::Move move) {
-                        juce::MessageManager::callAsync([this, move]() { makeMove(move); });
+                        // juce::MessageManager::callAsync([this, move]() { makeMove(move); });
                     };
                     updateGame();
                 } else {
