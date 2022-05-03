@@ -178,12 +178,10 @@ MainComponent::MainComponent() {
 
     addAndMakeVisible(board);
     board.onMove = [this](Chess::Move move) { makeMove(move); };
-    addChangeListener(&board);
 
     addAndMakeVisible(turnLabel);
     turnLabel.setFont(juce::Font(15));
     turnLabel.setJustificationType(juce::Justification::centred);
-    updateGame();
 
     // Controls
     // TODO: Implement auto-advance, play/pause, and maybe PGN comment timing.
@@ -282,6 +280,8 @@ MainComponent::MainComponent() {
     };
     soundOptions.volumeSlider.setValue(-20);
     addAndMakeVisible(soundOptions);
+
+    updateGame();
 }
 
 MainComponent::~MainComponent() {
@@ -371,7 +371,8 @@ void MainComponent::updateGame() {
     controls.skipForward.setEnabled(pastMoves < totalMoves);
     controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
-    sendChangeMessage();
+    board.changeListenerCallback(nullptr);
+    currentSonifier->changeListenerCallback(nullptr);
 }
 
 void MainComponent::setSonifier(int sonifierIndex) {
@@ -379,10 +380,8 @@ void MainComponent::setSonifier(int sonifierIndex) {
     currentSonifier = sonifiers[sonifierIndex].create(sampleRate);
     if (oldSonifier) {
         oldSonifier->setEnabled(false);
-        removeChangeListener(oldSonifier.get());
     }
     currentSonifier->setEnabled(true);
-    addChangeListener(currentSonifier.get());
     currentSonifier->onMove(AppState::getInstance().getGame());
     currentSonifier->setGain(soundOptions.getGain());
 }

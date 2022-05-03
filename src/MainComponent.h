@@ -62,7 +62,7 @@ public:
     juce::TextEditor fen;
 };
 
-class MainComponent: public juce::AudioAppComponent, public juce::ChangeBroadcaster {
+class MainComponent: public juce::AudioAppComponent {
 public:
     enum class PlayerType {
         Human,
