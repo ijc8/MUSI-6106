@@ -2,6 +2,26 @@
 
 #include "MainComponent.h"
 
+// Utilities for loading and saving user's engine preference.
+std::string loadEnginePath() {
+    juce::File path = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                          .getChildFile("MusicalChess")
+                          .getChildFile("engine_path.txt");
+    if (!path.exists()) return "";
+    return path.loadFileAsString().toStdString();
+}
+
+void saveEnginePath(const std::string &enginePath) {
+    juce::File path = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                          .getChildFile("MusicalChess")
+                          .getChildFile("engine_path.txt");
+    if (!path.exists()) {
+        path.create();
+        juce::FileOutputStream output(path);
+        output.writeText(enginePath, false, false, "");
+    }
+}
+
 Controls::Controls() {
     setText("Controls");
     setColour(ColourIds::textColourId, juce::Colours::lightgrey);
@@ -311,6 +331,7 @@ MainComponent::MainComponent() {
     soundOptions.volumeSlider.setValue(-20);
     addAndMakeVisible(soundOptions);
 
+    enginePath = loadEnginePath();
     updateGame();
 }
 
@@ -417,7 +438,7 @@ void MainComponent::updateGame() {
             engine->analyzeAsync([this](Chess::Analysis analysis) {
                 Chess::Move move = analysis.bestMove;
                 juce::MessageManager::callAsync([this, move]() { makeMove(move); });
-            }, game, depth[(int)player-1], skill[(int)player-1]);
+            }, game, depth[(int)player - 1], skill[(int)player - 1]);
         }
     }
 
@@ -491,27 +512,27 @@ void MainComponent::clearRedoStack() {
 }
 
 void MainComponent::enableStockfish(bool enable) {
-    std::string defaultPath = "/usr/games/stockfish";
     if (!enable) {
         engine.reset();
     } else if (engine) {
         // Already started.
         updateGame();
-    } else if (std::filesystem::exists(defaultPath)) {
-        engine = std::make_unique<Chess::Engine>(defaultPath);
+    } else if (!enginePath.empty() && std::filesystem::exists(enginePath)) {
+        engine = std::make_unique<Chess::Engine>(enginePath);
         updateGame();
     } else {
         // Allow user to tell us where their engine binary is.
         // TODO: Remember their selected engine and allow them to change it later.
         engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
-                                                            juce::File::getSpecialLocation(juce::File::userHomeDirectory));
-
+                                                            juce::File::getSpecialLocation(juce::File::globalApplicationsDirectory));
         auto chooserFlags = juce::FileBrowserComponent::openMode;
 
         engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
             juce::File file = chooser.getResult();
             if (file.exists()) {
-                engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
+                enginePath = file.getFullPathName().toStdString();
+                saveEnginePath(enginePath);
+                engine = std::make_unique<Chess::Engine>(enginePath);
                 updateGame();
             } else {
                 // User canceled the file chooser.

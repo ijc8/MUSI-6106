@@ -96,6 +96,8 @@ private:
 
     std::unique_ptr<Chess::Engine> engine;
     std::unique_ptr<juce::FileChooser> engineChooser;
+    std::string enginePath;
+
     std::stack<Chess::Move> redoStack;
     Chess::Game &game = AppState::getInstance().getGame();
 
