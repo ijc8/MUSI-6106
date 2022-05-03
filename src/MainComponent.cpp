@@ -401,23 +401,16 @@ void MainComponent::updateGame() {
             turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::lightgrey);
             turnLabel.setColour(turnLabel.textColourId, juce::Colours::grey);
         }
-    } else if (game.getTurn() == Chess::Color::White) {
-        turnLabel.setText("White to move", juce::dontSendNotification);
-        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
-        turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
-
-        if (players[(int)Chess::Color::White] != PlayerType::Human) {
-            engine->analyzeAsync([this](Chess::Analysis analysis) {
-                Chess::Move move = analysis.bestMove;
-                juce::MessageManager::callAsync([this, move]() { makeMove(move); });
-            }, game);
-        }
     } else {
-        turnLabel.setText("Black to move", juce::dontSendNotification);
-        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
-        turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
+        Chess::Color turn = game.getTurn();
+        std::string text = turn == Chess::Color::White ? "White" : "Black";
+        turnLabel.setText(text + " to move", juce::dontSendNotification);
+        juce::Colour bg = turn == Chess::Color::White ? juce::Colours::whitesmoke : juce::Colours::black;
+        juce::Colour fg = turn == Chess::Color::White ? juce::Colours::black : juce::Colours::whitesmoke;
+        turnLabel.setColour(turnLabel.backgroundColourId, bg);
+        turnLabel.setColour(turnLabel.textColourId, fg);
 
-        if (players[(int)Chess::Color::Black] != PlayerType::Human) {
+        if (players[(int)turn] != PlayerType::Human) {
             engine->analyzeAsync([this](Chess::Analysis analysis) {
                 Chess::Move move = analysis.bestMove;
                 juce::MessageManager::callAsync([this, move]() { makeMove(move); });
