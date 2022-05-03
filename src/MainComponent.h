@@ -85,8 +85,8 @@ public:
 
 private:
     void makeMove(Chess::Move move);
-    void undo();
-    void redo();
+    bool undo();
+    bool redo();
     void clearRedoStack();
     void toggleStockfish(bool shouldTurnOn);
 
@@ -123,7 +123,6 @@ private:
     std::vector<std::shared_ptr<GameStream>> streams;
     std::shared_ptr<GameStream> stream;
 
-    void setFEN();
     void loadSavedGame();
 
     std::unique_ptr<juce::FileChooser> fileChooser;

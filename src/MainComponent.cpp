@@ -7,7 +7,6 @@ Controls::Controls() {
     setColour(ColourIds::textColourId, juce::Colours::lightgrey);
 
     addAndMakeVisible(move);
-    move.setText("25/26", juce::dontSendNotification);
     move.setJustificationType(juce::Justification::centred);
 
     std::initializer_list<std::pair<const char *, juce::ImageButton *>> pairs = {
@@ -181,21 +180,6 @@ MainComponent::MainComponent() {
     board.onMove = [this](Chess::Move move) { makeMove(move); };
     addChangeListener(&board);
 
-    // prevButton.onClick = [this, &game]() {
-    //     broadcastManager.undo();
-    //     if (mode == GameMode::PVC)
-    //         broadcastManager.undo();
-    // };
-
-    // nextButton.onClick = [this, &game]() {
-    //     broadcastManager.redo();
-    //     if (mode == GameMode::PVC)
-    //         broadcastManager.redo();
-    // };
-
-    // TODO
-    // fenInput.onTextChange = [this]() { onFenChanged(); };
-
     addAndMakeVisible(turnLabel);
     turnLabel.setFont(juce::Font(15));
     turnLabel.setJustificationType(juce::Justification::centred);
@@ -230,6 +214,28 @@ MainComponent::MainComponent() {
     //     }
     // };
 
+    // TODO: Show these buttons as disabled if they will have no effect.
+    controls.skipBackward.onClick = [this]() {
+        while (undo());
+        updateGame();
+    };
+
+    controls.stepBackward.onClick = [this]() {
+        if (undo()) updateGame();
+        // TODO: Maybe add a special case for computer-made moves.
+        // Or, perhaps add another button to go back one "full" move (two plies).
+    };
+
+    controls.stepForward.onClick = [this]() {
+        if (redo()) updateGame();
+        // TODO: Maybe add a special case for computer-made moves.
+        // Or, perhaps add another button to go back one "full" move (two plies).
+    };
+
+    controls.skipForward.onClick = [this]() {
+        while (redo());
+        updateGame();
+    };
     addAndMakeVisible(controls);
 
     // Player options
@@ -355,6 +361,9 @@ void MainComponent::updateGame() {
         }
     }
 
+    int pastMoves = game.getHistory().size();
+    int totalMoves = pastMoves + redoStack.size();
+    controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
     sendChangeMessage();
 }
@@ -370,13 +379,6 @@ void MainComponent::setSonifier(int sonifierIndex) {
     addChangeListener(currentSonifier.get());
     currentSonifier->onMove(AppState::getInstance().getGame());
     currentSonifier->setGain(soundOptions.getGain());
-}
-
-void MainComponent::setFEN() {
-    // TODO
-    // std::string fenString = fenInput.getText().toStdString();
-    // AppState::getInstance().getGame().setFen(fenString);
-    // broadcastManager.sendChangeMessage();
 }
 
 void MainComponent::loadSavedGame() {
@@ -400,21 +402,19 @@ void MainComponent::makeMove(Chess::Move move) {
     updateGame();
 }
 
-void MainComponent::undo() {
+bool MainComponent::undo() {
     std::optional<Chess::Move> move = game.pop();
-    if (move) {
-        redoStack.push(*move);
-        updateGame();
-    }
+    if (!move) return false;
+    redoStack.push(*move);
+    return true;
 }
 
-void MainComponent::redo() {
-    if (!redoStack.empty()) {
-        Chess::Move lastMove = redoStack.top();
-        game.push(lastMove);
-        redoStack.pop();
-        updateGame();
-    }
+bool MainComponent::redo() {
+    if (redoStack.empty()) return false;
+    Chess::Move lastMove = redoStack.top();
+    game.push(lastMove);
+    redoStack.pop();
+    return true;
 }
 
 void MainComponent::clearRedoStack() {
