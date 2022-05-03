@@ -98,7 +98,6 @@ MainComponent::MainComponent() {
     //     }
     // };
 
-    // TODO: Debug case where both players are computers.
     playerOptions.blackMenu.onChange = [this]() {
         int id = playerOptions.blackMenu.getSelectedId();
         board.enableInput(Chess::Color::Black, id == 1);
@@ -308,8 +307,7 @@ void MainComponent::toggleStockfish(bool shouldTurnOn) {
                 if (file.exists()) {
                     engineManager = std::make_unique<EngineManager>(file.getFullPathName().toStdString());
                     engineManager->onMove = [this](Chess::Move move) {
-                        const juce::MessageManagerLock lock;
-                        makeMove(move);
+                        juce::MessageManager::callAsync([this, move]() { makeMove(move); });
                     };
                     updateGame();
                 } else {
