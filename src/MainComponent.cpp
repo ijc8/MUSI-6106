@@ -185,36 +185,6 @@ MainComponent::MainComponent() {
     turnLabel.setJustificationType(juce::Justification::centred);
     updateGame();
 
-    // TODO
-    // openPGN.onClick = [this]() { loadSavedGame(); };
-
-    // TODO
-    // streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
-    // streamInputLabel.attachToComponent(&streamInput, false);
-    // streamToggle.setButtonText("Play Stream");
-    // streamToggle.onClick = [this]() {
-    //     if (stream) {
-    //         // Hack to avoid thread-killing issues.
-    //         stream->cancel();
-    //         streams.push_back(stream);
-    //         stream.reset();
-    //         streamToggle.setButtonText("Play Stream");
-    //     } else {
-    //         // TODO: Reset game first.
-    //         std::string id = streamInput.getText().toStdString();
-    //         stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
-    //             if (move) {
-    //                 std::cout << "Streamed move: " << move->toString() << std::endl;
-    //                 broadcastManager.actionListenerCallback(juce::String(move->toString()));
-    //             } else {
-    //                 std::cout << "Done streaming." << std::endl;
-    //             }
-    //         });
-    //         streamToggle.setButtonText("Stop Stream");
-    //     }
-    // };
-
-    // TODO: Show these buttons as disabled if they will have no effect.
     controls.skipBackward.onClick = [this]() {
         while (undo());
         updateGame();
@@ -258,8 +228,37 @@ MainComponent::MainComponent() {
     };
     addAndMakeVisible(playerOptions);
 
+    // TODO: load from PGN, lichess stream.
+    // streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
+    // streamInputLabel.attachToComponent(&streamInput, false);
+    // streamToggle.setButtonText("Play Stream");
+    // streamToggle.onClick = [this]() {
+    //     if (stream) {
+    //         // Hack to avoid thread-killing issues.
+    //         stream->cancel();
+    //         streams.push_back(stream);
+    //         stream.reset();
+    //         streamToggle.setButtonText("Play Stream");
+    //     } else {
+    //         // TODO: Reset game first.
+    //         std::string id = streamInput.getText().toStdString();
+    //         stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
+    //             if (move) {
+    //                 std::cout << "Streamed move: " << move->toString() << std::endl;
+    //                 broadcastManager.actionListenerCallback(juce::String(move->toString()));
+    //             } else {
+    //                 std::cout << "Done streaming." << std::endl;
+    //             }
+    //         });
+    //         streamToggle.setButtonText("Stop Stream");
+    //     }
+    // };
     analysisOptions.fen.onReturnKey = [this]() {
-        // TODO: Clear undo/redo.
+        // NOTE: We don't clear the undo history here;
+        // it might be annoying for the user is we throw out
+        // their whole game when they just want to experiment.
+        std::stack<Chess::Move> empty;
+        redoStack.swap(empty);
         game.setFen(analysisOptions.fen.getText().toStdString());
         updateGame();
     };
@@ -363,6 +362,10 @@ void MainComponent::updateGame() {
 
     int pastMoves = game.getHistory().size();
     int totalMoves = pastMoves + redoStack.size();
+    controls.skipBackward.setEnabled(pastMoves > 0);
+    controls.stepBackward.setEnabled(pastMoves > 0);
+    controls.stepForward.setEnabled(pastMoves < totalMoves);
+    controls.skipForward.setEnabled(pastMoves < totalMoves);
     controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
     sendChangeMessage();
