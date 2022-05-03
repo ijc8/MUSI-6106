@@ -41,8 +41,8 @@ Controls::Controls() {
 
     addAndMakeVisible(autoAdvance);
     autoAdvancePeriod.setJustification(juce::Justification::centredRight);
-    autoAdvancePeriod.setText("5");
-    autoAdvancePeriod.setInputRestrictions(0, "0123456789");
+    autoAdvancePeriod.setText("3");
+    autoAdvancePeriod.setInputRestrictions(0, "0123456789.");
     addAndMakeVisible(autoAdvancePeriod);
     seconds.setText("secs", juce::dontSendNotification);
     addAndMakeVisible(seconds);
@@ -199,18 +199,6 @@ MainComponent::MainComponent() {
         // Or, perhaps add another button to go back one "full" move (two plies).
     };
 
-    controls.playPause.setToggleable(true);
-    controls.playPause.setClickingTogglesState(true);
-    controls.playPause.onClick = [this]() {
-        bool enabled = controls.playPause.getToggleState();
-        if (enabled) {
-            // TODO: Use interval chosen by user.
-            startTimer(1000);
-        } else {
-            stopTimer();
-        }
-    };
-
     controls.stepForward.onClick = [this]() {
         if (redo()) updateGame();
         // TODO: Maybe add a special case for computer-made moves.
@@ -221,6 +209,43 @@ MainComponent::MainComponent() {
         while (redo());
         updateGame();
     };
+
+    controls.playPause.setToggleable(true);
+    controls.playPause.setClickingTogglesState(true);
+    controls.playPause.onClick = [this]() {
+        bool enabled = controls.playPause.getToggleState();
+        if (enabled) {
+            double period;
+            std::string text = controls.autoAdvancePeriod.getText().toStdString();
+            try {
+                period = std::stod(text);
+            } catch (...) {
+                // Conversion failed, bail.
+                // (Could be even nicer to disable the play button if the period is invalid;
+                // however, wouldn't want to disable the pause button if it's already playing.)
+                controls.playPause.setToggleState(false, juce::dontSendNotification);
+                return;
+            }
+            startTimer(period * 1000);
+        } else {
+            stopTimer();
+        }
+    };
+
+    controls.autoAdvancePeriod.onReturnKey = [this]() {
+        if (isTimerRunning()) {
+            // Change timer period.
+            double period;
+            std::string text = controls.autoAdvancePeriod.getText().toStdString();
+            try {
+                period = std::stod(text);
+            } catch (...) {
+                return;
+            }
+            startTimer(period * 1000);
+        }
+    };
+
     addAndMakeVisible(controls);
 
     // Player options
