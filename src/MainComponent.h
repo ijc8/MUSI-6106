@@ -8,7 +8,7 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 #include "BoardComponent.h"
-#include "BroadcastManager.h"
+#include "EngineManager.h"
 #include "CommentarySonifier.h"
 #include "GameState.h"
 #include "GameStream.h"
@@ -16,7 +16,7 @@
 #include "ThreatsSonifier.h"
 #include "ZenSonifier.h"
 
-class MainComponent: public juce::AudioAppComponent, public juce::ChangeListener, public juce::ChangeBroadcaster {
+class MainComponent: public juce::AudioAppComponent, public juce::ChangeBroadcaster {
 public:
     enum GameMode {
         PVP,
@@ -35,9 +35,19 @@ public:
     void resized() override;
 
     void updateGame();
-    void changeListenerCallback(juce::ChangeBroadcaster *source) override { updateGame(); }
 
 private:
+    void makeMove(Chess::Move move);
+    void undo();
+    void redo();
+    void clearRedoStack();
+    void toggleStockfish(bool shouldTurnOn);
+    
+    std::unique_ptr<EngineManager> engineManager;
+    std::unique_ptr<juce::FileChooser> engineChooser;
+    std::stack<Chess::Move> redoStack;
+    Chess::Game &game = AppState::getInstance().getGame();
+
     double sampleRate;
 
     class Controls: public juce::GroupComponent {
@@ -255,7 +265,6 @@ private:
         {"Threat", [](float sr) { return std::make_unique<ThreatsSonifier>(sr); }},
         {"Commentary", [](float sr) { return std::make_unique<CommentarySonifier>(sr); }}};
 
-    BroadcastManager broadcastManager;
     BoardComponent board;
 
     Controls controls;

@@ -7,8 +7,7 @@ MainComponent::MainComponent() {
 
     addAndMakeVisible(board);
     Chess::Game &game = AppState::getInstance().getGame();
-    board.onMove = [this](Chess::Move move) { broadcastManager.makeMove(move); };
-    broadcastManager.addChangeListener(this);
+    board.onMove = [this](Chess::Move move) { makeMove(move); };
     addChangeListener(&board);
 
     // prevButton.setButtonText("Undo");
@@ -242,3 +241,62 @@ void MainComponent::loadSavedGame() {
 //     AppState::getInstance().getGame().setFen(AppState::getInstance().getGame().initialFen);
 //     broadcastManager.sendChangeMessage();
 // }
+
+
+void MainComponent::makeMove(Chess::Move move) {
+    clearRedoStack();
+    game.push(move);
+    sendChangeMessage();
+}
+
+void MainComponent::undo() {
+    std::optional<Chess::Move> move = game.pop();
+    if (move) {
+        redoStack.push(*move);
+        sendChangeMessage();
+    }
+}
+
+void MainComponent::redo() {
+    if (!redoStack.empty()) {
+        Chess::Move lastMove = redoStack.top();
+        game.push(lastMove);
+        redoStack.pop();
+        sendChangeMessage();
+    }
+}
+
+void MainComponent::clearRedoStack() {
+    std::stack<Chess::Move> empty;
+    redoStack.swap(empty);
+}
+
+void MainComponent::toggleStockfish(bool shouldTurnOn) {
+    if (shouldTurnOn) {
+        if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
+            engineManager = std::make_unique<EngineManager>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+            addChangeListener(engineManager.get());
+            engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
+        } else {
+            // Allow user to tell us where their engine binary is.
+            // TODO: Remember their selected engine and allow them to change it later.
+            engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
+                                                                juce::File::getSpecialLocation(juce::File::userHomeDirectory));
+
+            auto chooserFlags = juce::FileBrowserComponent::openMode;
+
+            engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
+                juce::File file = chooser.getResult();
+                if (file.exists()) {
+                    engineManager = std::make_unique<EngineManager>(file.getFullPathName().toStdString());
+                    addChangeListener(engineManager.get());
+                    engineManager->onMove = [this](Chess::Move move) { makeMove(move); };
+                }
+            });
+        }
+    } else {
+        if (engineManager)
+            removeChangeListener(engineManager.get());
+        engineManager.reset();
+    }
+}
