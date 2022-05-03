@@ -101,6 +101,16 @@ void BoardComponent::paint(juce::Graphics &g) {
     float squareSize = size / 8.0;
     g.fillCheckerBoard(juce::Rectangle<float>(0, 0, size, size), squareSize, squareSize, lightSquare, darkSquare);
 
+    // Draw rank & file labels.
+    for (int rank = 0; rank < 8; rank++) {
+        g.setColour(rank % 2 ? lightSquare : darkSquare);
+        g.drawSingleLineText(std::string({(char)('1' + rank)}), getWidth() - 10, getHeight() - squareSize * (rank + 1) + 13);
+    }
+    for (int file = 0; file < 8; file++) {
+        g.setColour(file % 2 ? darkSquare : lightSquare);
+        g.drawSingleLineText(std::string({(char)('a' + file)}), squareSize * file + 3, getHeight() - 3);
+    }
+
     if (selected) {
         g.setColour(juce::Colours::red.withAlpha(0.5f));
         g.fillRect(squareToRect(*selected));
