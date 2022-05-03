@@ -22,12 +22,8 @@ void StorySonifier::onMove(Chess::Game& game) {
                }
 		   }
 	}
-}
 
-void StorySonifier::changeListenerCallback(juce::ChangeBroadcaster* source)
-{
-    Sonifier::changeListenerCallback(source);
-
+	// TODO: This should be based on `game.getHistory().size()`.
 	mBoardChangeCounter++;
 	switch (mBoardChangeCounter)
 	{

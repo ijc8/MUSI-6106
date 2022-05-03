@@ -372,7 +372,7 @@ void MainComponent::updateGame() {
     controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
     board.select();
-    currentSonifier->changeListenerCallback(nullptr);
+    currentSonifier->onMove(game);
 }
 
 void MainComponent::setSonifier(int sonifierIndex) {
