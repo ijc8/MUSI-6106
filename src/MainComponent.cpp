@@ -516,8 +516,13 @@ void MainComponent::enableStockfish(bool enable) {
                 engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
                 updateGame();
             } else {
-                // User canceled.
-                // TODO: Reset triggering player to "Human".
+                // User canceled the file chooser.
+                // Reset both players to "Human" since we don't have a valid engine.
+                players[0] = players[1] = PlayerType::Human;
+                playerOptions.whiteMenu.setSelectedId(1, juce::dontSendNotification);
+                playerOptions.blackMenu.setSelectedId(1, juce::dontSendNotification);
+                board.enableInput(Chess::Color::White, true);
+                board.enableInput(Chess::Color::Black, true);
             }
         });
     }
