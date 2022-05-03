@@ -194,15 +194,17 @@ MainComponent::MainComponent() {
     };
 
     controls.stepBackward.onClick = [this]() {
-        if (undo()) updateGame();
-        // TODO: Maybe add a special case for computer-made moves.
-        // Or, perhaps add another button to go back one "full" move (two plies).
+        Chess::Color turn = game.getTurn();
+        if (players[(int)turn] == PlayerType::Human && players[!(int)turn] != PlayerType::Human) {
+            // Special case: human vs. computer - go back one full move to the human's last turn.
+            undo();
+        }
+        undo();
+        updateGame();
     };
 
     controls.stepForward.onClick = [this]() {
         if (redo()) updateGame();
-        // TODO: Maybe add a special case for computer-made moves.
-        // Or, perhaps add another button to go back one "full" move (two plies).
     };
 
     controls.skipForward.onClick = [this]() {
