@@ -78,65 +78,79 @@ std::unordered_map<std::string, std::string> PGNParser::extractTags() {
 
 std::vector<std::string> PGNParser::getMovesAlgebraic() {
 
-    std::locale loc;
-    std::vector<std::string> moves;
-
-    int startIdx = 2;
-    int endIdx = 0;
-
-    int moveNumber = 1;
-    int lineNumber = 0;
-
+//    std::locale loc;
+//    std::vector<std::string> moves;
+//
+//    int startIdx = 2;
+//    int endIdx = 0;
+//
+//    int moveNumber = 1;
+//    int lineNumber = 0;
+//
     std::string line;
     std::string move;
+//
+//    while (std::getline(m_PGNFile, line)) {
+//
+//        if (line[0] == TAGSTART || line.length() == 0)
+//            continue;
+//
+//        // Check whether line stars with number or not and set start-end idx
+//        if (!std::isdigit(line[0], loc)) {
+//            startIdx = 0;
+//            endIdx = line.find(std::to_string(moveNumber + 1) + ".");
+//
+//            if(line.back() == '.') {
+//
+//            }
+//
+//            move = move + " " + line.substr(startIdx, endIdx - startIdx);
+//            moves.push_back(move);
+//            startIdx = line.find(" ", endIdx);
+//            moveNumber++;
+//        }
+//
+//        if (std::isdigit(line[0], loc) && moves.size() != 0)
+//        {
+//            startIdx = line.find(" ");
+//            endIdx = 0;
+//            moveNumber++;
+//        }
+//
+//        // When the line starts with a number
+//        while (endIdx != -1) {
+//            endIdx = line.find(std::to_string(moveNumber + 1) + ".");
+//            if (endIdx == -1) {
+//                if(startIdx == -1) {
+//                    move = " ";
+//                    break;
+//                }
+//                move = line.substr(startIdx, line.length() - startIdx);
+//                if(move.find("1-0") != -1 || move.find("0-1") != -1 || move.find("1/2-1/2") != -1 )
+//                    moves.push_back(move);
+//                break;
+//            }
+//            move = line.substr(startIdx, endIdx - startIdx);
+//            moves.push_back(move);
+//            startIdx = line.find(" ", endIdx);
+//            moveNumber++;
+//        }
+//    }
 
-    while (std::getline(m_PGNFile, line)) {
+    std::vector<std::string> moves;
+    std::regex matchStr ("(?:[PNBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:\\=[PNBRQK])?|O(-?O){1,2})[\\+#]?(\\s*[\\!\\?]+)? (1\\-0|0\\-1|1\\/2\\-1\\/2)?");
+    std::smatch sm;
+//    std::string test = "1. e4 c5 ";
+//    std::regex_search(test, sm, matchStr);
 
-        if (line[0] == TAGSTART || line.length() == 0)
-            continue;
-
-        // Check whether line stars with number or not and set start-end idx
-        if (!std::isdigit(line[0], loc)) {
-            startIdx = 0;
-            endIdx = line.find(std::to_string(moveNumber + 1) + ".");
-
-            if(line.back() == '.') {
-
-            }
-
-            move = move + " " + line.substr(startIdx, endIdx - startIdx);
-            moves.push_back(move);
-            startIdx = line.find(" ", endIdx);
-            moveNumber++;
-        }
-
-        if (std::isdigit(line[0], loc) && moves.size() != 0)
+    while(std::getline(m_PGNFile, line))
+    {
+        std::regex_search(line,sm,matchStr);
+        for (int i = 0; i < sm.size(); i++)
         {
-            startIdx = line.find(" ");
-            endIdx = 0;
-            moveNumber++;
-        }
-
-        // When the line starts with a number
-        while (endIdx != -1) {
-            endIdx = line.find(std::to_string(moveNumber + 1) + ".");
-            if (endIdx == -1) {
-                if(startIdx == -1) {
-                    move = " ";
-                    break;
-                }
-                move = line.substr(startIdx, line.length() - startIdx);
-                if(move.find("1-0") != -1 || move.find("0-1") != -1 || move.find("1/2-1/2") != -1 )
-                    moves.push_back(move);
-                break;
-            }
-            move = line.substr(startIdx, endIdx - startIdx);
-            moves.push_back(move);
-            startIdx = line.find(" ", endIdx);
-            moveNumber++;
+            moves.push_back(sm[i]);
         }
     }
-
     return moves;
 }
 
@@ -145,6 +159,14 @@ std::vector<Chess::Move> PGNParser::getMoves(std::vector<std::string> moves) {
 
 
     return std::vector<Chess::Move>();
+}
+
+bool PGNParser::placeMovesOnBoard(Game &game, std::vector<std::string> moves) {
+    for (auto move : moves)
+    {
+//        char regex_piece = "[A-Z]"
+    }
+
 }
 
 

@@ -7,8 +7,10 @@
 
 #endif //MUSICAL_CHESS_PGNPARSER_H
 
+#include <iostream>
 #include "GameState.h"
 #include <fstream>
+#include <regex>
 
 #define TAGSTART '['
 #define TAGEND ']'
@@ -26,6 +28,7 @@ struct PGNMove {
     bool isCastling;
     bool isCapture;
     bool isEndOfGame;
+    Color color;
 };
 
 //static const std::unordered_map<char, Piece> PGNCharToPiece;
@@ -41,7 +44,8 @@ public:
     std::vector<std::string> getMovesAlgebraic();
     std::unordered_map<int,std::string> getComments();
     std::vector<Chess::Move> getMoves(std::vector<std::string> moves);
-    bool placeMovesOnBoard(std::vector<std::string> moves);
+    bool placeMovesOnBoard(Chess::Game &game,std::vector<std::string> moves);
+
 
 
 
