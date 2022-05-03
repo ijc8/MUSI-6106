@@ -111,13 +111,12 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
             } else {
                 // Complete move by filling in the promotion.
                 Chess::Piece::Type type = promotions[result - 1].second;
-                juce::String intent = Chess::Move(*selected, target, type).toString();
-                sendActionMessage(intent);
+                if (onMove) onMove(Chess::Move(*selected, target, type));
                 selected.reset();
             }
         });
     } else {
-        sendActionMessage(juce::String(move.toString()));
+        if (onMove) onMove(move);
         selected.reset();
     }
 }

@@ -7,7 +7,9 @@ MainComponent::MainComponent() {
 
     addAndMakeVisible(board);
     Chess::Game &game = AppState::getInstance().getGame();
-    board.addActionListener(&broadcastManager);
+    board.onMove = [this](Chess::Move move) {
+        broadcastManager.actionListenerCallback(move.toString());
+    };
     broadcastManager.addChangeListener(&board);
     broadcastManager.addChangeListener(this);
 
@@ -107,7 +109,6 @@ MainComponent::MainComponent() {
 
 MainComponent::~MainComponent() {
     broadcastManager.removeAllChangeListeners();
-    board.removeAllActionListeners();
     shutdownAudio();
 }
 

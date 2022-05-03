@@ -4,7 +4,7 @@
 #include "GameState.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
-class BoardComponent: public juce::Component, public juce::ActionBroadcaster, public juce::ChangeListener {
+class BoardComponent: public juce::Component, public juce::ChangeListener {
   public:
     enum class Mode {
         PVP,
@@ -19,6 +19,8 @@ class BoardComponent: public juce::Component, public juce::ActionBroadcaster, pu
     void mouseUp(const juce::MouseEvent &event) override;
     void changeListenerCallback(juce::ChangeBroadcaster *source) override;
     void setMode(Mode newMode);
+
+    std::function<void (Chess::Move)> onMove;
 
   private:
     std::unordered_map<Chess::Piece, juce::Image> pieceImages;
