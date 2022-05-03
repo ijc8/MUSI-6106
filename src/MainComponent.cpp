@@ -126,6 +126,17 @@ SoundOptions::SoundOptions() {
     addAndMakeVisible(volumeSlider);
 }
 
+void SoundOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
 double SoundOptions::getGain() const {
     double db = volumeSlider.getValue();
     double min = volumeSlider.getMinimum();
@@ -157,17 +168,6 @@ void AnalysisOptions::resized() {
     fb.items.add(juce::FlexItem(loadGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
     fb.items.add(juce::FlexItem(streamGame).withMinHeight(30).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
     fb.items.add(juce::FlexItem(fen).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
-    fb.performLayout(getLocalBounds());
-}
-
-void SoundOptions::resized() {
-    juce::FlexBox fb;
-    fb.flexDirection = juce::FlexBox::Direction::column;
-    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
-    fb.alignContent = juce::FlexBox::AlignContent::center;
-
-    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
-    fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
     fb.performLayout(getLocalBounds());
 }
 
@@ -256,8 +256,8 @@ MainComponent::MainComponent() {
     // };
     analysisOptions.fen.onReturnKey = [this]() {
         // NOTE: We don't clear the undo history here;
-        // it might be annoying for the user is we throw out
-        // their whole game when they just want to experiment.
+        // it might be annoying for the user if we throw out
+        // the whole game when they just want to experiment.
         std::stack<Chess::Move> empty;
         redoStack.swap(empty);
         game.setFen(analysisOptions.fen.getText().toStdString());
@@ -282,6 +282,8 @@ MainComponent::MainComponent() {
     addAndMakeVisible(soundOptions);
 
     updateGame();
+
+    startTimer(1000);
 }
 
 MainComponent::~MainComponent() {
@@ -337,8 +339,11 @@ void MainComponent::resized() {
     fb.performLayout(menuArea);
 }
 
+void MainComponent::timerCallback() {
+    std::cout << "bang!" << std::endl;
+}
+
 void MainComponent::updateGame() {
-    Chess::Game &game = AppState::getInstance().getGame();
     if (game.getTurn() == Chess::Color::White) {
         turnLabel.setText("White to move", juce::dontSendNotification);
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);

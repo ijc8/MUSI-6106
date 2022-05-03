@@ -62,7 +62,7 @@ public:
     juce::TextEditor fen;
 };
 
-class MainComponent: public juce::AudioAppComponent {
+class MainComponent: public juce::AudioAppComponent, public juce::Timer {
 public:
     enum class PlayerType {
         Human,
@@ -74,12 +74,15 @@ public:
     MainComponent();
     ~MainComponent();
 
+    // AudioAppComponent
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override;
-    void releaseResources() override{};
-
+    void releaseResources() override {};
+    // Component
     void paint(juce::Graphics &g) override;
     void resized() override;
+    // Timer
+    void timerCallback() override;
 
     void updateGame();
 
