@@ -115,19 +115,15 @@ SoundOptions::SoundOptions() {
     setColour(ColourIds::textColourId, juce::Colours::lightgrey);
 
     sonifierLabel.setText("Sonifier", juce::dontSendNotification);
-    volumeLabel.setText("Volume", juce::dontSendNotification);
-    addAndMakeVisible(volumeLabel);
     sonifierLabel.attachToComponent(&sonifierMenu, false);
     addAndMakeVisible(sonifierLabel);
-    volumeLabel.attachToComponent(&volumeSlider, false);
-
     addAndMakeVisible(sonifierMenu);
-    sonifierMenu.addItem("Zen", 1);
-    sonifierMenu.addItem("Explosions", 2);
-    sonifierMenu.setSelectedId(1);
 
-    addAndMakeVisible(volumeSlider);
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    addAndMakeVisible(volumeLabel);
     volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+    addAndMakeVisible(volumeSlider);
+    volumeLabel.attachToComponent(&volumeSlider, false);
 }
 
 AnalysisOptions::AnalysisOptions() {
@@ -179,46 +175,16 @@ MainComponent::MainComponent() {
     board.onMove = [this](Chess::Move move) { makeMove(move); };
     addChangeListener(&board);
 
-    // prevButton.setButtonText("Undo");
     // prevButton.onClick = [this, &game]() {
     //     broadcastManager.undo();
     //     if (mode == GameMode::PVC)
     //         broadcastManager.undo();
     // };
 
-    // nextButton.setButtonText("Redo");
     // nextButton.onClick = [this, &game]() {
     //     broadcastManager.redo();
     //     if (mode == GameMode::PVC)
     //         broadcastManager.redo();
-    // };
-
-    // addAndMakeVisible(sonifierMenu);
-    // sonifierMenu.onChange = [this]() {
-    //     setSonifier(sonifierMenu.getSelectedItemIndex());
-    // };
-    // for (int i = 0; i < sonifiers.size(); i++) {
-    //     sonifierMenu.addItem(sonifiers[i].name, i + 1);
-    // }
-    // sonifierMenu.setSelectedId(1, juce::dontSendNotification);
-    // currentSonifier->setEnabled(true);
-
-    // addAndMakeVisible(sonifierLabel);
-    // sonifierLabel.setText("Sonifier", juce::dontSendNotification);
-    // sonifierLabel.attachToComponent(&sonifierMenu, false);
-
-    // TODO
-    // modeMenu.onChange = [this]() {
-    //     switch (modeMenu.getSelectedId()) {
-    //     case 1:
-    //         onGameModeChange(GameMode::PVP);
-    //         break;
-    //     case 2:
-    //         onGameModeChange(GameMode::PVC);
-    //         break;
-    //     default:
-    //         onGameModeChange(GameMode::PGN);
-    //     }
     // };
 
     // TODO
@@ -267,6 +233,9 @@ MainComponent::MainComponent() {
     //     }
     // };
 
+    addAndMakeVisible(controls);
+
+    // Player options
     playerOptions.blackMenu.onChange = [this]() {
         int id = playerOptions.blackMenu.getSelectedId();
         board.enableInput(Chess::Color::Black, id == 1);
@@ -275,7 +244,6 @@ MainComponent::MainComponent() {
             toggleStockfish(true);
         }
     };
-
     // TODO: Reduce duplication here.
     playerOptions.whiteMenu.onChange = [this]() {
         int id = playerOptions.whiteMenu.getSelectedId();
@@ -285,11 +253,20 @@ MainComponent::MainComponent() {
             toggleStockfish(true);
         }
     };
-
-    addAndMakeVisible(controls);
     addAndMakeVisible(playerOptions);
-    addAndMakeVisible(soundOptions);
+
     addAndMakeVisible(analysisOptions);
+
+    // Sound options
+    soundOptions.sonifierMenu.onChange = [this]() {
+        setSonifier(soundOptions.sonifierMenu.getSelectedItemIndex());
+    };
+    for (int i = 0; i < sonifiers.size(); i++) {
+        soundOptions.sonifierMenu.addItem(sonifiers[i].name, i + 1);
+    }
+    soundOptions.sonifierMenu.setSelectedId(1, juce::dontSendNotification);
+    currentSonifier->setEnabled(true);
+    addAndMakeVisible(soundOptions);
 }
 
 MainComponent::~MainComponent() {
