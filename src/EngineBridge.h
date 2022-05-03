@@ -39,8 +39,8 @@ namespace Chess {
     class Engine {
     public:
         Engine(const std::string &path);
-        Analysis analyze(const GameState &state, int time=1000);
-        void analyzeAsync(std::function<void (Analysis)> callback, const GameState &state, int time=1000);
+        Analysis analyze(const GameState &state, int depth=13, int skill=20);
+        void analyzeAsync(std::function<void (Analysis)> callback, const GameState &state, int depth=13, int skill=20);
 
     private:
         Subprocess process;

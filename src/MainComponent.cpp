@@ -412,11 +412,14 @@ void MainComponent::updateGame() {
         turnLabel.setColour(turnLabel.backgroundColourId, bg);
         turnLabel.setColour(turnLabel.textColourId, fg);
 
-        if (players[(int)turn] != PlayerType::Human) {
+        PlayerType player = players[(int)turn];
+        if (player != PlayerType::Human) {
+            static int depth[] = {5, 5, 13};
+            static int skill[] = {-5, 7, 20};
             engine->analyzeAsync([this](Chess::Analysis analysis) {
                 Chess::Move move = analysis.bestMove;
                 juce::MessageManager::callAsync([this, move]() { makeMove(move); });
-            }, game);
+            }, game, depth[(int)player-1], skill[(int)player-1]);
         }
     }
 
@@ -490,13 +493,14 @@ void MainComponent::clearRedoStack() {
 }
 
 void MainComponent::enableStockfish(bool enable) {
+    std::string defaultPath = "/usr/games/stockfish";
     if (!enable) {
         engine.reset();
     } else if (engine) {
         // Already started.
         updateGame();
-    } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
-        engine = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+    } else if (std::filesystem::exists(defaultPath)) {
+        engine = std::make_unique<Chess::Engine>(defaultPath);
         updateGame();
     } else {
         // Allow user to tell us where their engine binary is.
