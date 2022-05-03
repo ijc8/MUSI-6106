@@ -387,7 +387,21 @@ void MainComponent::timerCallback() {
 }
 
 void MainComponent::updateGame() {
-    if (game.getTurn() == Chess::Color::White) {
+    auto outcome = game.getOutcome();
+    if (outcome) {
+        if (*outcome) {
+            std::string text = *outcome == Chess::Color::White ? "White" : "Black";
+            turnLabel.setText(text + " wins by checkmate", juce::dontSendNotification);
+            juce::Colour bg = *outcome == Chess::Color::White ? juce::Colours::whitesmoke : juce::Colours::black;
+            juce::Colour fg = *outcome == Chess::Color::White ? juce::Colours::black : juce::Colours::whitesmoke;
+            turnLabel.setColour(turnLabel.backgroundColourId, bg);
+            turnLabel.setColour(turnLabel.textColourId, fg);
+        } else {
+            turnLabel.setText("Draw by stalemate", juce::dontSendNotification);
+            turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::lightgrey);
+            turnLabel.setColour(turnLabel.textColourId, juce::Colours::grey);
+        }
+    } else if (game.getTurn() == Chess::Color::White) {
         turnLabel.setText("White to move", juce::dontSendNotification);
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
         turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
