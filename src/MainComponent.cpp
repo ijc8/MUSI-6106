@@ -29,11 +29,14 @@ Controls::Controls() {
 
     juce::Image playImage = juce::ImageFileFormat::loadFrom(ChessImageData::playsolid_png, ChessImageData::playsolid_pngSize);
     juce::Image pauseImage = juce::ImageFileFormat::loadFrom(ChessImageData::pausesolid_png, ChessImageData::pausesolid_pngSize);
+    // Ideally this would show a brighter pause icon when we hover over the button in the "toggle on" state
+    // (the same way it shows a brighter play icon when we hover over it in the "toggle off" state),
+    // but unfortunately this doesn't seem to be supported by JUCE.
     playPause.setImages(
         false, false, true,
         playImage, 0.6, juce::Colours::transparentBlack,
         playImage, 0.8, juce::Colours::transparentBlack,
-        pauseImage, 1.0, juce::Colours::transparentBlack);
+        pauseImage, 0.6, juce::Colours::transparentBlack);
     addAndMakeVisible(playPause);
 
     addAndMakeVisible(autoAdvance);
@@ -196,6 +199,18 @@ MainComponent::MainComponent() {
         // Or, perhaps add another button to go back one "full" move (two plies).
     };
 
+    controls.playPause.setToggleable(true);
+    controls.playPause.setClickingTogglesState(true);
+    controls.playPause.onClick = [this]() {
+        bool enabled = controls.playPause.getToggleState();
+        if (enabled) {
+            // TODO: Use interval chosen by user.
+            startTimer(1000);
+        } else {
+            stopTimer();
+        }
+    };
+
     controls.stepForward.onClick = [this]() {
         if (redo()) updateGame();
         // TODO: Maybe add a special case for computer-made moves.
@@ -282,8 +297,6 @@ MainComponent::MainComponent() {
     addAndMakeVisible(soundOptions);
 
     updateGame();
-
-    startTimer(1000);
 }
 
 MainComponent::~MainComponent() {
@@ -340,7 +353,12 @@ void MainComponent::resized() {
 }
 
 void MainComponent::timerCallback() {
-    std::cout << "bang!" << std::endl;
+    if (redo()) {
+        updateGame();
+    } else {
+        controls.playPause.setToggleState(false, juce::dontSendNotification);
+        stopTimer();
+    }
 }
 
 void MainComponent::updateGame() {
@@ -374,6 +392,11 @@ void MainComponent::updateGame() {
     controls.stepBackward.setEnabled(pastMoves > 0);
     controls.stepForward.setEnabled(pastMoves < totalMoves);
     controls.skipForward.setEnabled(pastMoves < totalMoves);
+    controls.playPause.setEnabled(pastMoves < totalMoves);
+    if (pastMoves == totalMoves && controls.playPause.getToggleState()) {
+        controls.playPause.setToggleState(false, juce::dontSendNotification);
+        stopTimer();
+    }
     controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
     board.select();
