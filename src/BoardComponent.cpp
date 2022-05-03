@@ -111,11 +111,20 @@ void BoardComponent::paint(juce::Graphics &g) {
         g.drawSingleLineText(std::string({(char)('a' + file)}), squareSize * file + 3, getHeight() - 3);
     }
 
+    Chess::Game &game = AppState::getInstance().getGame();
+    if (game.peek()) {
+        // Highlight last move.
+        g.setColour(juce::Colours::yellow.withAlpha(0.3f));
+        g.fillRect(squareToRect(game.peek()->src));
+        g.fillRect(squareToRect(game.peek()->dst));
+        g.setColour(juce::Colours::black);
+    }
+
     if (selected) {
         g.setColour(juce::Colours::red.withAlpha(0.5f));
         g.fillRect(squareToRect(*selected));
         // TODO: Maybe cache this.
-        auto candidates = AppState::getInstance().getGame().generateMoves(*selected);
+        auto candidates = game.generateMoves(*selected);
         g.setColour(juce::Colours::yellow.withAlpha(0.5f));
         for (auto move : candidates) {
             g.fillRect(squareToRect(move.dst));
@@ -124,7 +133,7 @@ void BoardComponent::paint(juce::Graphics &g) {
     }
 
     // Draw pieces.
-    for (auto [square, piece] : AppState::getInstance().getGame().getPieceMap()) {
+    for (auto [square, piece] : game.getPieceMap()) {
         float x = squareSize * square.file;
         float y = squareSize * (7 - square.rank);
         juce::Image &image = pieceImages[piece];
