@@ -178,7 +178,6 @@ MainComponent::MainComponent() {
     setAudioChannels(0, 2);
 
     addAndMakeVisible(board);
-    Chess::Game &game = AppState::getInstance().getGame();
     board.onMove = [this](Chess::Move move) { makeMove(move); };
     addChangeListener(&board);
 
@@ -253,6 +252,11 @@ MainComponent::MainComponent() {
     };
     addAndMakeVisible(playerOptions);
 
+    analysisOptions.fen.onReturnKey = [this]() {
+        // TODO: Clear undo/redo.
+        game.setFen(analysisOptions.fen.getText().toStdString());
+        updateGame();
+    };
     addAndMakeVisible(analysisOptions);
 
     // Sound options
@@ -351,6 +355,7 @@ void MainComponent::updateGame() {
         }
     }
 
+    analysisOptions.fen.setText(game.getFen(), false);
     sendChangeMessage();
 }
 
