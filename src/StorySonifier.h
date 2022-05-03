@@ -17,8 +17,6 @@ private:
 
 	void initializeMemberInstruments(float fSampleRate);
 
-	void changeListenerCallback(juce::ChangeBroadcaster* source) override;
-
 	enum PieceMelody {
 		kKingWhite,
 		kKingBlack,

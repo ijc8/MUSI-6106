@@ -13,56 +13,26 @@ BoardComponent::BoardComponent() {
     }
 }
 
-void BoardComponent::paint(juce::Graphics &g) {
-    static const juce::Colour lightSquare(240, 217, 181);
-    static const juce::Colour darkSquare(181, 136, 99);
-
-    // Draw squares.
-    // NOTE: We assume our parent is maintaining our 1:1 aspect ratio.
-    int size = getWidth();
-    float squareSize = getSquareSize();
-    g.fillCheckerBoard(juce::Rectangle<float>(0, 0, size, size), squareSize, squareSize, lightSquare, darkSquare);
-
-    if (selected) {
-        g.setColour(juce::Colours::red.withAlpha(0.5f));
-        g.fillRect(squareToRect(*selected));
-        // TODO: Maybe cache this.
-        auto candidates = AppState::getInstance().getGame().generateMoves(*selected);
-        g.setColour(juce::Colours::yellow.withAlpha(0.5f));
-        for (auto move : candidates) {
-            g.fillRect(squareToRect(move.dst));
-        }
-        g.setColour(juce::Colours::black);
-    }
-
-    // Draw pieces.
-    for (auto [square, piece] : AppState::getInstance().getGame().getPieceMap()) {
-        float x = squareSize * square.file;
-        float y = squareSize * (7 - square.rank);
-        juce::Image &image = pieceImages[piece];
-        g.drawImage(image, juce::Rectangle<float>(x, y, squareSize, squareSize));
-    }
-
-    if (dragging) {
-        juce::Image &image = pieceImages[dragging->piece];
-        juce::Point<int> mousePos = getMouseXYRelative();
-        float x = mousePos.x - dragging->offset.x;
-        float y = mousePos.y - dragging->offset.y;
-        g.drawImage(image, juce::Rectangle<float>(x, y, squareSize, squareSize));
+void BoardComponent::enableInput(Chess::Color color, bool enable) {
+    inputEnabled[(int)color] = enable;
+    if (!enable && color == AppState::getInstance().getGame().getTurn()) {
+        select();
     }
 }
 
-float BoardComponent::getSquareSize() const {
-    return (float)getWidth() / 8;
+void BoardComponent::select(std::optional<Chess::Square> square) {
+    selected = square;
+    repaint();
 }
+
 
 Chess::Square BoardComponent::coordsToSquare(int x, int y) const {
-    float squareSize = getSquareSize();
+    float squareSize = getWidth() / 8.0;
     return Chess::Square(7 - (int)(y / squareSize), (int)(x / squareSize));
 }
 
 juce::Rectangle<float> BoardComponent::squareToRect(Chess::Square square) const {
-    float squareSize = getSquareSize();
+    float squareSize = getWidth() / 8.0;
     float x = squareSize * square.file;
     float y = squareSize * (7 - square.rank);
     return juce::Rectangle<float>(x, y, squareSize, squareSize);
@@ -121,6 +91,45 @@ void BoardComponent::makeMove(const juce::MouseEvent &event) {
     }
 }
 
+void BoardComponent::paint(juce::Graphics &g) {
+    static const juce::Colour lightSquare(240, 217, 181);
+    static const juce::Colour darkSquare(181, 136, 99);
+
+    // Draw squares.
+    // NOTE: We assume our parent is maintaining our 1:1 aspect ratio.
+    int size = getWidth();
+    float squareSize = size / 8.0;
+    g.fillCheckerBoard(juce::Rectangle<float>(0, 0, size, size), squareSize, squareSize, lightSquare, darkSquare);
+
+    if (selected) {
+        g.setColour(juce::Colours::red.withAlpha(0.5f));
+        g.fillRect(squareToRect(*selected));
+        // TODO: Maybe cache this.
+        auto candidates = AppState::getInstance().getGame().generateMoves(*selected);
+        g.setColour(juce::Colours::yellow.withAlpha(0.5f));
+        for (auto move : candidates) {
+            g.fillRect(squareToRect(move.dst));
+        }
+        g.setColour(juce::Colours::black);
+    }
+
+    // Draw pieces.
+    for (auto [square, piece] : AppState::getInstance().getGame().getPieceMap()) {
+        float x = squareSize * square.file;
+        float y = squareSize * (7 - square.rank);
+        juce::Image &image = pieceImages[piece];
+        g.drawImage(image, juce::Rectangle<float>(x, y, squareSize, squareSize));
+    }
+
+    if (dragging) {
+        juce::Image &image = pieceImages[dragging->piece];
+        juce::Point<int> mousePos = getMouseXYRelative();
+        float x = mousePos.x - dragging->offset.x;
+        float y = mousePos.y - dragging->offset.y;
+        g.drawImage(image, juce::Rectangle<float>(x, y, squareSize, squareSize));
+    }
+}
+
 void BoardComponent::mouseDown(const juce::MouseEvent &event) {
     Chess::Square target = coordsToSquare(event.x, event.y);
     juce::Rectangle<float> rect = squareToRect(target);
@@ -158,22 +167,5 @@ void BoardComponent::mouseUp(const juce::MouseEvent &event) {
         makeMove(event);
     }
     dragging.reset();
-    repaint();
-}
-
-void BoardComponent::changeListenerCallback(juce::ChangeBroadcaster *source) {
-    (void)source;
-    select();
-}
-
-void BoardComponent::enableInput(Chess::Color color, bool enable) {
-    inputEnabled[(int)color] = enable;
-    if (!enable && color == AppState::getInstance().getGame().getTurn()) {
-        select();
-    }
-}
-
-void BoardComponent::select(std::optional<Chess::Square> square) {
-    selected = square;
     repaint();
 }

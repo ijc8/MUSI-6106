@@ -25,9 +25,9 @@ public:
     juce::Label move;
     juce::ImageButton skipBackward, stepBackward, stepForward, skipForward, playPause;
 
-    juce::ToggleButton autoAdvance{"Auto-advance every"};
+    juce::Label autoAdvance{"", "Auto-advance every"};
     juce::TextEditor autoAdvancePeriod;
-    juce::Label seconds;
+    juce::Label seconds{"", "seconds"};
 
     juce::ToggleButton pgnAdvance{"Use PGN clock times if available"};
 };
@@ -62,7 +62,7 @@ public:
     juce::TextEditor fen;
 };
 
-class MainComponent: public juce::AudioAppComponent, public juce::ChangeBroadcaster {
+class MainComponent: public juce::AudioAppComponent, public juce::Timer {
 public:
     enum class PlayerType {
         Human,
@@ -74,12 +74,15 @@ public:
     MainComponent();
     ~MainComponent();
 
+    // AudioAppComponent
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override;
-    void releaseResources() override{};
-
+    void releaseResources() override {};
+    // Component
     void paint(juce::Graphics &g) override;
     void resized() override;
+    // Timer
+    void timerCallback() override;
 
     void updateGame();
 

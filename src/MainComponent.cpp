@@ -29,19 +29,21 @@ Controls::Controls() {
 
     juce::Image playImage = juce::ImageFileFormat::loadFrom(ChessImageData::playsolid_png, ChessImageData::playsolid_pngSize);
     juce::Image pauseImage = juce::ImageFileFormat::loadFrom(ChessImageData::pausesolid_png, ChessImageData::pausesolid_pngSize);
+    // Ideally this would show a brighter pause icon when we hover over the button in the "toggle on" state
+    // (the same way it shows a brighter play icon when we hover over it in the "toggle off" state),
+    // but unfortunately this doesn't seem to be supported by JUCE.
     playPause.setImages(
         false, false, true,
         playImage, 0.6, juce::Colours::transparentBlack,
         playImage, 0.8, juce::Colours::transparentBlack,
-        pauseImage, 1.0, juce::Colours::transparentBlack);
+        pauseImage, 0.6, juce::Colours::transparentBlack);
     addAndMakeVisible(playPause);
 
     addAndMakeVisible(autoAdvance);
     autoAdvancePeriod.setJustification(juce::Justification::centredRight);
-    autoAdvancePeriod.setText("5");
-    autoAdvancePeriod.setInputRestrictions(0, "0123456789");
+    autoAdvancePeriod.setText("3");
+    autoAdvancePeriod.setInputRestrictions(0, "0123456789.");
     addAndMakeVisible(autoAdvancePeriod);
-    seconds.setText("secs", juce::dontSendNotification);
     addAndMakeVisible(seconds);
 
     addAndMakeVisible(pgnAdvance);
@@ -67,10 +69,11 @@ void Controls::resized() {
     fb.items.add(juce::FlexItem(buttons).withMinHeight(50).withMargin(juce::FlexItem::Margin(0, 6, 6, 6)));
 
     juce::FlexBox autoBox;
-    autoAdvance.changeWidthToFitText();
-    autoBox.items.add(juce::FlexItem(autoAdvance).withMinWidth(autoAdvance.getWidth()));
+    float autoAdvanceWidth = autoAdvance.getFont().getStringWidthFloat(autoAdvance.getText());
+    autoBox.items.add(juce::FlexItem(autoAdvance).withMinWidth(autoAdvanceWidth + 10));
     autoBox.items.add(juce::FlexItem(autoAdvancePeriod).withMinWidth(30).withMaxHeight(25));
-    autoBox.items.add(juce::FlexItem(seconds).withMinWidth(50));
+    float secondsWidth = seconds.getFont().getStringWidthFloat(seconds.getText());
+    autoBox.items.add(juce::FlexItem(seconds).withMinWidth(secondsWidth + 10));
 
     fb.items.add(juce::FlexItem(autoBox).withMinHeight(25).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
     fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
@@ -126,6 +129,17 @@ SoundOptions::SoundOptions() {
     addAndMakeVisible(volumeSlider);
 }
 
+void SoundOptions::resized() {
+    juce::FlexBox fb;
+    fb.flexDirection = juce::FlexBox::Direction::column;
+    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
+    fb.performLayout(getLocalBounds());
+}
+
 double SoundOptions::getGain() const {
     double db = volumeSlider.getValue();
     double min = volumeSlider.getMinimum();
@@ -160,17 +174,6 @@ void AnalysisOptions::resized() {
     fb.performLayout(getLocalBounds());
 }
 
-void SoundOptions::resized() {
-    juce::FlexBox fb;
-    fb.flexDirection = juce::FlexBox::Direction::column;
-    fb.justifyContent = juce::FlexBox::JustifyContent::flexStart;
-    fb.alignContent = juce::FlexBox::AlignContent::center;
-
-    fb.items.add(juce::FlexItem(sonifierMenu).withMinHeight(30).withMargin(juce::FlexItem::Margin(40, 12, 6, 12)));
-    fb.items.add(juce::FlexItem(volumeSlider).withMinHeight(30).withMargin(juce::FlexItem::Margin(24, 12, 6, 12)));
-    fb.performLayout(getLocalBounds());
-}
-
 MainComponent::MainComponent() {
     setSize(1000, 740);
 
@@ -178,15 +181,13 @@ MainComponent::MainComponent() {
 
     addAndMakeVisible(board);
     board.onMove = [this](Chess::Move move) { makeMove(move); };
-    addChangeListener(&board);
 
     addAndMakeVisible(turnLabel);
     turnLabel.setFont(juce::Font(15));
     turnLabel.setJustificationType(juce::Justification::centred);
-    updateGame();
 
     // Controls
-    // TODO: Implement auto-advance, play/pause, and maybe PGN comment timing.
+    // TODO: Maybe implement PGN comment timing.
     controls.skipBackward.onClick = [this]() {
         while (undo());
         updateGame();
@@ -208,6 +209,43 @@ MainComponent::MainComponent() {
         while (redo());
         updateGame();
     };
+
+    controls.playPause.setToggleable(true);
+    controls.playPause.setClickingTogglesState(true);
+    controls.playPause.onClick = [this]() {
+        bool enabled = controls.playPause.getToggleState();
+        if (enabled) {
+            double period;
+            std::string text = controls.autoAdvancePeriod.getText().toStdString();
+            try {
+                period = std::stod(text);
+            } catch (...) {
+                // Conversion failed, bail.
+                // (Could be even nicer to disable the play button if the period is invalid;
+                // however, wouldn't want to disable the pause button if it's already playing.)
+                controls.playPause.setToggleState(false, juce::dontSendNotification);
+                return;
+            }
+            startTimer(period * 1000);
+        } else {
+            stopTimer();
+        }
+    };
+
+    controls.autoAdvancePeriod.onReturnKey = [this]() {
+        if (isTimerRunning()) {
+            // Change timer period.
+            double period;
+            std::string text = controls.autoAdvancePeriod.getText().toStdString();
+            try {
+                period = std::stod(text);
+            } catch (...) {
+                return;
+            }
+            startTimer(period * 1000);
+        }
+    };
+
     addAndMakeVisible(controls);
 
     // Player options
@@ -258,8 +296,8 @@ MainComponent::MainComponent() {
     // };
     analysisOptions.fen.onReturnKey = [this]() {
         // NOTE: We don't clear the undo history here;
-        // it might be annoying for the user is we throw out
-        // their whole game when they just want to experiment.
+        // it might be annoying for the user if we throw out
+        // the whole game when they just want to experiment.
         std::stack<Chess::Move> empty;
         redoStack.swap(empty);
         game.setFen(analysisOptions.fen.getText().toStdString());
@@ -282,6 +320,8 @@ MainComponent::MainComponent() {
     };
     soundOptions.volumeSlider.setValue(-20);
     addAndMakeVisible(soundOptions);
+
+    updateGame();
 }
 
 MainComponent::~MainComponent() {
@@ -337,8 +377,16 @@ void MainComponent::resized() {
     fb.performLayout(menuArea);
 }
 
+void MainComponent::timerCallback() {
+    if (redo()) {
+        updateGame();
+    } else {
+        controls.playPause.setToggleState(false, juce::dontSendNotification);
+        stopTimer();
+    }
+}
+
 void MainComponent::updateGame() {
-    Chess::Game &game = AppState::getInstance().getGame();
     if (game.getTurn() == Chess::Color::White) {
         turnLabel.setText("White to move", juce::dontSendNotification);
         turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
@@ -369,9 +417,15 @@ void MainComponent::updateGame() {
     controls.stepBackward.setEnabled(pastMoves > 0);
     controls.stepForward.setEnabled(pastMoves < totalMoves);
     controls.skipForward.setEnabled(pastMoves < totalMoves);
+    controls.playPause.setEnabled(pastMoves < totalMoves);
+    if (pastMoves == totalMoves && controls.playPause.getToggleState()) {
+        controls.playPause.setToggleState(false, juce::dontSendNotification);
+        stopTimer();
+    }
     controls.move.setText(std::to_string(pastMoves) + "/" + std::to_string(totalMoves), juce::dontSendNotification);
     analysisOptions.fen.setText(game.getFen(), false);
-    sendChangeMessage();
+    board.select();
+    currentSonifier->onMove(game);
 }
 
 void MainComponent::setSonifier(int sonifierIndex) {
@@ -379,10 +433,8 @@ void MainComponent::setSonifier(int sonifierIndex) {
     currentSonifier = sonifiers[sonifierIndex].create(sampleRate);
     if (oldSonifier) {
         oldSonifier->setEnabled(false);
-        removeChangeListener(oldSonifier.get());
     }
     currentSonifier->setEnabled(true);
-    addChangeListener(currentSonifier.get());
     currentSonifier->onMove(AppState::getInstance().getGame());
     currentSonifier->setGain(soundOptions.getGain());
 }
