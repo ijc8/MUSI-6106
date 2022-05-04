@@ -126,13 +126,14 @@ private:
     AnalysisOptions analysisOptions;
 
     juce::Label turnLabel;
-    // std::vector<std::shared_ptr<GameStream>> streams;
-    // std::shared_ptr<GameStream> stream;
+    std::vector<std::shared_ptr<GameStream>> streams;
+    std::shared_ptr<GameStream> stream;
 
     void loadSavedGame();
+    void streamLiveGame();
 
     std::unique_ptr<juce::FileChooser> fileChooser;
-    // juce::String pgnData;
+    std::unique_ptr<juce::AlertWindow> streamPrompt;
 
     void setSonifier(int sonifierIndex);
 
