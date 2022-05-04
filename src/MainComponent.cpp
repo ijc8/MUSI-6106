@@ -22,6 +22,12 @@ void saveEnginePath(const std::string &enginePath) {
     }
 }
 
+std::vector<Chess::Move> loadMoves(const std::string &pgn) {
+    // TODO
+    (void)pgn;
+    return {Chess::Move("e2e4"), Chess::Move("e7e5"), Chess::Move("b1c3")};
+}
+
 Controls::Controls() {
     setText("Controls");
     setColour(ColourIds::textColourId, juce::Colours::lightgrey);
@@ -458,8 +464,15 @@ void MainComponent::loadSavedGame() {
     fileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
         juce::File file = chooser.getResult();
         if (file.exists()) {
-            std::cout << "File contents:" << std::endl
-                      << chooser.getResult().loadFileAsString() << std::endl;
+            std::string pgn = chooser.getResult().loadFileAsString().toStdString();
+            std::cout << "PGN:" << std::endl << pgn << std::endl;
+            std::vector<Chess::Move> moves = loadMoves(pgn);
+            while (game.pop());
+            clearRedoStack();
+            for (int i = 0; i < moves.size(); i++) {
+                redoStack.push(moves[moves.size() - i - 1]);
+            }
+            updateGame();
         }
     });
 }
