@@ -53,7 +53,7 @@ Error_t CScheduler::constructTune(const CWavetableOscillator& osc, std::string n
 	float beatSum = 0;
 	for (int i = 0; i < numNotes; i++)
 	{
-		auto pOsc = std::unique_ptr<CWavetableOscillator>(new CWavetableOscillator(osc));
+		auto pOsc = std::make_unique<CWavetableOscillator>(osc);
 		pOsc->setFrequency(FREQ::noteToFreq(notes[i]));
 		scheduleInst(std::move(pOsc), TEMPO::beatToSec(beatSum, bpm), TEMPO::beatToSec(beats[i], bpm));
 		beatSum += beats[i];
@@ -65,7 +65,7 @@ Error_t CScheduler::constructChord(const CWavetableOscillator& osc, const std::v
 {
 	for (const std::string& note : notes)
 	{
-		auto pOsc = std::unique_ptr<CWavetableOscillator>(new CWavetableOscillator(osc));
+		auto pOsc = std::make_unique<CWavetableOscillator>(osc);
 		pOsc->setFrequency(FREQ::noteToFreq(note));
 		scheduleInst(std::move(pOsc), 0, TEMPO::beatToSec(lengthInBeats, bpm));
 	}
@@ -173,7 +173,7 @@ void CScheduler::checkTriggers()
 	}
 }
 
-void CScheduler::updateSampleRate(map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate)
+void CScheduler::updateSampleRate(unordered_map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate)
 {
 	std::unordered_map<int64_t, std::unordered_set<std::shared_ptr<CInstrument>>> tempMap;
 	for (const auto& oldSampleValue : mapToUpdate)

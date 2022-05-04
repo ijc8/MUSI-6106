@@ -4,14 +4,14 @@
 #include "AtomicRingBuffer.h"
 #include "Util.h"
 
-#include <map>
+#include <unordered_map>
 #include <unordered_set>
 #include <optional>
 #include <vector>
 #include <string>
 
 
-using std::map;
+using std::unordered_map;
 using std::unordered_set;
 
 struct TriggerInfo
@@ -68,9 +68,9 @@ protected:
 	// These maps are used to trigger events on instruments at the correct sample
 	// Key: Current Frame
 	// Value: Set of Instruments with an event at that key
-	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOn;
-	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOff;
-	map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapRemover;
+	unordered_map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOn;
+	unordered_map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapNoteOff;
+	unordered_map<int64_t, unordered_set<std::shared_ptr<CInstrument>>> m_MapRemover;
 
 	// Checks for internal state changes i.e. noteOn() and/or noteOff() calls
 	virtual void checkFlags() override;
@@ -82,7 +82,7 @@ protected:
 	// Carries out necessary actions if so
 	virtual void checkTriggers();
 
-	void updateSampleRate(map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate);
+	void updateSampleRate(unordered_map<int64_t, unordered_set<std::shared_ptr<CInstrument>>>& mapToUpdate, float fNewSampleRate);
 	float updateSampleRate(float fValue, float fNewSampleRate);
 	
 	AtomicRingBuffer<std::pair<std::shared_ptr<CInstrument>, std::optional<TriggerInfo>>> m_InsertQueue{ 1000 };
