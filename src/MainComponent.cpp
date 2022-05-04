@@ -485,24 +485,28 @@ void MainComponent::streamLiveGame() {
         std::string id = streamPrompt->getTextEditorContents("id").toStdString();
         std::string username = streamPrompt->getTextEditorContents("username").toStdString();
         std::cout << "Got: " << result << " " << id << " " << username << std::endl;
+        if (!id.empty()) {
+            // Reset game first.
+            while (game.pop());
+            clearRedoStack();
+            // Stream moves from game.
+            stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
+                if (move) {
+                    std::cout << "Streamed move: " << move->toString() << std::endl;
+                    while (redo());
+                    game.push(*move);
+                    updateGame();
+                } else {
+                    std::cout << "Done streaming." << std::endl;
+                    streamLiveGame();
+                }
+            });
+            analysisOptions.streamGame.setButtonText("Stop streaming");
+        }
         streamPrompt->exitModalState(result);
         streamPrompt->setVisible(false);
         streamPrompt.reset();
     }));
-
-    // TODO: Reset game first.
-    // std::string id = streamInput.getText().toStdString();
-    // stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
-    //     if (move) {
-    //         std::cout << "Streamed move: " << move->toString() << std::endl;
-    //         while (redo());
-    //         game.push(move);
-    //         updateGame();
-    //     } else {
-    //         std::cout << "Done streaming." << std::endl;
-    //     }
-    // });
-    // analysisOptions.streamGame.setButtonText("Stop streaming");
 }
 
 void MainComponent::makeMove(Chess::Move move) {
