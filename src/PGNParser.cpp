@@ -99,7 +99,7 @@ std::vector<Chess::Move> PGNParser::getMoves(std::vector<std::string> moves) {
     return std::vector<Chess::Move>();
 }
 
-Chess::Move PGNParser::placeMovesOnBoard(Game &game, const std::string &SANMove) {
+Chess::Move PGNParser::placeMovesOnBoard(GameState &game, const std::string &SANMove) {
     Piece piece;
     std::smatch sm;
 

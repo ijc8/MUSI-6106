@@ -41,10 +41,10 @@ public:
     PGNParser();
     void setupFileFromPath(std::string path);
     std::unordered_map<std::string, std::string> extractTags();
-    std::vector<std::string> getMovesAlgebraic(std::string PGNFileContents);
+    static std::vector<std::string> getMovesAlgebraic(std::string PGNFileContents);
     std::unordered_map<int,std::string> getComments();
     std::vector<Chess::Move> getMoves(std::vector<std::string> moves);
-    static Chess::Move placeMovesOnBoard(Chess::Game &game,const std::string &SANMove);
+    static Chess::Move placeMovesOnBoard(Chess::GameState &game,const std::string &SANMove);
 
 
 

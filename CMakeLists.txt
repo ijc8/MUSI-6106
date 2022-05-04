@@ -98,6 +98,7 @@ target_sources(MusicalChess
         src/Main.cpp
         src/MainComponent.cpp
         src/MainProcessor.cpp
+        src/PGNParser.cpp
         src/Scheduler.cpp
         src/SoundProcessor.cpp
         src/StorySonifier.cpp
@@ -273,4 +274,3 @@ target_link_libraries(PGNTest
 		juce::juce_recommended_warning_flags)
 
         
-

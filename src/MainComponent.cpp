@@ -1,6 +1,7 @@
 #include <filesystem>
 
 #include "MainComponent.h"
+#include "PGNParser.h"
 
 // Utilities for loading and saving user's engine preference.
 std::string loadEnginePath() {
@@ -22,10 +23,15 @@ void saveEnginePath(const std::string &enginePath) {
     }
 }
 
-std::vector<Chess::Move> loadMoves(const std::string &pgn) {
-    // TODO
-    (void)pgn;
-    return {Chess::Move("e2e4"), Chess::Move("e7e5"), Chess::Move("b1c3")};
+std::vector<Chess::Move> loadMoves(GameState &game, const std::string &pgn) {
+    std::vector<Chess::Move> moves;
+    GameState copy(game);
+    for (auto &san : PGNParser::getMovesAlgebraic(pgn)) {
+        Chess::Move move = PGNParser::placeMovesOnBoard(copy, san);
+        copy.execute(move);
+        moves.push_back(move);
+    }
+    return moves;
 }
 
 Controls::Controls() {
@@ -466,9 +472,9 @@ void MainComponent::loadSavedGame() {
         if (file.exists()) {
             std::string pgn = chooser.getResult().loadFileAsString().toStdString();
             std::cout << "PGN:" << std::endl << pgn << std::endl;
-            std::vector<Chess::Move> moves = loadMoves(pgn);
             while (game.pop());
             clearRedoStack();
+            std::vector<Chess::Move> moves = loadMoves(game, pgn);
             for (int i = 0; i < moves.size(); i++) {
                 redoStack.push(moves[moves.size() - i - 1]);
             }
