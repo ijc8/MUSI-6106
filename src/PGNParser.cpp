@@ -139,18 +139,28 @@ std::vector<std::string> PGNParser::getMovesAlgebraic() {
 
     std::vector<std::string> moves;
     std::regex matchStr ("(?:[PNBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:\\=[PNBRQK])?|O(-?O){1,2})[\\+#]?(\\s*[\\!\\?]+)? (1\\-0|0\\-1|1\\/2\\-1\\/2)?");
+//    std::regex matchStr ("");
     std::smatch sm;
-//    std::string test = "1. e4 c5 ";
-//    std::regex_search(test, sm, matchStr);
+    std::string test = "Qxd4";
 
-    while(std::getline(m_PGNFile, line))
+
+    while(std::regex_search(test, sm, matchStr))
     {
-        std::regex_search(line,sm,matchStr);
-        for (int i = 0; i < sm.size(); i++)
-        {
-            moves.push_back(sm[i]);
-        }
+        std::cout << sm[0] << std::endl;
+        moves.push_back(sm[0]);
+        test = sm.suffix();
+
     }
+
+//    while(std::getline(m_PGNFile, line))
+//    {
+//        line+=" ";
+//            std::regex_search(line,sm,matchStr);
+//        for (int i = 0; i < sm.size(); i++)
+//        {
+//            moves.push_back(sm[i]);
+//        }
+//    }
     return moves;
 }
 
@@ -162,12 +172,70 @@ std::vector<Chess::Move> PGNParser::getMoves(std::vector<std::string> moves) {
 }
 
 bool PGNParser::placeMovesOnBoard(Game &game, std::vector<std::string> moves) {
-    for (auto move : moves)
-    {
-//        char regex_piece = "[A-Z]"
+
+
+        Piece piece;
+
+        std::string test = "Qxd4";
+        std::regex regexMove("^([NBKRQ])?([a-h])?([1-8])?[\\-x]?([a-h][1-8])(=?[nbrqkNBRQK])?[\\+#]?");
+        std::smatch sm;
+
+        std::regex_search(test, sm, regexMove);
+
+        piece.type  = sm[1].length() == 0 ? Piece::Type::Pawn : Piece::FromChar.at(sm[1].str()[0]);
+        piece.color = game.getTurn();
+
+
+        Square toSquare(sm[4].str());
+
+        // Some ASCII stuff to find rank and file of source
+        std::optional<int> file = sm[2].length() ? std::make_optional(sm[2].str()[0] - 'a') : std::nullopt;
+        std::optional<int> rank = sm[3].length() ? std::make_optional(sm[3].str()[0] - '1') : std::nullopt;
+
+
+        for (auto [square, pieceCandidate] : game.getPieceMap()) {
+            if (piece.color != game.getTurn()) continue;
+
+            if (pieceCandidate.type != piece.type) continue;
+
+            if (rank.has_value() && square.rank != rank) continue;
+
+            if (file.has_value() && square.file != file) continue;
+
+
+
+
+        }
+
+
+        if(sm[2].length() == 0) {
+
+        }
+
+
+        // Piece Promotion check
+        std::optional<Piece::Type> promotion;
+        if (sm[5].length() > 0) {
+            promotion = Piece::FromChar.at(sm[5].str()[1]);
+        }
+
+
+
+
+
+        std::cout<<toSquare.toString();
+        std::cout<<piece.toChar()<<'\n';
+
+
+
+
+
+//        PGNMove move;
+//        move.piece = piece;
+
+
     }
 
-}
 
 
 
