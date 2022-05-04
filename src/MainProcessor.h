@@ -1,6 +1,8 @@
 #if !defined(__MainProcessor_hdr__)
 #define __MainProcessor_hdr__
 
+#include <juce_events/juce_events.h>
+
 #include "Scheduler.h"
 
 // To be used as a singleton
