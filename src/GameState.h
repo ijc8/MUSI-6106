@@ -68,6 +68,7 @@ namespace Chess {
         Square src, dst;
         std::optional<Piece::Type> promotion;
     };
+
 }
 
 // Implement hash for Piece, Square, and Move so we can use them as keys in maps.
