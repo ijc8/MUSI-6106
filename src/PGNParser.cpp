@@ -78,68 +78,13 @@ std::unordered_map<std::string, std::string> PGNParser::extractTags() {
 
 std::vector<std::string> PGNParser::getMovesAlgebraic() {
 
-//    std::locale loc;
-//    std::vector<std::string> moves;
-//
-//    int startIdx = 2;
-//    int endIdx = 0;
-//
-//    int moveNumber = 1;
-//    int lineNumber = 0;
+
 //
     std::string line;
     std::string move;
-//
-//    while (std::getline(m_PGNFile, line)) {
-//
-//        if (line[0] == TAGSTART || line.length() == 0)
-//            continue;
-//
-//        // Check whether line stars with number or not and set start-end idx
-//        if (!std::isdigit(line[0], loc)) {
-//            startIdx = 0;
-//            endIdx = line.find(std::to_string(moveNumber + 1) + ".");
-//
-//            if(line.back() == '.') {
-//
-//            }
-//
-//            move = move + " " + line.substr(startIdx, endIdx - startIdx);
-//            moves.push_back(move);
-//            startIdx = line.find(" ", endIdx);
-//            moveNumber++;
-//        }
-//
-//        if (std::isdigit(line[0], loc) && moves.size() != 0)
-//        {
-//            startIdx = line.find(" ");
-//            endIdx = 0;
-//            moveNumber++;
-//        }
-//
-//        // When the line starts with a number
-//        while (endIdx != -1) {
-//            endIdx = line.find(std::to_string(moveNumber + 1) + ".");
-//            if (endIdx == -1) {
-//                if(startIdx == -1) {
-//                    move = " ";
-//                    break;
-//                }
-//                move = line.substr(startIdx, line.length() - startIdx);
-//                if(move.find("1-0") != -1 || move.find("0-1") != -1 || move.find("1/2-1/2") != -1 )
-//                    moves.push_back(move);
-//                break;
-//            }
-//            move = line.substr(startIdx, endIdx - startIdx);
-//            moves.push_back(move);
-//            startIdx = line.find(" ", endIdx);
-//            moveNumber++;
-//        }
-//    }
 
     std::vector<std::string> moves;
     std::regex matchStr ("(?:[PNBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:\\=[PNBRQK])?|O(-?O){1,2})[\\+#]?(\\s*[\\!\\?]+)? (1\\-0|0\\-1|1\\/2\\-1\\/2)?");
-//    std::regex matchStr ("");
     std::smatch sm;
     std::string test = "Qxd4";
 
@@ -152,15 +97,6 @@ std::vector<std::string> PGNParser::getMovesAlgebraic() {
 
     }
 
-//    while(std::getline(m_PGNFile, line))
-//    {
-//        line+=" ";
-//            std::regex_search(line,sm,matchStr);
-//        for (int i = 0; i < sm.size(); i++)
-//        {
-//            moves.push_back(sm[i]);
-//        }
-//    }
     return moves;
 }
 
@@ -171,16 +107,32 @@ std::vector<Chess::Move> PGNParser::getMoves(std::vector<std::string> moves) {
     return std::vector<Chess::Move>();
 }
 
-bool PGNParser::placeMovesOnBoard(Game &game, std::vector<std::string> moves) {
+Chess::Move PGNParser::placeMovesOnBoard(Game &game, std::vector<std::string> moves) {
 
 
         Piece piece;
-
-        std::string test = "Qxd4";
-        std::regex regexMove("^([NBKRQ])?([a-h])?([1-8])?[\\-x]?([a-h][1-8])(=?[nbrqkNBRQK])?[\\+#]?");
         std::smatch sm;
 
-        std::regex_search(test, sm, regexMove);
+        std::string test = "Qxd4";
+        std::regex castlingRegex("O(-O){1,2}[\\+#]?");
+
+        std::regex_match(test,sm,castlingRegex);
+
+        // Castling
+        if(sm[0].matched) {
+           auto turn = game.getTurn();
+            if(sm[0].length() >= 5) {
+                return Chess::Move (turn ==  Chess::Color::White ? "e1c1" : "e8c8");
+            }
+            else {
+                return Chess::Move (turn ==  Chess::Color::White ? "e1g1" : "e8g8");
+            }
+        }
+
+        std::regex regexMove("([NBKRQ])?([a-h])?([1-8])?[\\-x]?([a-h][1-8])(=?[nbrqkNBRQK])?[\\+#]?");
+
+
+        std::regex_match(test, sm, regexMove);
 
         piece.type  = sm[1].length() == 0 ? Piece::Type::Pawn : Piece::FromChar.at(sm[1].str()[0]);
         piece.color = game.getTurn();
@@ -192,6 +144,12 @@ bool PGNParser::placeMovesOnBoard(Game &game, std::vector<std::string> moves) {
         std::optional<int> file = sm[2].length() ? std::make_optional(sm[2].str()[0] - 'a') : std::nullopt;
         std::optional<int> rank = sm[3].length() ? std::make_optional(sm[3].str()[0] - '1') : std::nullopt;
 
+        // Piece Promotion check
+        std::optional<Piece::Type> promotion;
+        if (sm[5].length() > 0) {
+            promotion = Piece::FromChar.at(sm[5].str()[1]);
+        }
+
 
         for (auto [square, pieceCandidate] : game.getPieceMap()) {
             if (piece.color != game.getTurn()) continue;
@@ -202,36 +160,15 @@ bool PGNParser::placeMovesOnBoard(Game &game, std::vector<std::string> moves) {
 
             if (file.has_value() && square.file != file) continue;
 
+            for (auto move: game.generateMoves(square)) {
 
-
-
+                if (move.dst == toSquare && move.promotion == promotion) {
+                    return move;
+                }
+            }
         }
 
-
-        if(sm[2].length() == 0) {
-
-        }
-
-
-        // Piece Promotion check
-        std::optional<Piece::Type> promotion;
-        if (sm[5].length() > 0) {
-            promotion = Piece::FromChar.at(sm[5].str()[1]);
-        }
-
-
-
-
-
-        std::cout<<toSquare.toString();
-        std::cout<<piece.toChar()<<'\n';
-
-
-
-
-
-//        PGNMove move;
-//        move.piece = piece;
+        throw std::runtime_error("Bad SAN");
 
 
     }

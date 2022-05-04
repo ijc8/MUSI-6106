@@ -44,7 +44,7 @@ public:
     std::vector<std::string> getMovesAlgebraic();
     std::unordered_map<int,std::string> getComments();
     std::vector<Chess::Move> getMoves(std::vector<std::string> moves);
-    static bool placeMovesOnBoard(Chess::Game &game,std::vector<std::string> moves);
+    static Chess::Move placeMovesOnBoard(Chess::Game &game,std::vector<std::string> moves);
 
 
 
