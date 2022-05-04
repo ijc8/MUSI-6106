@@ -76,28 +76,20 @@ std::unordered_map<std::string, std::string> PGNParser::extractTags() {
     return tags;
 }
 
-std::vector<std::string> PGNParser::getMovesAlgebraic() {
+std::vector<std::string> PGNParser::getMovesAlgebraic(std::string PGNFileContents) {
 
-
-//
-    std::string line;
-    std::string move;
 
     std::vector<std::string> moves;
-    std::regex matchStr(
-            "(?:[PNBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:\\=[PNBRQK])?|O(-?O){1,2})[\\+#]?(\\s*[\\!\\?]+)? (1\\-0|0\\-1|1\\/2\\-1\\/2)?");
-//    std::regex matchStr ("");
+    std::regex matchStr(R"((?:[PNBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:\=[PNBRQK])?|O(-?O){1,2})[\+#]?(\s*[\!\?]+)?)");
     std::smatch sm;
-    std::string test = "Qxd4";
 
 
-    while (std::regex_search(test, sm, matchStr)) {
+    while (std::regex_search(PGNFileContents, sm, matchStr)) {
         std::cout << sm[0] << std::endl;
         moves.push_back(sm[0]);
-        test = sm.suffix();
+        PGNFileContents = sm.suffix();
 
     }
-
     return moves;
 }
 
