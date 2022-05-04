@@ -66,7 +66,7 @@ Controls::Controls() {
     addAndMakeVisible(autoAdvancePeriod);
     addAndMakeVisible(seconds);
 
-    addAndMakeVisible(pgnAdvance);
+    // addAndMakeVisible(pgnAdvance);
 
     resized();
 }
@@ -95,8 +95,8 @@ void Controls::resized() {
     float secondsWidth = seconds.getFont().getStringWidthFloat(seconds.getText());
     autoBox.items.add(juce::FlexItem(seconds).withMinWidth(secondsWidth + 10));
 
-    fb.items.add(juce::FlexItem(autoBox).withMinHeight(25).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
-    fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(autoBox).withMinHeight(20).withMargin(juce::FlexItem::Margin(0, 12, 6, 12)));
+    // fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
     fb.performLayout(getLocalBounds());
 }
 
@@ -207,7 +207,7 @@ MainComponent::MainComponent() {
     turnLabel.setJustificationType(juce::Justification::centred);
 
     // Controls
-    // TODO: Maybe implement PGN comment timing.
+    // TODO: Would be nice to support PGN comment timing.
     controls.skipBackward.onClick = [this]() {
         while (undo());
         updateGame();
@@ -381,7 +381,7 @@ void MainComponent::resized() {
     fb.alignContent = juce::FlexBox::AlignContent::center;
 
     juce::FlexItem::Margin margin(24, 6, 6, 6);
-    fb.items.add(juce::FlexItem(controls).withMinHeight(170).withMargin(6));
+    fb.items.add(juce::FlexItem(controls).withMinHeight(130).withMargin(6));
     fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(margin));
     fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(margin));
     fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(margin));
@@ -522,7 +522,6 @@ void MainComponent::enableStockfish(bool enable) {
         updateGame();
     } else {
         // Allow user to tell us where their engine binary is.
-        // TODO: Remember their selected engine and allow them to change it later.
         engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
                                                             juce::File::getSpecialLocation(juce::File::globalApplicationsDirectory));
         auto chooserFlags = juce::FileBrowserComponent::openMode;

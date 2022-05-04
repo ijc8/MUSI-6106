@@ -29,7 +29,7 @@ public:
     juce::TextEditor autoAdvancePeriod;
     juce::Label seconds{"", "seconds"};
 
-    juce::ToggleButton pgnAdvance{"Use PGN clock times if available"};
+    // juce::ToggleButton pgnAdvance{"Use PGN clock times if available"};
 };
 
 class PlayerOptions: public juce::GroupComponent {
