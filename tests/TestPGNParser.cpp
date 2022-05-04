@@ -27,9 +27,9 @@ TEST_CASE("Reading PGN moves (algebraic)", "[PGN]") {
 TEST_CASE("Reading PGN moves (on the board)", "[PGN]") {
 
     Game game;
-    std::vector<std::string> moves;
+    std::string SANMove = "e4";
     PGNParser pgn;
-    bool move = PGNParser::placeMovesOnBoard(game, moves);
-    
+    Chess::Move move = PGNParser::placeMovesOnBoard(game, SANMove);
+    std::cout<<move.toString();
 
 }
