@@ -304,6 +304,7 @@ MainComponent::MainComponent() {
     //         streamToggle.setButtonText("Stop Stream");
     //     }
     // };
+    analysisOptions.loadGame.onClick = [this]() { loadSavedGame(); };
     analysisOptions.fen.onReturnKey = [this]() {
         // NOTE: We don't clear the undo history here;
         // it might be annoying for the user if we throw out
@@ -480,7 +481,7 @@ void MainComponent::loadSavedGame() {
     fileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
         juce::File file = chooser.getResult();
         if (file.exists()) {
-            // pgnData = chooser.getResult().loadFileAsString();
+            std::cout << "File contents:" << std::endl << chooser.getResult().loadFileAsString() << std::endl;
         }
     });
 }
