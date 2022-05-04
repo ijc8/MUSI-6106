@@ -101,20 +101,53 @@ void BoardComponent::paint(juce::Graphics &g) {
     float squareSize = size / 8.0;
     g.fillCheckerBoard(juce::Rectangle<float>(0, 0, size, size), squareSize, squareSize, lightSquare, darkSquare);
 
+    // Draw rank & file labels.
+    for (int rank = 0; rank < 8; rank++) {
+        g.setColour(rank % 2 ? lightSquare : darkSquare);
+        g.drawSingleLineText(std::string({(char)('1' + rank)}), getWidth() - 10, getHeight() - squareSize * (rank + 1) + 13);
+    }
+    for (int file = 0; file < 8; file++) {
+        g.setColour(file % 2 ? darkSquare : lightSquare);
+        g.drawSingleLineText(std::string({(char)('a' + file)}), squareSize * file + 3, getHeight() - 3);
+    }
+
+    Chess::Game &game = AppState::getInstance().getGame();
+    const auto &pieces = game.getPieceMap();
+    if (game.peek()) {
+        // Highlight last move.
+        g.setColour(juce::Colours::yellow.withAlpha(0.3f));
+        g.fillRect(squareToRect(game.peek()->src));
+        g.fillRect(squareToRect(game.peek()->dst));
+        g.setColour(juce::Colours::black);
+    }
+
     if (selected) {
-        g.setColour(juce::Colours::red.withAlpha(0.5f));
+        g.setColour(juce::Colours::darkgreen.withAlpha(0.5f));
         g.fillRect(squareToRect(*selected));
-        // TODO: Maybe cache this.
-        auto candidates = AppState::getInstance().getGame().generateMoves(*selected);
-        g.setColour(juce::Colours::yellow.withAlpha(0.5f));
+        auto candidates = game.generateMoves(*selected);
+        // Show candidate moves.
         for (auto move : candidates) {
-            g.fillRect(squareToRect(move.dst));
+            g.setColour(juce::Colours::darkgreen.withAlpha(0.5f));
+            if (pieces.count(move.dst)) {
+                g.fillRect(squareToRect(move.dst).withSizeKeepingCentre(squareSize, squareSize));
+                g.setColour(move.dst.rank + move.dst.file % 2 ? lightSquare : darkSquare);
+                g.fillEllipse(squareToRect(move.dst).withSizeKeepingCentre(squareSize, squareSize));
+            } else {
+                g.fillEllipse(squareToRect(move.dst).withSizeKeepingCentre(squareSize/4, squareSize/4));
+            }
         }
         g.setColour(juce::Colours::black);
     }
 
+    if (game.isInCheck(game.getTurn())) {
+        // Uh oh, we're in check! Show the king in danger.
+        g.setColour(juce::Colours::red.withAlpha(0.5f));
+        g.fillEllipse(squareToRect(*game.getPieces(Chess::Piece(Chess::Piece::Type::King, game.getTurn())).begin()));
+        g.setColour(juce::Colours::black);
+    }
+
     // Draw pieces.
-    for (auto [square, piece] : AppState::getInstance().getGame().getPieceMap()) {
+    for (auto [square, piece] : pieces) {
         float x = squareSize * square.file;
         float y = squareSize * (7 - square.rank);
         juce::Image &image = pieceImages[piece];

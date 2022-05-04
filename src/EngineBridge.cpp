@@ -52,13 +52,16 @@ Chess::Engine::Engine(const std::string &path) : process(path) {
     assert(starts_with(process.readline(), "Stockfish"));
 }
 
-Chess::Analysis Chess::Engine::analyze(const GameState &state, int time) {
+Chess::Analysis Chess::Engine::analyze(const GameState &state, int depth, int skill) {
+    // Set the skill level.
+    process.write("setoption name Skill Level value ");
+    process.writeline(std::to_string(skill));
     // Set up the position.
     process.write("position fen ");
     process.writeline(state.getFen());
-    // Start computing.
-    process.write("go movetime ");
-    process.writeline(std::to_string(time));
+    // Start computing. (Time is in milliseconds.)
+    process.write("go depth ");
+    process.writeline(std::to_string(depth));
     // Read output: we're looking for `bestmove ...`,
     // preceded by a final `info ...` line with the score.
     std::string infoLine = process.readline();
@@ -68,14 +71,16 @@ Chess::Analysis Chess::Engine::analyze(const GameState &state, int time) {
         moveLine = process.readline();
     }
     // Extract relevant info: best move, overall evaluation score.
+    infoLine.pop_back();
+    moveLine.pop_back();
     auto infoWords = split(infoLine, std::regex(" "));
     auto moveWords = split(moveLine, std::regex(" "));
     return { Chess::Move(moveWords[1]), std::stod(infoWords[9]) };
 }
 
-void Chess::Engine::analyzeAsync(std::function<void (Analysis)> callback, const GameState &state, int time) {
+void Chess::Engine::analyzeAsync(std::function<void (Analysis)> callback, const GameState &state, int depth, int skill) {
     // Wait for engine in separate thread. Useful for UI.
-    task = std::async(std::launch::async, [this, callback, &state, time] {
-        callback(analyze(state, time));
+    task = std::async(std::launch::async, [this, callback, &state, depth, skill] {
+        callback(analyze(state, depth, skill));
     });
 }

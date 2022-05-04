@@ -2,6 +2,26 @@
 
 #include "MainComponent.h"
 
+// Utilities for loading and saving user's engine preference.
+std::string loadEnginePath() {
+    juce::File path = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                          .getChildFile("MusicalChess")
+                          .getChildFile("engine_path.txt");
+    if (!path.exists()) return "";
+    return path.loadFileAsString().toStdString();
+}
+
+void saveEnginePath(const std::string &enginePath) {
+    juce::File path = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+                          .getChildFile("MusicalChess")
+                          .getChildFile("engine_path.txt");
+    if (!path.exists()) {
+        path.create();
+        juce::FileOutputStream output(path);
+        output.writeText(enginePath, false, false, "");
+    }
+}
+
 Controls::Controls() {
     setText("Controls");
     setColour(ColourIds::textColourId, juce::Colours::lightgrey);
@@ -46,7 +66,7 @@ Controls::Controls() {
     addAndMakeVisible(autoAdvancePeriod);
     addAndMakeVisible(seconds);
 
-    addAndMakeVisible(pgnAdvance);
+    // addAndMakeVisible(pgnAdvance);
 
     resized();
 }
@@ -75,8 +95,8 @@ void Controls::resized() {
     float secondsWidth = seconds.getFont().getStringWidthFloat(seconds.getText());
     autoBox.items.add(juce::FlexItem(seconds).withMinWidth(secondsWidth + 10));
 
-    fb.items.add(juce::FlexItem(autoBox).withMinHeight(25).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
-    fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
+    fb.items.add(juce::FlexItem(autoBox).withMinHeight(20).withMargin(juce::FlexItem::Margin(0, 12, 6, 12)));
+    // fb.items.add(juce::FlexItem(pgnAdvance).withMinHeight(20).withMargin(juce::FlexItem::Margin(6, 12, 6, 12)));
     fb.performLayout(getLocalBounds());
 }
 
@@ -187,22 +207,24 @@ MainComponent::MainComponent() {
     turnLabel.setJustificationType(juce::Justification::centred);
 
     // Controls
-    // TODO: Maybe implement PGN comment timing.
+    // TODO: Would be nice to support PGN comment timing.
     controls.skipBackward.onClick = [this]() {
         while (undo());
         updateGame();
     };
 
     controls.stepBackward.onClick = [this]() {
-        if (undo()) updateGame();
-        // TODO: Maybe add a special case for computer-made moves.
-        // Or, perhaps add another button to go back one "full" move (two plies).
+        Chess::Color turn = game.getTurn();
+        if (players[(int)turn] == PlayerType::Human && players[!(int)turn] != PlayerType::Human) {
+            // Special case: human vs. computer - go back one full move to the human's last turn.
+            undo();
+        }
+        undo();
+        updateGame();
     };
 
     controls.stepForward.onClick = [this]() {
         if (redo()) updateGame();
-        // TODO: Maybe add a special case for computer-made moves.
-        // Or, perhaps add another button to go back one "full" move (two plies).
     };
 
     controls.skipForward.onClick = [this]() {
@@ -249,23 +271,11 @@ MainComponent::MainComponent() {
     addAndMakeVisible(controls);
 
     // Player options
-    // TODO: Maybe implement support for multiple difficulties.
     playerOptions.blackMenu.onChange = [this]() {
-        int id = playerOptions.blackMenu.getSelectedId();
-        board.enableInput(Chess::Color::Black, id == 1);
-        players[(int)Chess::Color::Black] = (PlayerType)(id - 1);
-        if (id > 1) {
-            enableStockfish(true);
-        }
+        setPlayerType(Chess::Color::Black, (PlayerType)(playerOptions.blackMenu.getSelectedId() - 1));
     };
-    // TODO: Reduce duplication here.
     playerOptions.whiteMenu.onChange = [this]() {
-        int id = playerOptions.whiteMenu.getSelectedId();
-        board.enableInput(Chess::Color::White, id == 1);
-        players[(int)Chess::Color::White] = (PlayerType)(id - 1);
-        if (id > 1) {
-            enableStockfish(true);
-        }
+        setPlayerType(Chess::Color::White, (PlayerType)(playerOptions.whiteMenu.getSelectedId() - 1));
     };
     addAndMakeVisible(playerOptions);
 
@@ -321,6 +331,7 @@ MainComponent::MainComponent() {
     soundOptions.volumeSlider.setValue(-20);
     addAndMakeVisible(soundOptions);
 
+    enginePath = loadEnginePath();
     updateGame();
 }
 
@@ -370,7 +381,7 @@ void MainComponent::resized() {
     fb.alignContent = juce::FlexBox::AlignContent::center;
 
     juce::FlexItem::Margin margin(24, 6, 6, 6);
-    fb.items.add(juce::FlexItem(controls).withMinHeight(170).withMargin(6));
+    fb.items.add(juce::FlexItem(controls).withMinHeight(130).withMargin(6));
     fb.items.add(juce::FlexItem(playerOptions).withMinHeight(150).withMargin(margin));
     fb.items.add(juce::FlexItem(analysisOptions).withMinHeight(170).withMargin(margin));
     fb.items.add(juce::FlexItem(soundOptions).withMinHeight(140).withMargin(margin));
@@ -383,6 +394,16 @@ void MainComponent::timerCallback() {
     } else {
         controls.playPause.setToggleState(false, juce::dontSendNotification);
         stopTimer();
+    }
+}
+
+void MainComponent::setPlayerType(Chess::Color color, PlayerType type) {
+    board.enableInput(color, type == PlayerType::Human);
+    players[(int)color] = type;
+    if (type != PlayerType::Human) {
+        enableStockfish(true);
+    } else if (players[!(int)color] == PlayerType::Human) {
+        enableStockfish(false);
     }
 }
 
@@ -401,27 +422,23 @@ void MainComponent::updateGame() {
             turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::lightgrey);
             turnLabel.setColour(turnLabel.textColourId, juce::Colours::grey);
         }
-    } else if (game.getTurn() == Chess::Color::White) {
-        turnLabel.setText("White to move", juce::dontSendNotification);
-        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::whitesmoke);
-        turnLabel.setColour(turnLabel.textColourId, juce::Colours::black);
-
-        if (players[(int)Chess::Color::White] != PlayerType::Human) {
-            engine->analyzeAsync([this](Chess::Analysis analysis) {
-                Chess::Move move = analysis.bestMove;
-                juce::MessageManager::callAsync([this, move]() { makeMove(move); });
-            }, game);
-        }
     } else {
-        turnLabel.setText("Black to move", juce::dontSendNotification);
-        turnLabel.setColour(turnLabel.backgroundColourId, juce::Colours::black);
-        turnLabel.setColour(turnLabel.textColourId, juce::Colours::whitesmoke);
+        Chess::Color turn = game.getTurn();
+        std::string text = turn == Chess::Color::White ? "White" : "Black";
+        turnLabel.setText(text + " to move", juce::dontSendNotification);
+        juce::Colour bg = turn == Chess::Color::White ? juce::Colours::whitesmoke : juce::Colours::black;
+        juce::Colour fg = turn == Chess::Color::White ? juce::Colours::black : juce::Colours::whitesmoke;
+        turnLabel.setColour(turnLabel.backgroundColourId, bg);
+        turnLabel.setColour(turnLabel.textColourId, fg);
 
-        if (players[(int)Chess::Color::Black] != PlayerType::Human) {
+        PlayerType player = players[(int)turn];
+        if (player != PlayerType::Human) {
+            static int depth[] = {5, 5, 13};
+            static int skill[] = {-5, 7, 20};
             engine->analyzeAsync([this](Chess::Analysis analysis) {
                 Chess::Move move = analysis.bestMove;
                 juce::MessageManager::callAsync([this, move]() { makeMove(move); });
-            }, game);
+            }, game, depth[(int)player - 1], skill[(int)player - 1]);
         }
     }
 
@@ -500,25 +517,27 @@ void MainComponent::enableStockfish(bool enable) {
     } else if (engine) {
         // Already started.
         updateGame();
-    } else if (std::filesystem::exists("../../stockfish/stockfish_14.1_win_x64_avx2.exe")) {
-        engine = std::make_unique<Chess::Engine>("../../stockfish/stockfish_14.1_win_x64_avx2.exe");
+    } else if (!enginePath.empty() && std::filesystem::exists(enginePath)) {
+        engine = std::make_unique<Chess::Engine>(enginePath);
         updateGame();
     } else {
         // Allow user to tell us where their engine binary is.
-        // TODO: Remember their selected engine and allow them to change it later.
         engineChooser = std::make_unique<juce::FileChooser>("Please select the engine executable you want to use...",
-                                                            juce::File::getSpecialLocation(juce::File::userHomeDirectory));
-
+                                                            juce::File::getSpecialLocation(juce::File::globalApplicationsDirectory));
         auto chooserFlags = juce::FileBrowserComponent::openMode;
 
         engineChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &chooser) {
             juce::File file = chooser.getResult();
             if (file.exists()) {
-                engine = std::make_unique<Chess::Engine>(file.getFullPathName().toStdString());
+                enginePath = file.getFullPathName().toStdString();
+                saveEnginePath(enginePath);
+                engine = std::make_unique<Chess::Engine>(enginePath);
                 updateGame();
             } else {
-                // User canceled.
-                // TODO: Reset triggering player to "Human".
+                // User canceled the file chooser.
+                // Reset both players to "Human" since we don't have a valid engine.
+                playerOptions.whiteMenu.setSelectedId(1, juce::sendNotification);
+                playerOptions.blackMenu.setSelectedId(1, juce::sendNotification);
             }
         });
     }
