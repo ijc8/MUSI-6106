@@ -22,6 +22,12 @@ void saveEnginePath(const std::string &enginePath) {
     }
 }
 
+std::vector<Chess::Move> loadMoves(const std::string &pgn) {
+    // TODO
+    (void)pgn;
+    return {Chess::Move("e2e4"), Chess::Move("e7e5"), Chess::Move("b1c3")};
+}
+
 Controls::Controls() {
     setText("Controls");
     setColour(ColourIds::textColourId, juce::Colours::lightgrey);
@@ -228,7 +234,8 @@ MainComponent::MainComponent() {
     };
 
     controls.skipForward.onClick = [this]() {
-        while (redo());
+        while (redo())
+            ;
         updateGame();
     };
 
@@ -279,31 +286,8 @@ MainComponent::MainComponent() {
     };
     addAndMakeVisible(playerOptions);
 
-    // TODO: load from PGN, lichess stream.
-    // streamInputLabel.setText("Lichess Game ID", juce::dontSendNotification);
-    // streamInputLabel.attachToComponent(&streamInput, false);
-    // streamToggle.setButtonText("Play Stream");
-    // streamToggle.onClick = [this]() {
-    //     if (stream) {
-    //         // Hack to avoid thread-killing issues.
-    //         stream->cancel();
-    //         streams.push_back(stream);
-    //         stream.reset();
-    //         streamToggle.setButtonText("Play Stream");
-    //     } else {
-    //         // TODO: Reset game first.
-    //         std::string id = streamInput.getText().toStdString();
-    //         stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
-    //             if (move) {
-    //                 std::cout << "Streamed move: " << move->toString() << std::endl;
-    //                 broadcastManager.actionListenerCallback(juce::String(move->toString()));
-    //             } else {
-    //                 std::cout << "Done streaming." << std::endl;
-    //             }
-    //         });
-    //         streamToggle.setButtonText("Stop Stream");
-    //     }
-    // };
+    analysisOptions.loadGame.onClick = [this]() { loadSavedGame(); };
+    analysisOptions.streamGame.onClick = [this]() { streamLiveGame(); };
     analysisOptions.fen.onReturnKey = [this]() {
         // NOTE: We don't clear the undo history here;
         // it might be annoying for the user if we throw out
@@ -480,9 +464,62 @@ void MainComponent::loadSavedGame() {
     fileChooser->launchAsync(folderChooserFlags, [this](const juce::FileChooser &chooser) {
         juce::File file = chooser.getResult();
         if (file.exists()) {
-            // pgnData = chooser.getResult().loadFileAsString();
+            std::string pgn = chooser.getResult().loadFileAsString().toStdString();
+            std::cout << "PGN:" << std::endl << pgn << std::endl;
+            std::vector<Chess::Move> moves = loadMoves(pgn);
+            while (game.pop());
+            clearRedoStack();
+            for (int i = 0; i < moves.size(); i++) {
+                redoStack.push(moves[moves.size() - i - 1]);
+            }
+            updateGame();
         }
     });
+}
+
+void MainComponent::streamLiveGame() {
+    if (stream) {
+        // Hack to avoid thread-killing issues.
+        stream->cancel();
+        streams.push_back(stream);
+        stream.reset();
+        analysisOptions.streamGame.setButtonText("Stream live game (Lichess)");
+        return;
+    }
+
+    streamPrompt = std::make_unique<juce::AlertWindow>(
+        "Stream Live Game", "Enter Lichess game ID or username", juce::MessageBoxIconType::NoIcon);
+    streamPrompt->addTextEditor("id", "", "Game ID");
+    streamPrompt->addTextBlock("or");
+    streamPrompt->addTextEditor("username", "", "Username");
+    streamPrompt->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey, 0, 0));
+    streamPrompt->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey, 0, 0));
+    streamPrompt->enterModalState(true, juce::ModalCallbackFunction::create([this](int result) {
+        std::string id = streamPrompt->getTextEditorContents("id").toStdString();
+        std::string username = streamPrompt->getTextEditorContents("username").toStdString();
+        std::cout << "Got: " << result << " " << id << " " << username << std::endl;
+        if (!id.empty()) {
+            // Reset game first.
+            while (game.pop());
+            clearRedoStack();
+            // Stream moves from game.
+            stream = std::make_unique<GameStream>(id, [this](std::optional<Chess::Move> move) {
+                if (move) {
+                    std::cout << "Streamed move: " << move->toString() << std::endl;
+                    while (redo());
+                    game.push(*move);
+                    updateGame();
+                } else {
+                    std::cout << "Done streaming." << std::endl;
+                    streamLiveGame();
+                }
+            });
+            analysisOptions.streamGame.setButtonText("Stop streaming");
+        }
+        streamPrompt->exitModalState(result);
+        streamPrompt->setVisible(false);
+        streamPrompt.reset();
+    }));
 }
 
 void MainComponent::makeMove(Chess::Move move) {
