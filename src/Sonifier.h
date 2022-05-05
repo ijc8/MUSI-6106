@@ -10,7 +10,7 @@ public:
         mMainProcessor.setSampleRate(mSampleRate);
         mMainProcessor.setADSRParameters(1, 0, 1, 1);
     }
-    ~Sonifier() {}
+    virtual ~Sonifier() {}
 
     virtual void process(float **ppfOutputBuffer, int iNumChannels, int iNumFrames) {
         mMainProcessor.process(ppfOutputBuffer, iNumChannels, iNumFrames);
