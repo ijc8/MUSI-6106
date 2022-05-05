@@ -1,6 +1,25 @@
 # MUSI-6106
 ♘ Musical Chess ♞ (for Audio Software Engineering 🚀)
 
+## Build Instructions
+
+First, clone the repository and initialize submodules: e.g. `git clone --recurse-submodules -j8 https://github.com/ijc8/MUSI-6106.git`.
+
+Run CMake to generate a project file for your preferred build tool, and build (e.g. `cmake . && make`).
+
+Finally, run the "MusicalChess" target.
+
+### Dependencies
+
+- [JUCE](https://juce.com/) - included as git submodule (GPL license)
+- [Catch2](https://github.com/catchorg/Catch2/tree/v2.x) - header-only library included directly in repository (BSL-1.0 license)
+- [Subprocess](https://github.com/sheredom/subprocess.h) - header-only library included directly in repo (Unlicense license)
+- Stockfish (or another chess engine) - optional dependency for playing against the computer; download binary from [the website](https://stockfishchess.org/)
+
+Note that `CMakeLists.txt` is configured to compile with C++17.
+
+Some third-party assets are included in `assets/`; see READMEs within subdirectories for details.
+
 ## Motivation
 The main motivation for this project is to take a complex, interesting game and bring it into sound — with the aim of having the sonic output capture some of the interest of the game, and add something to the experience of playing it. The project will take the form of a system that generates audio based on input from a chess game. The inputs will be the board state (with move history) and derived data, such as relative positions of pieces, chess engine evaluation of game state, etc. We would like to explore multiple approaches to come up with creative ways to translate the happenings on the board to sound. We envision our final deliverable being a standalone application that will enable a user to play a game of chess against the computer (or another human) with real-time audio output based on the game.
 
